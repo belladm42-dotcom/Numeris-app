@@ -872,25 +872,126 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
     }));
 
     try {
-      if (tipoIncognita === "monto") {
-        const sol = solveUnknownCashFlow(flowsBase, focal, regimen, tasa, target);
-        if (!sol.ok || !validateSolution(sol.value)) throw new Error("Con los datos ingresados no encontramos una solución financiera válida. Revisa los valores, la tasa y los momentos de los flujos.");
-        // verificación
-        let total = 0;
-        for (const f of flowsBase) total += f.signo * (f.esIncognita ? f.coeficiente * sol.value : f.monto) * trasladoFlujo(1, f.momento, focal, regimen, tasa);
-        const residual = total - target;
-        setResultado({ tipo: "monto", valor: sol.value, residual, verifOk: Math.abs(residual) < Math.max(1, Math.abs(sol.value)) * 1e-5, focal, tasa, regimen, target, flowsBase });
-      } else if (tipoIncognita === "momento") {
-        const idx = flujos.findIndex((f) => f.esIncognitaMomento);
-        const sol = solveUnknownCashFlowTime(flowsBase, focal, regimen, tasa, target, idx);
-        if (!sol.ok) throw new Error("Con los datos ingresados no encontramos una solución financiera válida. Revisa los valores, la tasa y los montos de los flujos.");
-        setResultado({ tipo: "momento", valor: sol.value, residual: sol.residual, verifOk: Math.abs(sol.residual) < 1e-4, focal, tasa, regimen, target, flowsBase });
-      } else {
-        const sol = solveUnknownRateMultiFlow(flowsBase, focal, regimen, target);
-        if (!sol.ok) throw new Error("Con los datos ingresados no encontramos una tasa que satisfaga la ecuación de valor. Revisa los montos y momentos.");
-        setResultado({ tipo: "tasa", valor: sol.value, residual: sol.residual, verifOk: Math.abs(sol.residual) < 1, focal, regimen, target, flowsBase });
-      }
-      onGuardarHistorial({ tipo: "avanzado", regimen, incognita: tipoIncognita, fecha: new Date().toISOString(), moneda });
+      let valorHistorial = null;
+let tipoResultadoHistorial = "moneda";
+
+if (tipoIncognita === "monto") {
+  const sol = solveUnknownCashFlow(
+    flowsBase,
+    focal,
+    regimen,
+    tasa,
+    target
+  );
+
+  if (!sol.ok || !validateSolution(sol.value)) {
+    throw new Error(
+      "Con los datos ingresados no encontramos una solución financiera válida."
+    );
+  }
+
+  // Verificación
+  let total = 0;
+
+  for (const f of flowsBase) {
+    total +=
+      f.signo *
+      (f.esIncognita ? f.coeficiente * sol.value : f.monto) *
+      trasladoFlujo(1, f.momento, focal, regimen, tasa);
+  }
+
+  const residual = total - target;
+
+  setResultado({
+    tipo: "monto",
+    valor: sol.value,
+    residual,
+    verifOk:
+      Math.abs(residual) <
+      Math.max(1, Math.abs(sol.value)) * 1e-5,
+    focal,
+    tasa,
+    regimen,
+    target,
+  });
+
+  valorHistorial = sol.value;
+  tipoResultadoHistorial = "moneda";
+}
+
+else if (tipoIncognita === "momento") {
+  const idx = flujos.findIndex(
+    (f) => f.esIncognitaMomento
+  );
+
+  const sol = solveUnknownCashFlowTime(
+    flowsBase,
+    focal,
+    regimen,
+    tasa,
+    target,
+    idx
+  );
+
+  if (!sol.ok) {
+    throw new Error(
+      "Con los datos ingresados no encontramos una solución financiera válida. Revisa los valores, la tasa y los momentos."
+    );
+  }
+
+  setResultado({
+    tipo: "momento",
+    valor: sol.value,
+    residual: sol.residual,
+    verifOk: Math.abs(sol.residual) < 1e-4,
+    focal,
+    tasa,
+    regimen,
+    target,
+  });
+
+  valorHistorial = sol.value;
+  tipoResultadoHistorial = "tiempo";
+}
+
+else {
+  const sol = solveUnknownRateMultiFlow(
+    flowsBase,
+    focal,
+    regimen,
+    target
+  );
+
+  if (!sol.ok) {
+    throw new Error(
+      "Con los datos ingresados no encontramos una tasa que satisfaga la ecuación de valor."
+    );
+  }
+
+  setResultado({
+    tipo: "tasa",
+    valor: sol.value,
+    residual: sol.residual,
+    verifOk: Math.abs(sol.residual) < 1e-4,
+    focal,
+    regimen,
+    target,
+  });
+
+  valorHistorial = sol.value;
+  tipoResultadoHistorial = "tasa";
+}
+
+// GUARDAR RESULTADO EN HISTORIAL
+onGuardarHistorial({
+  tipo: "avanzado",
+  regimen,
+  incognita: tipoIncognita,
+  resultado: valorHistorial,
+  resultadoTipo: tipoResultadoHistorial,
+  fecha: new Date().toISOString(),
+  moneda,
+});
     } catch (e) {
       setError(e.message);
     }
@@ -1026,48 +1127,51 @@ function Simular({ moneda }) {
   const [historial, setHistorial] = useState([]);
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
 
-  const cargar = useCallback(async () => setHistorial(await cargarHistorial()), []);
-  useEffect(() => { cargar(); }, [cargar]);
+ const cargar = useCallback(() => {
+  try {
+    const raw = localStorage.getItem("numeris_historial");
+    const datos = raw ? JSON.parse(raw) : [];
+    setHistorial(Array.isArray(datos) ? datos : []);
+  } catch (error) {
+    console.error("Error cargando historial:", error);
+    setHistorial([]);
+  }
+}, []);
 
-  async function guardar(entry) { await guardarHistorial(entry); cargar(); }
-  async function limpiar() { await borrarHistorial(historial); setHistorial([]); }
+useEffect(() => {
+  cargar();
+}, [cargar]);
 
-  return (
-    <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
-      <Etiqueta>Simulación / Cotización</Etiqueta>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 22 }}>
-        <h1 style={{ fontFamily: F_DISPLAY, fontSize: 30, color: C.navy, margin: 0 }}>Simula tu crédito o inversión</h1>
-        <div style={{ display: "flex", gap: 8 }}>
-          <Boton small variant={modo === "basico" ? "gold" : "outline"} onClick={() => setModo("basico")}>Modo básico</Boton>
-          <Boton small variant={modo === "avanzado" ? "gold" : "outline"} onClick={() => setModo("avanzado")}>Modo avanzado</Boton>
-          <Boton small variant="ghost" onClick={() => setMostrarHistorial(!mostrarHistorial)}><RotateCcw size={13} /> Historial</Boton>
-        </div>
-      </div>
+function guardar(entry) {
+  try {
+    const actual = JSON.parse(localStorage.getItem("numeris_historial") || "[]");
 
-      {mostrarHistorial && (
-        <Tarjeta style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <Etiqueta>Historial local de simulaciones</Etiqueta>
-            {historial.length > 0 && <Boton small variant="danger" onClick={limpiar}>Borrar historial</Boton>}
-          </div>
-          {historial.length === 0 ? <div style={{ fontSize: 13, color: C.slate }}>Aún no hay simulaciones guardadas.</div> :
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {historial.map((h, i) => (
-                <div key={h.key || i} style={{ fontSize: 12.5, color: C.ink, display: "flex", justifyContent: "space-between", borderBottom: `1px solid ${C.line}`, padding: "6px 0" }}>
-                  <span>{new Date(h.fecha).toLocaleString("es-CO")} · {h.regimen} · {h.incognita}{h.resultado !== undefined ? ` · ${formatCurrencyCO(h.resultado, h.moneda)}` : ""}</span>
-                </div>
-              ))}
-            </div>}
-        </Tarjeta>
-      )}
+    const nuevo = {
+      id: Date.now(),
+      fecha: new Date().toISOString(),
+      ...entry,
+    };
 
-      {modo === "basico" ? <SimularBasico moneda={moneda} onGuardarHistorial={guardar} /> : <SimularAvanzado moneda={moneda} onGuardarHistorial={guardar} />}
+    const actualizado = [nuevo, ...actual].slice(0, 30);
 
-      <div style={{ marginTop: 24, padding: 14, background: C.paperDark, borderRadius: 8, fontSize: 12, color: C.slate }}>
-        En este primer corte convertimos el tiempo al número de periodos de la tasa; no convertimos tasas entre periodicidades.
-      </div>
-    </Section>
-  );
+    localStorage.setItem(
+      "numeris_historial",
+      JSON.stringify(actualizado)
+    );
+
+    setHistorial(actualizado);
+  } catch (error) {
+    console.error("Error guardando historial:", error);
+  }
+}
+
+function limpiar() {
+  try {
+    localStorage.removeItem("numeris_historial");
+    setHistorial([]);
+  } catch (error) {
+    console.error("Error borrando historial:", error);
+  }
 }
 
 /* ============================================================
