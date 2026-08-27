@@ -175,33 +175,82 @@ const EJEMPLOS = {
   compuesto: { VP: "1000000", tasa: "3", periodicidad: "trimestral", nPersonalizado: "", anios: "3", meses: "0", incognita: "VF", VF: "", operacion: "inversion" },
   continuo: { VP: "850000", tasa: "8.95", anios: "2", meses: "6", incognita: "VF", VF: "", operacion: "inversion" },
 };
-
 /* ============================================================
-   PERSISTENCIA — historial local (window.storage, no localStorage)
+   PERSISTENCIA — historial local compatible con navegador/Vercel
    ============================================================ */
+
+const HISTORIAL_KEY = "numeris:historial:v1";
+const HISTORIAL_MAX = 30;
+
+function leerHistorialStorage() {
+  if (typeof window === "undefined" || !window.localStorage) return [];
+
+  try {
+    const raw = window.localStorage.getItem(HISTORIAL_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 async function guardarHistorial(entry) {
+  if (typeof window === "undefined" || !window.localStorage) return false;
+
   try {
-    const key = `historial:${Date.now()}`;
-    await window.storage.set(key, JSON.stringify(entry), false);
-  } catch (e) { /* almacenamiento best-effort */ }
-}
-async function cargarHistorial() {
-  try {
-    const listado = await window.storage.list("historial:", false);
-    if (!listado || !listado.keys) return [];
-    const items = await Promise.all(
-      listado.keys.slice(-30).reverse().map(async (k) => {
-        try { const r = await window.storage.get(k, false); return r ? { key: k, ...JSON.parse(r.value) } : null; }
-        catch { return null; }
-      })
+    const actual = leerHistorialStorage();
+
+    const nuevo = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      ...entry,
+      fecha: entry.fecha || new Date().toISOString(),
+    };
+
+    const actualizado = [nuevo, ...actual].slice(0, HISTORIAL_MAX);
+
+    window.localStorage.setItem(
+      HISTORIAL_KEY,
+      JSON.stringify(actualizado)
     );
-    return items.filter(Boolean);
-  } catch (e) { return []; }
+
+    return true;
+  } catch {
+    return false;
+  }
 }
-async function borrarHistorial(items) {
-  try { await Promise.all(items.map((it) => window.storage.delete(it.key, false).catch(() => {}))); }
-  catch (e) { /* noop */ }
+
+async function cargarHistorial() {
+  return leerHistorialStorage();
 }
+
+async function borrarHistorial() {
+  if (typeof window === "undefined" || !window.localStorage) return;
+
+  try {
+    window.localStorage.removeItem(HISTORIAL_KEY);
+  } catch {
+    // No hacer nada si falla
+  }
+}
+
+function formatearResultadoHistorial(h) {
+  if (!Number.isFinite(h.resultado)) return "";
+
+  if (h.resultadoTipo === "tasa") {
+    return formatPercentCO(h.resultado, 4);
+  }
+
+  if (h.resultadoTipo === "tiempo") {
+    const unidad = h.regimen === "continuo" ? "años" : "periodos";
+    return `${formatNumberCO(h.resultado, 2, 6)} ${unidad}`;
+  }
+
+  return formatCurrencyCO(
+    h.resultado,
+    h.moneda || "COP"
+  );
+}
+
 
 /* ============================================================
    COMPONENTES DE UTILIDAD
