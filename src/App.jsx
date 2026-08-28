@@ -588,6 +588,8 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
   const [incognita, setIncognita] = useState("VF");
   const [VP, setVP] = useState("1000000");
   const [VF, setVF] = useState("");
+  const [I, setI] = useState("");
+  const [usarI, setUsarI] = useState(false);
   const [tasaPct, setTasaPct] = useState("2");
   const [periodicidad, setPeriodicidad] = useState("mensual");
   const [nPersonalizado, setNPersonalizado] = useState("3");
@@ -598,220 +600,377 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
   const [error, setError] = useState("");
 
   const incognitasDisponibles = regimen === "continuo"
-    ? [{ value: "VF", label: "Valor Futuro (VF)" }, { value: "VP", label: "Valor Presente (VP)" }, { value: "r", label: "Tasa continua (r)" }, { value: "t", label: "Tiempo (t)" }]
-    : [{ value: "VF", label: "Valor Futuro (VF)" }, { value: "VP", label: "Valor Presente (VP)" }, { value: "i", label: "Tasa de interés (i)" }, { value: "n", label: "Tiempo / periodos (n)" }];
+    ? [
+        { value: "VF", label: "Valor Futuro (VF)" },
+        { value: "VP", label: "Valor Presente (VP)" },
+        { value: "I", label: "Interés / ganancia neta (I)" },
+        { value: "r", label: "Tasa continua (r)" },
+        { value: "t", label: "Tiempo (t, en años)" },
+      ]
+    : [
+        { value: "VF", label: "Valor Futuro (VF)" },
+        { value: "VP", label: "Valor Presente (VP)" },
+        { value: "I", label: "Interés / ganancia neta (I)" },
+        { value: "i", label: "Tasa de interés (i)" },
+        { value: "n", label: "Número de períodos (n)" },
+      ];
+
+  const parseNum = (v) => {
+    if (v === "" || v === null || v === undefined) return NaN;
+    let txt = String(v).trim();
+    if (txt.includes(",")) txt = txt.replace(/\./g, "").replace(",", ".");
+    else if (/^-?\d{1,3}(\.\d{3})+$/.test(txt)) txt = txt.replace(/\./g, "");
+    return parseFloat(txt);
+  };
+
+  const periodoActual = PERIODICIDADES.find((p) => p.value === periodicidad);
+  const mesesPeriodoVista = periodicidad === "personalizada" ? parseNum(nPersonalizado) : periodoActual?.meses;
+  const nombrePeriodo = periodicidad === "personalizada"
+    ? `cada ${Number.isFinite(mesesPeriodoVista) ? formatNumberCO(mesesPeriodoVista, 0, 2) : "N"} meses`
+    : periodicidad;
 
   function cargarEjemplo() {
     const ej = EJEMPLOS[regimen];
     setOperacion(ej.operacion); setVP(ej.VP); setTasaPct(ej.tasa); setAnios(ej.anios); setMeses(ej.meses);
-    setIncognita(ej.incognita); setVF(ej.VF || "");
+    setIncognita(ej.incognita); setVF(ej.VF || ""); setI(""); setUsarI(false);
     if (regimen !== "continuo") setPeriodicidad(ej.periodicidad);
   }
 
   function calcular() {
     setError(""); setResultado(null);
-    const vp = parseFloat(String(VP).replace(",", "."));
-    const vf = parseFloat(String(VF).replace(",", "."));
-    const tasa = parseFloat(String(tasaPct).replace(",", ".")) / 100;
-    const a = parseFloat(anios) || 0, m = parseFloat(meses) || 0;
+    let vp = parseNum(VP), vf = parseNum(VF), interesDato = parseNum(I);
+    const tasa = parseNum(tasaPct) / 100;
+    const a = parseNum(anios) || 0, m = parseNum(meses) || 0;
 
     if (a < 0 || m < 0) { setError("El tiempo no puede ser negativo."); return; }
+    if (m >= 12) { setError("En el campo Meses usa un valor entre 0 y 11. Si tienes 14 meses, escribe 1 año y 2 meses."); return; }
 
     let mesesPorPeriodo = 1;
     if (regimen !== "continuo") {
       const perio = PERIODICIDADES.find((p) => p.value === periodicidad);
-      mesesPorPeriodo = periodicidad === "personalizada" ? parseFloat(nPersonalizado) : perio.meses;
-      if (!mesesPorPeriodo || mesesPorPeriodo <= 0) { setError("Ingresa cuántos meses tiene el periodo personalizado."); return; }
+      mesesPorPeriodo = periodicidad === "personalizada" ? parseNum(nPersonalizado) : perio?.meses;
+      if (!mesesPorPeriodo || mesesPorPeriodo <= 0) { setError("Ingresa cuántos meses tiene el período personalizado."); return; }
     }
 
     const pasos = [];
-    let valorFinal, etiquetaFinal, datosUsados;
+    let valorFinal, etiquetaFinal;
+    let vpFinal = vp, vfFinal = vf;
+
+    pasos.push({
+      label: "1. Datos del ejercicio",
+      content: `Operación: ${operacion === "credito" ? "Crédito" : "Inversión"}. VP = ${Number.isFinite(vp) ? formatCurrencyCO(vp, moneda) : "incógnita"}; VF = ${Number.isFinite(vf) ? formatCurrencyCO(vf, moneda) : "incógnita"}; I = ${Number.isFinite(interesDato) ? formatCurrencyCO(interesDato, moneda) : "por calcular"}.`,
+    });
+    pasos.push({
+      label: "2. Significado de las variables",
+      content: regimen === "continuo"
+        ? "VP = Valor Presente; VF = Valor Futuro; I = interés o ganancia neta; r = tasa continua; t = tiempo expresado en años."
+        : "VP = Valor Presente; VF = Valor Futuro; I = interés o ganancia neta; i = tasa por período; n = número de períodos de la tasa.",
+    });
+
+    // I puede usarse como dato auxiliar. En clase: I = VF − VP.
+    if (incognita !== "I" && usarI) {
+      if (!Number.isFinite(interesDato)) { setError("Marcaste I como dato conocido. Ingresa el valor de I."); return; }
+      if (incognita === "VF") {
+        if (!Number.isFinite(vp)) { setError("Para hallar VF usando I necesitas ingresar VP."); return; }
+        vf = vp + interesDato; vfFinal = vf;
+      } else if (incognita === "VP") {
+        if (!Number.isFinite(vf)) { setError("Para hallar VP usando I necesitas ingresar VF."); return; }
+        vp = vf - interesDato; vpFinal = vp;
+      } else if (["i", "n", "r", "t"].includes(incognita)) {
+        if (!Number.isFinite(vp)) { setError("Para usar I como dato en este despeje, ingresa VP. La herramienta obtiene VF = VP + I."); return; }
+        vf = vp + interesDato; vfFinal = vf;
+        pasos.push({ label: "3. Relación con I", content: `Como I = VF − VP, entonces VF = VP + I = ${formatCurrencyCO(vp, moneda)} + ${formatCurrencyCO(interesDato, moneda)} = ${formatCurrencyCO(vf, moneda)}.` });
+      }
+    }
+
     try {
-      if (regimen === "continuo") {
+      if (incognita === "I") {
+        if (!Number.isFinite(vp) || !Number.isFinite(vf)) throw new Error("Para calcular I necesitas ingresar VP y VF.");
+        valorFinal = vf - vp;
+        vpFinal = vp; vfFinal = vf;
+        etiquetaFinal = "Interés / ganancia neta (I)";
+        pasos.push(
+          { label: "3. Fórmula de I", content: "I = VF − VP" },
+          { label: "4. Sustitución", content: `I = ${formatCurrencyCO(vf, moneda)} − ${formatCurrencyCO(vp, moneda)}` },
+          { label: "5. Resultado", content: `I = ${formatCurrencyCO(valorFinal, moneda)}` },
+        );
+      } else if (usarI && (incognita === "VF" || incognita === "VP")) {
+        valorFinal = incognita === "VF" ? vf : vp;
+        vpFinal = incognita === "VP" ? valorFinal : vp;
+        vfFinal = incognita === "VF" ? valorFinal : vf;
+        etiquetaFinal = incognita === "VF" ? "Valor Futuro (VF)" : "Valor Presente (VP)";
+        pasos.push(
+          { label: "3. Relación fundamental", content: incognita === "VF" ? "I = VF − VP  →  VF = VP + I" : "I = VF − VP  →  VP = VF − I" },
+          { label: "4. Sustitución", content: incognita === "VF" ? `VF = ${formatCurrencyCO(vp, moneda)} + ${formatCurrencyCO(interesDato, moneda)}` : `VP = ${formatCurrencyCO(vf, moneda)} − ${formatCurrencyCO(interesDato, moneda)}` },
+        );
+      } else if (regimen === "continuo") {
         const t = incognita === "t" ? null : yearsMonthsToDecimalYears(a, m);
-        pasos.push({ label: "Conversión temporal", content: incognita === "t" ? "El tiempo es la incógnita" : `t = ${a} + ${m}/12 = ${formatNumberCO(t, 2, 4)} años` });
+        if (incognita !== "t") pasos.push({ label: "3. Conversión del tiempo", content: `En continuo usamos t en años: t = ${a} + ${m}/12 = ${formatNumberCO(t, 2, 4)} años.` });
+        pasos.push({ label: "4. Régimen", content: "Interés continuo: el crecimiento ocurre de forma continua. No usamos n ni períodos de capitalización; usamos r y t." });
         if (incognita === "VF") {
-          if (!validateSolution(vp) || vp <= 0) throw new Error("Ingresa un Valor Presente válido para continuar.");
-          valorFinal = futureValueContinuous(vp, tasa, t);
-          pasos.push({ label: "Fórmula", content: "VF = VP · e^(r·t)" }, { label: "Sustitución", content: `VF = ${formatNumberCO(vp)} × e^(${formatNumberCO(tasa, 4, 6)} × ${formatNumberCO(t, 2, 4)})` });
+          if (!Number.isFinite(vp) || vp <= 0 || !Number.isFinite(tasa)) throw new Error("Ingresa VP y r válidos.");
+          valorFinal = futureValueContinuous(vp, tasa, t); vfFinal = valorFinal; vpFinal = vp;
+          pasos.push(
+            { label: "5. Fórmula", content: "VF = VP · e^(r·t)" },
+            { label: "6. Sustitución", content: `VF = ${formatNumberCO(vp)} × e^(${formatNumberCO(tasa, 6, 8)} × ${formatNumberCO(t, 2, 6)})` },
+            { label: "7. Operación", content: `VF = ${formatNumberCO(vp)} × e^(${formatNumberCO(tasa * t, 6, 8)}) = ${formatNumberCO(vp)} × ${formatNumberCO(Math.exp(tasa * t), 6, 8)}` },
+            { label: "8. Resultado sin redondear", content: `VF = ${valorFinal}` }
+          );
           etiquetaFinal = "Valor Futuro (VF)";
         } else if (incognita === "VP") {
-          valorFinal = presentValueContinuous(vf, tasa, t);
-          pasos.push({ label: "Fórmula", content: "VP = VF · e^(−r·t)" });
+          if (!Number.isFinite(vf) || !Number.isFinite(tasa)) throw new Error("Ingresa VF y r válidos.");
+          valorFinal = presentValueContinuous(vf, tasa, t); vpFinal = valorFinal; vfFinal = vf;
+          pasos.push(
+            { label: "5. Fórmula", content: "VP = VF · e^(−r·t)" },
+            { label: "6. Sustitución", content: `VP = ${formatNumberCO(vf)} × e^(−${formatNumberCO(tasa, 6, 8)} × ${formatNumberCO(t, 2, 6)})` },
+            { label: "7. Operación", content: `VP = ${formatNumberCO(vf)} × e^(${formatNumberCO(-tasa * t, 6, 8)}) = ${formatNumberCO(vf)} × ${formatNumberCO(Math.exp(-tasa * t), 6, 8)}` },
+            { label: "8. Resultado sin redondear", content: `VP = ${valorFinal}` }
+          );
           etiquetaFinal = "Valor Presente (VP)";
         } else if (incognita === "r") {
-          valorFinal = solveRateContinuous(vp, vf, t);
-          pasos.push({ label: "Fórmula", content: "r = ln(VF/VP) / t" });
+          if (!Number.isFinite(vp) || !Number.isFinite(vf) || !t) throw new Error("Ingresa VP, VF y tiempo válidos.");
+          valorFinal = solveRateContinuous(vp, vf, t); vpFinal = vp; vfFinal = vf;
+          pasos.push(
+            { label: "5. Despeje", content: "r = ln(VF/VP) / t" },
+            { label: "6. Sustitución", content: `r = ln(${formatNumberCO(vf)}/${formatNumberCO(vp)}) / ${formatNumberCO(t, 2, 6)}` },
+            { label: "7. Operación", content: `r = ln(${formatNumberCO(vf / vp, 6, 8)}) / ${formatNumberCO(t, 2, 6)} = ${formatNumberCO(Math.log(vf / vp), 6, 8)} / ${formatNumberCO(t, 2, 6)}` },
+            { label: "8. Resultado sin redondear", content: `r = ${valorFinal} = ${valorFinal * 100} % anual` },
+            { label: "¿Por qué ln?", content: "Usamos logaritmo natural para bajar el exponente y poder despejar la tasa continua r." }
+          );
           etiquetaFinal = "Tasa continua (r)";
         } else if (incognita === "t") {
-          valorFinal = solveTimeContinuous(vp, vf, tasa);
+          if (!Number.isFinite(vp) || !Number.isFinite(vf) || !Number.isFinite(tasa) || tasa === 0) throw new Error("Ingresa VP, VF y r válidos.");
+          valorFinal = solveTimeContinuous(vp, vf, tasa); vpFinal = vp; vfFinal = vf;
+          pasos.push(
+            { label: "3. Despeje", content: "t = ln(VF/VP) / r" },
+            { label: "4. Sustitución", content: `t = ln(${formatNumberCO(vf)}/${formatNumberCO(vp)}) / ${formatNumberCO(tasa, 6, 8)}` },
+            { label: "5. Operación", content: `t = ln(${formatNumberCO(vf / vp, 6, 8)}) / ${formatNumberCO(tasa, 6, 8)} = ${formatNumberCO(Math.log(vf / vp), 6, 8)} / ${formatNumberCO(tasa, 6, 8)}` },
+            { label: "6. Resultado sin redondear", content: `t = ${valorFinal} años` },
+            { label: "7. Unidad", content: "En interés continuo, t se expresa siempre en años." }
+          );
           etiquetaFinal = "Tiempo (t)";
         }
       } else {
         const n = incognita === "n" ? null : convertTimeToPeriods(a, m, mesesPorPeriodo);
-        if (incognita !== "n") pasos.push({ label: "Conversión temporal", content: `${a} años y ${m} meses = ${a * 12 + m} meses → n = ${a * 12 + m}/${mesesPorPeriodo} = ${formatNumberCO(n, 2, 6)} periodos` });
+        const etiquetaPer = periodicidad === "personalizada" ? `cada ${mesesPorPeriodo} meses` : periodoActual?.label?.toLowerCase();
+        if (incognita !== "n") pasos.push({
+          label: "3. Conversión del tiempo a n",
+          content: `${a} años y ${m} meses = ${a * 12 + m} meses. Como la tasa es ${etiquetaPer} (1 período = ${mesesPorPeriodo} ${mesesPorPeriodo === 1 ? "mes" : "meses"}), n = ${a * 12 + m}/${mesesPorPeriodo} = ${formatNumberCO(n, 2, 6)} períodos.`,
+        });
+        pasos.push({
+          label: "4. Régimen y periodicidad",
+          content: regimen === "simple"
+            ? `Interés simple: i = ${formatPercentCO(tasa)} ${etiquetaPer}; los intereses NO se capitalizan y siempre se calculan sobre el capital inicial.`
+            : `Interés compuesto: i = ${formatPercentCO(tasa)} ${etiquetaPer}; los intereses sí se capitalizan y generan nuevos intereses.`,
+        });
         if (regimen === "simple") {
-          if (incognita === "VF") { valorFinal = futureValueSimple(vp, tasa, n); pasos.push({ label: "Fórmula", content: "VF = VP · (1 + i·n)" }); etiquetaFinal = "Valor Futuro (VF)"; }
-          else if (incognita === "VP") { valorFinal = presentValueSimple(vf, tasa, n); pasos.push({ label: "Fórmula", content: "VP = VF / (1 + i·n)" }); etiquetaFinal = "Valor Presente (VP)"; }
-          else if (incognita === "i") { valorFinal = solveRateSimple(vp, vf, n); pasos.push({ label: "Fórmula", content: "i = (VF/VP − 1) / n" }); etiquetaFinal = "Tasa de interés (i)"; }
-          else if (incognita === "n") { valorFinal = solveTimeSimple(vp, vf, tasa); etiquetaFinal = "Tiempo (n)"; }
+          if (incognita === "VF") {
+            valorFinal = futureValueSimple(vp, tasa, n); vfFinal = valorFinal; vpFinal = vp;
+            pasos.push(
+              { label: "5. Fórmula", content: "VF = VP · (1 + i·n)" },
+              { label: "6. Sustitución", content: `VF = ${formatNumberCO(vp)} · (1 + ${formatNumberCO(tasa, 6, 8)} × ${formatNumberCO(n, 2, 6)})` },
+              { label: "7. Operación", content: `VF = ${formatNumberCO(vp)} · (1 + ${formatNumberCO(tasa * n, 6, 8)}) = ${formatNumberCO(vp)} · ${formatNumberCO(1 + tasa * n, 6, 8)}` },
+              { label: "8. Resultado sin redondear", content: `VF = ${valorFinal}` }
+            ); etiquetaFinal = "Valor Futuro (VF)";
+          }
+          else if (incognita === "VP") {
+            valorFinal = presentValueSimple(vf, tasa, n); vpFinal = valorFinal; vfFinal = vf;
+            pasos.push(
+              { label: "5. Despeje", content: "VP = VF / (1 + i·n)" },
+              { label: "6. Sustitución", content: `VP = ${formatNumberCO(vf)} / (1 + ${formatNumberCO(tasa, 6, 8)} × ${formatNumberCO(n, 2, 6)})` },
+              { label: "7. Operación", content: `VP = ${formatNumberCO(vf)} / ${formatNumberCO(1 + tasa * n, 6, 8)}` },
+              { label: "8. Resultado sin redondear", content: `VP = ${valorFinal}` }
+            ); etiquetaFinal = "Valor Presente (VP)";
+          }
+          else if (incognita === "i") {
+            valorFinal = solveRateSimple(vp, vf, n); vpFinal = vp; vfFinal = vf;
+            pasos.push(
+              { label: "5. Despeje", content: "i = (VF/VP − 1) / n" },
+              { label: "6. Sustitución", content: `i = (${formatNumberCO(vf)}/${formatNumberCO(vp)} − 1) / ${formatNumberCO(n, 2, 6)}` },
+              { label: "7. Operación", content: `i = (${formatNumberCO(vf / vp, 6, 8)} − 1) / ${formatNumberCO(n, 2, 6)} = ${formatNumberCO((vf / vp) - 1, 6, 8)} / ${formatNumberCO(n, 2, 6)}` },
+              { label: "8. Resultado sin redondear", content: `i = ${valorFinal} = ${valorFinal * 100} % por período` }
+            ); etiquetaFinal = "Tasa de interés (i)";
+          }
+          else if (incognita === "n") {
+            valorFinal = solveTimeSimple(vp, vf, tasa); vpFinal = vp; vfFinal = vf;
+            pasos.push(
+              { label: "3. Despeje", content: "n = (VF/VP − 1) / i" },
+              { label: "4. Sustitución", content: `n = (${formatNumberCO(vf)}/${formatNumberCO(vp)} − 1) / ${formatNumberCO(tasa, 6, 8)}` },
+              { label: "5. Operación", content: `n = (${formatNumberCO(vf / vp, 6, 8)} − 1) / ${formatNumberCO(tasa, 6, 8)} = ${formatNumberCO((vf / vp) - 1, 6, 8)} / ${formatNumberCO(tasa, 6, 8)}` },
+              { label: "6. Resultado sin redondear", content: `n = ${valorFinal} períodos` }
+            ); etiquetaFinal = "Número de períodos (n)";
+          }
         } else {
-          if (incognita === "VF") { valorFinal = futureValueCompound(vp, tasa, n); pasos.push({ label: "Fórmula", content: "VF = VP · (1+i)ⁿ" }); etiquetaFinal = "Valor Futuro (VF)"; }
-          else if (incognita === "VP") { valorFinal = presentValueCompound(vf, tasa, n); pasos.push({ label: "Fórmula", content: "VP = VF / (1+i)ⁿ" }); etiquetaFinal = "Valor Presente (VP)"; }
-          else if (incognita === "i") { valorFinal = solveRateCompound(vp, vf, n); pasos.push({ label: "Fórmula", content: "i = (VF/VP)^(1/n) − 1" }); etiquetaFinal = "Tasa de interés (i)"; }
-          else if (incognita === "n") { valorFinal = solveTimeCompound(vp, vf, tasa); etiquetaFinal = "Tiempo (n)"; }
+          if (incognita === "VF") {
+            valorFinal = futureValueCompound(vp, tasa, n); vfFinal = valorFinal; vpFinal = vp;
+            pasos.push(
+              { label: "5. Fórmula", content: "VF = VP · (1+i)ⁿ" },
+              { label: "6. Sustitución", content: `VF = ${formatNumberCO(vp)} · (1 + ${formatNumberCO(tasa, 6, 8)})^${formatNumberCO(n, 2, 6)}` },
+              { label: "7. Operación", content: `VF = ${formatNumberCO(vp)} · (${formatNumberCO(1 + tasa, 6, 8)})^${formatNumberCO(n, 2, 6)} = ${formatNumberCO(vp)} · ${formatNumberCO(Math.pow(1 + tasa, n), 6, 8)}` },
+              { label: "8. Resultado sin redondear", content: `VF = ${valorFinal}` }
+            ); etiquetaFinal = "Valor Futuro (VF)";
+          }
+          else if (incognita === "VP") {
+            valorFinal = presentValueCompound(vf, tasa, n); vpFinal = valorFinal; vfFinal = vf;
+            pasos.push(
+              { label: "5. Despeje", content: "VP = VF / (1+i)ⁿ" },
+              { label: "6. Sustitución", content: `VP = ${formatNumberCO(vf)} / (1 + ${formatNumberCO(tasa, 6, 8)})^${formatNumberCO(n, 2, 6)}` },
+              { label: "7. Operación", content: `VP = ${formatNumberCO(vf)} / (${formatNumberCO(1 + tasa, 6, 8)})^${formatNumberCO(n, 2, 6)} = ${formatNumberCO(vf)} / ${formatNumberCO(Math.pow(1 + tasa, n), 6, 8)}` },
+              { label: "8. Resultado sin redondear", content: `VP = ${valorFinal}` }
+            ); etiquetaFinal = "Valor Presente (VP)";
+          }
+          else if (incognita === "i") {
+            valorFinal = solveRateCompound(vp, vf, n); vpFinal = vp; vfFinal = vf;
+            pasos.push(
+              { label: "5. Despeje", content: "i = (VF/VP)^(1/n) − 1" },
+              { label: "6. Sustitución", content: `i = (${formatNumberCO(vf)}/${formatNumberCO(vp)})^(1/${formatNumberCO(n, 2, 6)}) − 1` },
+              { label: "7. Operación", content: `i = (${formatNumberCO(vf / vp, 6, 8)})^(${formatNumberCO(1 / n, 6, 8)}) − 1` },
+              { label: "8. Resultado sin redondear", content: `i = ${valorFinal} = ${valorFinal * 100} % por período` }
+            ); etiquetaFinal = "Tasa de interés (i)";
+          }
+          else if (incognita === "n") {
+            valorFinal = solveTimeCompound(vp, vf, tasa); vpFinal = vp; vfFinal = vf;
+            pasos.push(
+              { label: "3. Despeje", content: "n = ln(VF/VP) / ln(1+i)" },
+              { label: "4. Sustitución", content: `n = ln(${formatNumberCO(vf)}/${formatNumberCO(vp)}) / ln(1 + ${formatNumberCO(tasa, 6, 8)})` },
+              { label: "5. Operación", content: `n = ${formatNumberCO(Math.log(vf / vp), 6, 8)} / ${formatNumberCO(Math.log(1 + tasa), 6, 8)}` },
+              { label: "6. Resultado sin redondear", content: `n = ${valorFinal} períodos` },
+              { label: "7. ¿Por qué logaritmos?", content: "Como n está en el exponente, usamos logaritmos para despejarlo." }
+            ); etiquetaFinal = "Número de períodos (n)";
+          }
         }
       }
     } catch (e) { setError(e.message || "No fue posible calcular con estos datos."); return; }
 
-    if (!validateSolution(valorFinal)) {
-      setError("Con los datos ingresados no encontramos una solución financiera válida. Revisa los valores, la tasa y los momentos de los flujos.");
-      return;
-    }
+    if (!validateSolution(valorFinal)) { setError("Con los datos ingresados no encontramos una solución financiera válida. Revisa VP, VF, I, la tasa y el tiempo."); return; }
 
-    // Verificación por sustitución
+    const interesCalculado = Number.isFinite(vpFinal) && Number.isFinite(vfFinal) ? vfFinal - vpFinal : (incognita === "I" ? valorFinal : NaN);
+    if (Number.isFinite(interesCalculado) && incognita !== "I") pasos.push({ label: "7. Interés / ganancia neta (I)", content: `I = VF − VP = ${formatCurrencyCO(vfFinal, moneda)} − ${formatCurrencyCO(vpFinal, moneda)} = ${formatCurrencyCO(interesCalculado, moneda)}.` });
+    pasos.push({
+      label: "Interpretación",
+      content: operacion === "credito"
+        ? "Desde la perspectiva del cliente, I representa el costo financiero total del crédito entre VP y VF."
+        : "En una inversión, I representa la ganancia neta generada entre el valor inicial VP y el valor final VF.",
+    });
+
     let residual = 0, verifOk = true;
     try {
-      if (regimen === "continuo") {
+      if (incognita === "I" || (usarI && ["VF", "VP"].includes(incognita))) residual = (vfFinal - vpFinal) - interesCalculado;
+      else if (regimen === "continuo") {
         const t = incognita === "t" ? valorFinal : yearsMonthsToDecimalYears(a, m);
-        const vpUsar = incognita === "VP" ? valorFinal : vp;
-        const vfUsar = incognita === "VF" ? valorFinal : vf;
         const rUsar = incognita === "r" ? valorFinal : tasa;
-        residual = vfUsar - futureValueContinuous(vpUsar, rUsar, t);
+        residual = vfFinal - futureValueContinuous(vpFinal, rUsar, t);
       } else {
         const n = incognita === "n" ? valorFinal : convertTimeToPeriods(a, m, mesesPorPeriodo);
-        const vpUsar = incognita === "VP" ? valorFinal : vp;
-        const vfUsar = incognita === "VF" ? valorFinal : vf;
         const iUsar = incognita === "i" ? valorFinal : tasa;
-        const vfCalc = regimen === "simple" ? futureValueSimple(vpUsar, iUsar, n) : futureValueCompound(vpUsar, iUsar, n);
-        residual = vfUsar - vfCalc;
+        const vfCalc = regimen === "simple" ? futureValueSimple(vpFinal, iUsar, n) : futureValueCompound(vpFinal, iUsar, n);
+        residual = vfFinal - vfCalc;
       }
-      verifOk = Math.abs(residual) < Math.max(1, Math.abs(valorFinal)) * 1e-6;
+      verifOk = Math.abs(residual) < Math.max(1, Math.abs(Number.isFinite(valorFinal) ? valorFinal : 1)) * 1e-6;
     } catch { verifOk = false; }
 
     const esTiempo = incognita === "n" || incognita === "t";
+    const esTasa = incognita === "i" || incognita === "r";
     let equivalenciaTemporal = null;
     if (incognita === "n") equivalenciaTemporal = periodsToYearsMonths(valorFinal, mesesPorPeriodo);
 
     const res = {
-      etiquetaFinal, valorFinal, esTiempo, equivalenciaTemporal, pasos, residual, verifOk, incognita, regimen, operacion,
-      datos: { vp: incognita === "VP" ? null : vp, vf: incognita === "VF" ? null : vf, tasa: incognita === "i" || incognita === "r" ? null : tasa, periodicidad: regimen !== "continuo" ? periodicidad : null },
+      etiquetaFinal, valorFinal, esTiempo, esTasa, equivalenciaTemporal, pasos, residual, verifOk, incognita, regimen, operacion,
+      interesCalculado, vpFinal, vfFinal, mesesPorPeriodo,
     };
     setResultado(res);
-    onGuardarHistorial({ tipo: "basico", regimen, operacion, incognita, resultado: valorFinal, fecha: new Date().toISOString(), moneda });
+    onGuardarHistorial({ tipo: "basico", regimen, operacion, incognita, resultado: valorFinal, resultadoTipo: esTasa ? "tasa" : esTiempo ? "tiempo" : "moneda", fecha: new Date().toISOString(), moneda });
   }
 
-  const gananciaNeta = resultado && !resultado.esTiempo && resultado.incognita !== "i" && resultado.incognita !== "r"
-    ? (resultado.incognita === "VF" ? resultado.valorFinal - (resultado.datos.vp ?? 0) : (resultado.datos.vf ?? 0) - resultado.valorFinal)
-    : null;
+  const mostrarTasaTiempo = incognita !== "I" && !(usarI && (incognita === "VF" || incognita === "VP"));
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "minmax(280px,1fr) minmax(320px,1.3fr)", gap: 26, alignItems: "start" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "minmax(300px,1fr) minmax(340px,1.3fr)", gap: 26, alignItems: "start" }}>
       <Tarjeta>
         <Etiqueta>Configuración</Etiqueta>
-        <Campo label="Tipo de operación">
-          <Selector value={operacion} onChange={(e) => setOperacion(e.target.value)}
-            options={[{ value: "credito", label: "Crédito" }, { value: "inversion", label: "Inversión" }]} />
+        <Campo label="Tipo de operación" help="La interpretación de entradas, salidas e intereses cambia según sea crédito o inversión.">
+          <Selector value={operacion} onChange={(e) => setOperacion(e.target.value)} options={[{ value: "credito", label: "Crédito" }, { value: "inversion", label: "Inversión" }]} />
         </Campo>
+        <div style={{ padding: 12, background: C.paperDark, borderRadius: 8, fontSize: 12.5, color: C.slate, marginBottom: 14, lineHeight: 1.5 }}>
+          {operacion === "credito"
+            ? <><strong style={{ color: C.navy }}>Crédito:</strong> VP suele ser el dinero que recibes hoy; VF es lo que terminas pagando o debiendo; <strong>I = VF − VP</strong> representa los intereses pagados.</>
+            : <><strong style={{ color: C.navy }}>Inversión:</strong> VP es el capital que inviertes hoy; VF es lo que recibes al final; <strong>I = VF − VP</strong> representa la ganancia neta por intereses.</>}
+        </div>
+
         <Campo label="Tipo de interés">
-          <Selector value={regimen} onChange={(e) => { setRegimen(e.target.value); setIncognita("VF"); }}
-            options={[{ value: "simple", label: "Simple" }, { value: "compuesto", label: "Compuesto" }, { value: "continuo", label: "Continuo" }]} />
+          <Selector value={regimen} onChange={(e) => { setRegimen(e.target.value); setIncognita("VF"); setUsarI(false); }} options={[{ value: "simple", label: "Simple" }, { value: "compuesto", label: "Compuesto" }, { value: "continuo", label: "Continuo" }]} />
         </Campo>
         <Campo label="Incógnita a calcular">
-          <Selector value={incognita} onChange={(e) => setIncognita(e.target.value)} options={incognitasDisponibles} />
+          <Selector value={incognita} onChange={(e) => { setIncognita(e.target.value); if (e.target.value === "I") setUsarI(false); }} options={incognitasDisponibles} />
         </Campo>
 
-        {incognita !== "VP" && <Campo label={`Valor Presente (VP) — ${moneda}`}><Entrada value={VP} onChange={(e) => setVP(e.target.value)} placeholder="1.000.000" /></Campo>}
-        {incognita !== "VF" && <Campo label={`Valor Futuro (VF) — ${moneda}`}><Entrada value={VF} onChange={(e) => setVF(e.target.value)} placeholder="1.200.000" /></Campo>}
-        {(regimen === "continuo" ? incognita !== "r" : incognita !== "i") && (
-          <Campo label={regimen === "continuo" ? "Tasa continua (r) % anual" : "Tasa de interés (i) % por periodo"}>
+        {incognita !== "I" && (
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: C.ink, margin: "8px 0 12px" }}>
+            <input type="checkbox" checked={usarI} onChange={(e) => setUsarI(e.target.checked)} />
+            Tengo <strong>I (interés / ganancia neta)</strong> como dato conocido del ejercicio
+          </label>
+        )}
+
+        {incognita !== "VP" && <Campo label={`Valor Presente (VP) — ${moneda}`} help="VP = valor del dinero en el momento inicial o fecha de referencia."><Entrada value={VP} onChange={(e) => setVP(e.target.value)} placeholder="1.000.000" /></Campo>}
+        {incognita !== "VF" && !(usarI && ["i","n","r","t"].includes(incognita)) && <Campo label={`Valor Futuro (VF) — ${moneda}`} help="VF = valor equivalente del dinero en un momento futuro."><Entrada value={VF} onChange={(e) => setVF(e.target.value)} placeholder="1.200.000" /></Campo>}
+        {(incognita === "I" ? false : usarI) && <Campo label={`Interés / ganancia neta (I) — ${moneda}`} help="En los ejercicios básicos usamos I = VF − VP."><Entrada value={I} onChange={(e) => setI(e.target.value)} placeholder="200.000" /></Campo>}
+
+        {mostrarTasaTiempo && (regimen === "continuo" ? incognita !== "r" : incognita !== "i") && (
+          <Campo label={regimen === "continuo" ? "Tasa continua (r) % anual" : "Tasa de interés (i) % por período"}>
             <Entrada value={tasaPct} onChange={(e) => setTasaPct(e.target.value)} placeholder="2,00" />
           </Campo>
         )}
 
-        {regimen !== "continuo" && (
-          <Campo label="Periodicidad de la tasa">
-            <Selector value={periodicidad} onChange={(e) => setPeriodicidad(e.target.value)}
-              options={PERIODICIDADES.map((p) => ({ value: p.value, label: p.label }))} />
-            {periodicidad === "personalizada" && (
-              <div style={{ marginTop: 8 }}>
-                <span style={{ fontSize: 12.5, color: C.slate }}>¿Cada cuántos meses se aplica la tasa?</span>
-                <Entrada value={nPersonalizado} onChange={(e) => setNPersonalizado(e.target.value)} placeholder="5" style={{ marginTop: 4 }} />
-              </div>
-            )}
-          </Campo>
-        )}
-
-        {(regimen === "continuo" ? incognita !== "t" : incognita !== "n") && (
-          <Campo label="Tiempo total">
-            <div style={{ display: "flex", gap: 8 }}>
-              <Entrada value={anios} onChange={(e) => setAnios(e.target.value)} placeholder="Años" />
-              <Entrada value={meses} onChange={(e) => setMeses(e.target.value)} placeholder="Meses" />
+        {mostrarTasaTiempo && regimen !== "continuo" && (
+          <Campo label={regimen === "compuesto" ? "Período de capitalización" : "Período de la tasa"} help={regimen === "compuesto" ? "En compuesto los intereses se agregan al capital en cada período." : "En simple la tasa tiene periodicidad, pero los intereses no se capitalizan."}>
+            <Selector value={periodicidad} onChange={(e) => setPeriodicidad(e.target.value)} options={PERIODICIDADES.map((p) => ({ value: p.value, label: p.label }))} />
+            {periodicidad === "personalizada" && <div style={{ marginTop: 8 }}><span style={{ fontSize: 12.5, color: C.slate }}>¿Cada cuántos meses se aplica la tasa?</span><Entrada value={nPersonalizado} onChange={(e) => setNPersonalizado(e.target.value)} placeholder="5" style={{ marginTop: 4 }} /></div>}
+            <div style={{ marginTop: 7, fontSize: 12, color: C.slate }}>
+              {periodicidad === "personalizada" ? `La tasa se aplica ${nombrePeriodo}.` : `1 período ${periodicidad === "anual" ? "anual" : periodicidad} = ${mesesPeriodoVista} ${mesesPeriodoVista === 1 ? "mes" : "meses"}.`}
             </div>
           </Campo>
         )}
 
-        <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-          <Boton variant="gold" onClick={calcular}>Calcular</Boton>
-          <Boton variant="outline" onClick={cargarEjemplo}>Cargar ejemplo</Boton>
-        </div>
+        {mostrarTasaTiempo && (regimen === "continuo" ? incognita !== "t" : incognita !== "n") && (
+          <Campo label={regimen === "continuo" ? "Tiempo total → t (años)" : "Tiempo total → se convierte a n períodos"}>
+            <div style={{ display: "flex", gap: 8 }}><Entrada value={anios} onChange={(e) => setAnios(e.target.value)} placeholder="Años" /><Entrada value={meses} onChange={(e) => setMeses(e.target.value)} placeholder="Meses (0–11)" /></div>
+            <div style={{ marginTop: 7, fontSize: 12, color: C.slate }}>
+              {regimen === "continuo" ? `t = años + meses/12. Aquí no usamos n.` : `n = meses totales ÷ ${mesesPeriodoVista || "meses por período"}. La tasa NO se convierte.`}
+            </div>
+          </Campo>
+        )}
+
+        <div style={{ display: "flex", gap: 8, marginTop: 10 }}><Boton variant="gold" onClick={calcular}>Calcular</Boton><Boton variant="outline" onClick={cargarEjemplo}>Cargar ejemplo</Boton></div>
         {error && <div style={{ marginTop: 12, fontSize: 13, color: C.danger }}>{error}</div>}
       </Tarjeta>
 
       <div>
-        {!resultado && !error && (
-          <Tarjeta style={{ color: C.slate, fontSize: 14, textAlign: "center", padding: 40 }}>
-            Completa los datos y presiona <strong>Calcular</strong> para ver el resultado y el procedimiento completo.
-          </Tarjeta>
-        )}
+        {!resultado && !error && <Tarjeta style={{ color: C.slate, fontSize: 14, textAlign: "center", padding: 40 }}>Completa los datos y presiona <strong>Calcular</strong>. La herramienta mostrará la fórmula, el reemplazo con la notación de clase y la interpretación.</Tarjeta>}
         {resultado && (
           <Tarjeta>
-            <div style={{ fontSize: 13, color: C.slate, marginBottom: 4 }}>
-              Vas a calcular {resultado.etiquetaFinal.toLowerCase()} de {resultado.operacion === "credito" ? "un crédito" : "una inversión"} con interés {resultado.regimen}.
-            </div>
+            <div style={{ fontSize: 13, color: C.slate, marginBottom: 4 }}>Resultado de {resultado.operacion === "credito" ? "crédito" : "inversión"} · interés {resultado.regimen}</div>
             <Etiqueta>{resultado.etiquetaFinal}</Etiqueta>
             <div style={{ fontFamily: F_MONO, fontSize: 30, color: C.navy, fontWeight: 700, marginBottom: 6 }}>
-              {resultado.esTiempo ? (
-                resultado.incognita === "n"
-                  ? `${formatNumberCO(resultado.valorFinal, 2, masDecimales ? 6 : 2)} periodos`
-                  : `${formatNumberCO(resultado.valorFinal, 2, masDecimales ? 6 : 2)} años`
-              ) : formatCurrencyCO(resultado.valorFinal, moneda, 2)}
+              {resultado.esTiempo ? (resultado.incognita === "n" ? `${formatNumberCO(resultado.valorFinal, 2, masDecimales ? 6 : 2)} períodos` : `${formatNumberCO(resultado.valorFinal, 2, masDecimales ? 6 : 2)} años`) : resultado.esTasa ? formatPercentCO(resultado.valorFinal, masDecimales ? 6 : 2) : formatCurrencyCO(resultado.valorFinal, moneda, 2)}
             </div>
-            {resultado.incognita === "n" && resultado.equivalenciaTemporal && (
-              <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>
-                Equivalencia temporal: {resultado.equivalenciaTemporal.anios} años y {formatNumberCO(resultado.equivalenciaTemporal.meses, 1, 2)} meses
-              </div>
-            )}
-            {(resultado.incognita === "i" || resultado.incognita === "r") && (
-              <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>≈ {formatPercentCO(resultado.valorFinal, masDecimales ? 6 : 2)}</div>
-            )}
-            <button onClick={() => setMasDecimales(!masDecimales)} style={{ background: "none", border: "none", color: C.gold, fontSize: 12, cursor: "pointer", padding: 0, marginBottom: 10 }}>
-              {masDecimales ? "Mostrar menos decimales" : "Mostrar más decimales"}
-            </button>
+            {resultado.incognita === "n" && resultado.equivalenciaTemporal && <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Equivalencia: {resultado.equivalenciaTemporal.anios} años y {formatNumberCO(resultado.equivalenciaTemporal.meses, 1, 2)} meses</div>}
+            <button onClick={() => setMasDecimales(!masDecimales)} style={{ background: "none", border: "none", color: C.gold, fontSize: 12, cursor: "pointer", padding: 0, marginBottom: 10 }}>{masDecimales ? "Mostrar menos decimales" : "Mostrar más decimales"}</button>
 
-            {gananciaNeta !== null && Number.isFinite(gananciaNeta) && (
-              <div style={{ fontSize: 13.5, color: C.navy, marginTop: 6 }}>
-                <strong>Ganancia neta / intereses:</strong> {formatCurrencyCO(gananciaNeta, moneda)}
+            {Number.isFinite(resultado.interesCalculado) && (
+              <div style={{ marginTop: 8, padding: 13, background: C.successBg, borderRadius: 8, color: C.navy, fontSize: 13.5 }}>
+                <strong>{resultado.operacion === "credito" ? "Intereses pagados (I)" : "Ganancia neta / intereses (I)"}:</strong> {formatCurrencyCO(resultado.interesCalculado, moneda)}
+                <div style={{ fontSize: 11.5, color: C.slate, marginTop: 4 }}>I = VF − VP = {formatCurrencyCO(resultado.vfFinal, moneda)} − {formatCurrencyCO(resultado.vpFinal, moneda)}</div>
               </div>
             )}
 
             <div style={{ fontSize: 13.5, color: C.ink, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.line}` }}>
               <strong>Interpretación financiera:</strong> {resultado.operacion === "credito"
-                ? `Bajo estas condiciones, el valor equivalente de la obligación sería ${resultado.esTiempo ? "el tiempo indicado arriba." : formatCurrencyCO(resultado.valorFinal, moneda)}.`
-                : `Bajo estas condiciones, el capital ${resultado.esTiempo ? "alcanzaría el valor objetivo en el tiempo indicado arriba." : `alcanzaría un valor de ${formatCurrencyCO(resultado.valorFinal, moneda)}.`}`}
+                ? `Desde la perspectiva del cliente, VP es el capital recibido y VF es el valor equivalente a pagar. I muestra cuánto corresponde a intereses.`
+                : `VP es el capital invertido, VF es el valor alcanzado y I muestra únicamente la ganancia generada por intereses.`}
             </div>
-
             <Verificacion ok={resultado.verifOk} residual={resultado.residual} />
-
-            <Acordeon title="Ver procedimiento completo">
-              <FichaProcedimiento pasos={[
-                { label: "Tipo de operación", content: resultado.operacion === "credito" ? "Crédito" : "Inversión" },
-                { label: "Régimen", content: resultado.regimen },
-                { label: "Incógnita", content: resultado.etiquetaFinal },
-                ...resultado.pasos,
-                { label: "Resultado sin redondear", content: String(resultado.valorFinal) },
-                { label: "Resultado presentado", content: resultado.esTiempo ? formatNumberCO(resultado.valorFinal, 2, 4) : formatCurrencyCO(resultado.valorFinal, moneda) },
-              ]} />
+            <Acordeon title="Ver procedimiento completo — con variables de clase">
+              <FichaProcedimiento pasos={[...resultado.pasos, { label: "Resultado sin redondear", content: String(resultado.valorFinal) }, { label: "Resultado presentado", content: resultado.esTiempo ? formatNumberCO(resultado.valorFinal, 2, 4) : resultado.esTasa ? formatPercentCO(resultado.valorFinal, 4) : formatCurrencyCO(resultado.valorFinal, moneda) }]} />
             </Acordeon>
           </Tarjeta>
         )}
@@ -862,6 +1021,7 @@ function nuevoFlujo(overrides) {
 }
 
 function SimularAvanzado({ moneda, onGuardarHistorial }) {
+  const [operacion, setOperacion] = useState("inversion");
   const [regimen, setRegimen] = useState("compuesto");
   const [tasaPct, setTasaPct] = useState("3");
   const [periodicidad, setPeriodicidad] = useState("mensual");
@@ -869,6 +1029,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
   const [focalAnios, setFocalAnios] = useState("0");
   const [focalMeses, setFocalMeses] = useState("6");
   const [objetivo, setObjetivo] = useState("0");
+  const [interesConocido, setInteresConocido] = useState("");
   const [tipoIncognita, setTipoIncognita] = useState("monto"); // monto | momento | tasa
   const [flujos, setFlujos] = useState([
     nuevoFlujo({ rol: "VP1", monto: "10000000", anios: "0", meses: "0", direccion: "salida" }),
@@ -918,7 +1079,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
     const marcadosMonto = flujos.filter((f) => f.esIncognitaMonto);
     const marcadosMomento = flujos.filter((f) => f.esIncognitaMomento);
 
-    if (tipoIncognita === "monto" && marcadosMonto.length < 1) { setError("Marca al menos un flujo con monto desconocido. Si varios flujos dependen de la misma X, márcalos todos y usa el coeficiente correspondiente (por ejemplo, 1·X y 1,4·X)."); return; }
+    if (tipoIncognita === "monto" && marcadosMonto.length < 1) { setError("Marca al menos un flujo con monto desconocido. Si varios flujos dependen de la misma X, márcalos y usa sus coeficientes (por ejemplo 1·X y 1,4·X)."); return; }
     if (tipoIncognita === "momento" && marcadosMomento.length !== 1) { setError("Marca exactamente un flujo con momento desconocido."); return; }
     for (const f of flujos) {
       const a = parseFloat(f.anios) || 0, m = parseFloat(f.meses) || 0;
@@ -964,6 +1125,64 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
       };
     });
 
+    // Construye el procedimiento matemático completo de la ecuación de valor.
+    // No muestra solo “sumatoria de entradas menos salidas”: enseña qué fórmula se aplica a cada flujo.
+    const formulaGeneralTraslado = regimen === "simple"
+      ? "Hacia el futuro: VF = VP·(1+i·n). Hacia el pasado: VP = VF/(1+i·n)."
+      : regimen === "compuesto"
+        ? "Hacia el futuro: VF = VP·(1+i)^n. Hacia el pasado: VP = VF/(1+i)^n."
+        : "Hacia el futuro: VF = VP·e^(r·t). Hacia el pasado: VP = VF·e^(−r·t).";
+
+    const expresionMonto = (f, usarX = true) => {
+      if (usarX && f.esIncognita) {
+        const c = Number.isFinite(f.coeficiente) ? f.coeficiente : 1;
+        return Math.abs(c - 1) < 1e-12 ? "X" : `${formatNumberCO(c, 0, 6)}·X`;
+      }
+      return formatNumberCO(f.monto, 2, 2);
+    };
+
+    const expresionTraslado = (f, usarX = true, tasaUsada = tasa) => {
+      const base = expresionMonto(f, usarX);
+      const delta = focal - f.momento;
+      const ad = Math.abs(delta);
+      if (Math.abs(delta) < 1e-12) return base;
+      if (regimen === "simple") {
+        return delta > 0
+          ? `${base}·(1 + ${formatNumberCO(tasaUsada, 6, 8)}·${formatNumberCO(ad, 2, 6)})`
+          : `${base}/(1 + ${formatNumberCO(tasaUsada, 6, 8)}·${formatNumberCO(ad, 2, 6)})`;
+      }
+      if (regimen === "compuesto") {
+        return delta > 0
+          ? `${base}·(1 + ${formatNumberCO(tasaUsada, 6, 8)})^${formatNumberCO(ad, 2, 6)}`
+          : `${base}/(1 + ${formatNumberCO(tasaUsada, 6, 8)})^${formatNumberCO(ad, 2, 6)}`;
+      }
+      return delta > 0
+        ? `${base}·e^(${formatNumberCO(tasaUsada, 6, 8)}·${formatNumberCO(ad, 2, 6)})`
+        : `${base}·e^(−${formatNumberCO(tasaUsada, 6, 8)}·${formatNumberCO(ad, 2, 6)})`;
+    };
+
+    const pasosFormulasFlujos = flowsBase.map((f) => {
+      const delta = focal - f.momento;
+      const dir = Math.abs(delta) < 1e-12 ? "ya está en la fecha focal" : delta > 0 ? "se lleva hacia el futuro" : "se descuenta hacia el pasado";
+      const signoTxt = f.signo === 1 ? "Entrada (+)" : "Salida (−)";
+      return {
+        label: `Traslado de ${f.etiqueta}`,
+        content: `${signoTxt}. ${dir}. ${expresionTraslado(f, true)}`,
+      };
+    });
+
+    const ecuacionExpandida = flowsBase.map((f, idx) => {
+      const prefijo = f.signo === 1 ? (idx === 0 ? "+" : "+") : "−";
+      return `${prefijo} ${expresionTraslado(f, true)}`;
+    }).join(" ") + ` = ${formatNumberCO(target, 2, 2)}`;
+
+    const calcularIConFlujos = (flowsMaterializados) => {
+      const entradas = flowsMaterializados.filter((f) => f.signo === 1).reduce((acc, f) => acc + f.monto, 0);
+      const salidas = flowsMaterializados.filter((f) => f.signo === -1).reduce((acc, f) => acc + f.monto, 0);
+      const Icalc = operacion === "inversion" ? entradas - salidas : salidas - entradas;
+      return { entradas, salidas, Icalc };
+    };
+
     try {
       let valorHistorial = null;
       let tipoResultadoHistorial = "moneda";
@@ -978,67 +1197,28 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
           total += f.signo * (f.esIncognita ? f.coeficiente * sol.value : f.monto) * trasladoFlujo(1, f.momento, focal, regimen, tasa);
         }
         const residual = total - target;
-        const incognitasResueltas = flowsBase
+        const materializados = flowsBase.map((f) => ({ ...f, monto: f.esIncognita ? f.coeficiente * sol.value : f.monto }));
+        const resumenI = calcularIConFlujos(materializados);
+        const valoresIncognitas = flowsBase
           .filter((f) => f.esIncognita)
-          .map((f) => ({
-            etiqueta: f.etiqueta,
-            coeficiente: f.coeficiente,
-            valor: f.coeficiente * sol.value,
-          }));
-
-        const pasosFlujos = flowsBase.map((f) => {
-          const delta = focal - f.momento;
-          const valorBase = f.esIncognita
-            ? `${formatNumberCO(f.coeficiente, 0, 4)}·X`
-            : formatCurrencyCO(f.monto, moneda);
-          const sentido = delta >= 0 ? "capitalizar" : "descontar";
-          const distancia = formatNumberCO(Math.abs(delta), 0, 4);
-          let formula = "";
-          if (regimen === "simple") {
-            formula = delta >= 0
-              ? `${valorBase} × (1 + ${formatNumberCO(tasa, 4, 6)} × ${distancia})`
-              : `${valorBase} ÷ (1 + ${formatNumberCO(tasa, 4, 6)} × ${distancia})`;
-          } else if (regimen === "compuesto") {
-            formula = delta >= 0
-              ? `${valorBase} × (1 + ${formatNumberCO(tasa, 4, 6)})^${distancia}`
-              : `${valorBase} ÷ (1 + ${formatNumberCO(tasa, 4, 6)})^${distancia}`;
-          } else {
-            formula = delta >= 0
-              ? `${valorBase} × e^(${formatNumberCO(tasa, 4, 6)} × ${distancia})`
-              : `${valorBase} × e^(-${formatNumberCO(tasa, 4, 6)} × ${distancia})`;
-          }
-          return {
-            label: `${f.etiqueta} — ${f.signo > 0 ? "Entrada" : "Salida"}`,
-            content: `${sentido} hasta el momento focal: ${formula}`,
-          };
-        });
-
-        const terminosEcuacion = flowsBase.map((f) => {
-          const delta = focal - f.momento;
-          const base = f.esIncognita ? `${formatNumberCO(f.coeficiente, 0, 4)}·X` : formatNumberCO(f.monto, 2, 2);
-          let term = "";
-          if (regimen === "simple") {
-            term = delta >= 0
-              ? `${base}(1 + ${formatNumberCO(tasa, 4, 6)}·${formatNumberCO(delta, 0, 4)})`
-              : `${base}/(1 + ${formatNumberCO(tasa, 4, 6)}·${formatNumberCO(Math.abs(delta), 0, 4)})`;
-          } else if (regimen === "compuesto") {
-            term = delta >= 0
-              ? `${base}(1 + ${formatNumberCO(tasa, 4, 6)})^${formatNumberCO(delta, 0, 4)}`
-              : `${base}/(1 + ${formatNumberCO(tasa, 4, 6)})^${formatNumberCO(Math.abs(delta), 0, 4)}`;
-          } else {
-            term = `${base}e^(${formatNumberCO(tasa, 4, 6)}·${formatNumberCO(delta, 0, 4)})`;
-          }
-          return `${f.signo > 0 ? "+" : "−"} ${term}`;
-        });
-
+          .map((f) => ({ etiqueta: f.etiqueta, coeficiente: f.coeficiente, valor: f.coeficiente * sol.value }));
+        const pasosEcuacion = [
+          { label: "Fórmulas de traslado", content: formulaGeneralTraslado },
+          ...pasosFormulasFlujos,
+          { label: "Ecuación de valor desarrollada", content: ecuacionExpandida },
+          { label: "Separar términos conocidos y términos con X", content: `Suma conocida trasladada = ${formatNumberCO(sol.knownSum, 2, 6)}. Coeficiente total trasladado de X = ${formatNumberCO(sol.unknownCoefSum, 6, 10)}.` },
+          { label: "Despeje de X", content: `X = (Objetivo − suma conocida) / coeficiente de X = (${formatNumberCO(target, 2, 2)} − ${formatNumberCO(sol.knownSum, 2, 6)}) / ${formatNumberCO(sol.unknownCoefSum, 6, 10)}` },
+          { label: "X sin redondear", content: `X = ${sol.value}` },
+          ...valoresIncognitas.map((v) => ({ label: `Valor de ${v.etiqueta}`, content: `${v.etiqueta} = ${formatNumberCO(v.coeficiente, 0, 6)}·X = ${formatNumberCO(v.coeficiente, 0, 6)} × ${sol.value} = ${v.valor}` })),
+        ];
         setResultado({
           tipo: "monto", valor: sol.value, residual,
           verifOk: Math.abs(residual) < Math.max(1, Math.abs(sol.value)) * 1e-5,
-          focal, tasa, regimen, target, pasosConversion, mesesPorPeriodo,
-          etiquetaIncognita: incognitasResueltas.length === 1 ? incognitasResueltas[0].etiqueta : "X común a varios flujos",
-          incognitasResueltas,
-          pasosFlujos,
-          ecuacionExpandida: `${terminosEcuacion.join(" ")} = ${formatNumberCO(target, 2, 2)}`,
+          focal, tasa, regimen, target, pasosConversion, pasosEcuacion, mesesPorPeriodo, operacion,
+          valoresIncognitas,
+          interesCalculado: resumenI.Icalc, totalEntradas: resumenI.entradas, totalSalidas: resumenI.salidas,
+          interesConocido: parseFloat(String(interesConocido).replace(",", ".")),
+          etiquetaIncognita: marcadosMonto.length > 1 ? "X base de flujos relacionados por coeficientes" : etiquetaRol(flujos.find((f) => f.esIncognitaMonto)),
         });
         valorHistorial = sol.value; tipoResultadoHistorial = "moneda";
       } else if (tipoIncognita === "momento") {
@@ -1049,10 +1229,15 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
           throw new Error("Con los datos ingresados no encontramos una solución financiera válida. Revisa los valores, la tasa y los momentos.");
         }
         const equivalencia = regimen === "continuo" ? periodsToYearsMonths(sol.value, 12) : periodsToYearsMonths(sol.value, mesesPorPeriodo);
+        const resumenI = calcularIConFlujos(flowsBase);
         setResultado({
           tipo: "momento", valor: sol.value, residual: sol.residual,
           verifOk: Math.abs(sol.residual) < 1e-4,
-          focal, tasa, regimen, target, pasosConversion, mesesPorPeriodo, equivalencia,
+          focal, tasa, regimen, target, pasosConversion,
+          pasosEcuacion: [{ label: "Fórmulas de traslado", content: formulaGeneralTraslado }, ...pasosFormulasFlujos, { label: "Ecuación de valor desarrollada", content: ecuacionExpandida }],
+          mesesPorPeriodo, equivalencia, operacion,
+          interesCalculado: resumenI.Icalc, totalEntradas: resumenI.entradas, totalSalidas: resumenI.salidas,
+          interesConocido: parseFloat(String(interesConocido).replace(",", ".")),
           etiquetaIncognita: etiquetaRol(flujos.find((f) => f.esIncognitaMomento)),
         });
         valorHistorial = sol.value; tipoResultadoHistorial = "tiempo";
@@ -1061,16 +1246,21 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
         if (!sol.ok) {
           throw new Error("Con los datos ingresados no encontramos una tasa que satisfaga la ecuación de valor.");
         }
+        const resumenI = calcularIConFlujos(flowsBase);
         setResultado({
           tipo: "tasa", valor: sol.value, residual: sol.residual,
           verifOk: Math.abs(sol.residual) < 1e-4,
-          focal, regimen, target, pasosConversion, mesesPorPeriodo,
+          focal, regimen, target, pasosConversion,
+          pasosEcuacion: [{ label: "Fórmulas de traslado", content: formulaGeneralTraslado }, ...pasosFormulasFlujos, { label: "Ecuación de valor desarrollada", content: ecuacionExpandida }],
+          mesesPorPeriodo, operacion,
+          interesCalculado: resumenI.Icalc, totalEntradas: resumenI.entradas, totalSalidas: resumenI.salidas,
+          interesConocido: parseFloat(String(interesConocido).replace(",", ".")),
         });
         valorHistorial = sol.value; tipoResultadoHistorial = "tasa";
       }
 
       onGuardarHistorial({
-        tipo: "avanzado", regimen, incognita: tipoIncognita,
+        tipo: "avanzado", regimen, operacion, incognita: tipoIncognita,
         resultado: valorHistorial, resultadoTipo: tipoResultadoHistorial, moneda,
       });
     } catch (e) {
@@ -1093,7 +1283,17 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
         <p style={{ fontSize: 13.5, color: C.slate, margin: "0 0 16px" }}>
           Para comparar cantidades de dinero ubicadas en momentos diferentes (ej. Valor Presente 1, Valor Presente 2 y Valor Futuro) las llevamos a un mismo momento focal y construimos una ecuación de valor. La tasa y el tiempo deben quedar en la misma unidad de periodo: la herramienta no convierte tasas entre periodicidades.
         </p>
+        <div style={{ padding: 13, background: C.paperDark, borderRadius: 8, fontSize: 12.5, lineHeight: 1.55, color: C.slate, marginBottom: 16 }}>
+          <strong style={{ color: C.navy }}>¿Qué significa entrada y salida?</strong><br />
+          La dirección se interpreta <strong>desde la perspectiva del cliente</strong>. {operacion === "inversion"
+            ? "En una inversión, una SALIDA es dinero que inviertes o aportas y una ENTRADA es dinero que recibes, retiras o recuperas."
+            : "En un crédito, una ENTRADA es dinero que recibes del banco (desembolso) y una SALIDA es dinero que pagas al banco (cuotas o pago final)."}
+          <div style={{ marginTop: 6 }}><strong>I (interés / ganancia neta)</strong>: en inversión se calcula como entradas − salidas; en crédito como salidas − entradas.</div>
+        </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14 }}>
+          <Campo label="Tipo de operación">
+            <Selector value={operacion} onChange={(e) => setOperacion(e.target.value)} options={[{ value: "credito", label: "Crédito" }, { value: "inversion", label: "Inversión" }]} />
+          </Campo>
           <Campo label="Régimen">
             <Selector value={regimen} onChange={(e) => setRegimen(e.target.value)} options={[{ value: "simple", label: "Simple" }, { value: "compuesto", label: "Compuesto" }, { value: "continuo", label: "Continuo" }]} />
           </Campo>
@@ -1122,6 +1322,9 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
           </Campo>
           <Campo label="Valor objetivo en el momento focal" help="0 = equilibrio (entradas = salidas)">
             <Entrada value={objetivo} onChange={(e) => setObjetivo(e.target.value)} />
+          </Campo>
+          <Campo label={`I conocido — ${moneda} (opcional)`} help="Si el enunciado te da la ganancia neta o los intereses totales, puedes registrarlos aquí. La herramienta comparará este dato con el I calculado a partir de los flujos.">
+            <Entrada value={interesConocido} onChange={(e) => setInteresConocido(e.target.value)} placeholder="Ej. 332.500" />
           </Campo>
         </div>
       </Tarjeta>
@@ -1177,8 +1380,9 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
           </table>
         </div>
         <Boton small variant="outline" onClick={agregarFlujo} style={{ marginTop: 12 }}><Plus size={14} /> Agregar flujo</Boton>
-        <div style={{ marginTop: 10, fontSize: 12, color: C.slate }}>
-          Ingresa el momento de cada flujo en años y meses; la herramienta lo convierte automáticamente {regimen === "continuo" ? "a años decimales" : "al número de periodos según la periodicidad elegida arriba"}.
+        <div style={{ marginTop: 10, fontSize: 12, color: C.slate, lineHeight: 1.55 }}>
+          Ingresa el momento de cada flujo en años y meses; la herramienta lo convierte automáticamente {regimen === "continuo" ? "a t en años decimales" : "a n, el número de períodos según la periodicidad elegida arriba"}.<br />
+          <strong>Coeficientes:</strong> si un enunciado dice “el segundo desembolso fue 1,4 veces el primero”, marca ambos montos como desconocidos y usa coeficientes 1 y 1,4. La herramienta resolverá una sola X y aplicará cada coeficiente.
         </div>
 
         {/* Línea de tiempo visual */}
@@ -1212,41 +1416,50 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
             {resultado.tipo === "momento" && (resultado.regimen === "continuo" ? `${formatNumberCO(resultado.valor, 2, 4)} años` : `${formatNumberCO(resultado.valor, 2, 4)} periodos`)}
             {resultado.tipo === "tasa" && formatPercentCO(resultado.valor, 4)}
           </div>
+          {resultado.tipo === "monto" && Array.isArray(resultado.valoresIncognitas) && resultado.valoresIncognitas.length > 0 && (
+            <div style={{ margin: "12px 0", display: "grid", gap: 8 }}>
+              {resultado.valoresIncognitas.map((v, idx) => (
+                <div key={`${v.etiqueta}-${idx}`} style={{ padding: 12, background: C.paperDark, borderRadius: 8 }}>
+                  <div style={{ fontSize: 12, color: C.slate }}>{v.etiqueta}</div>
+                  <div style={{ fontFamily: F_MONO, fontSize: 17, color: C.navy, fontWeight: 700 }}>{formatCurrencyCO(v.valor, moneda)}</div>
+                  <div style={{ fontSize: 11.5, color: C.slate }}>{formatNumberCO(v.coeficiente, 0, 6)} × X</div>
+                </div>
+              ))}
+            </div>
+          )}
           {resultado.tipo === "momento" && resultado.equivalencia && (
             <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>
               Equivalencia: {resultado.equivalencia.anios} años y {formatNumberCO(resultado.equivalencia.meses, 1, 2)} meses
             </div>
           )}
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>
-            Momento focal utilizado: {focalAnios} años y {focalMeses} meses ({formatNumberCO(resultado.focal, 2, 4)} {resultado.regimen === "continuo" ? "años" : "periodos"})
+            Momento focal utilizado: {focalAnios} años y {focalMeses} meses ({formatNumberCO(resultado.focal, 2, 4)} {resultado.regimen === "continuo" ? "años (t)" : "períodos (n)"})
           </div>
-          {resultado.tipo === "monto" && resultado.incognitasResueltas?.length > 0 && (
-            <div style={{ margin: "14px 0", padding: 14, background: C.paper, borderRadius: 10, border: `1px solid ${C.line}` }}>
-              <div style={{ fontWeight: 700, color: C.navy, marginBottom: 8 }}>Valores de todos los flujos ligados a X</div>
-              {resultado.incognitasResueltas.map((f, idx) => (
-                <div key={`${f.etiqueta}-${idx}`} style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "6px 0", borderTop: idx ? `1px solid ${C.line}` : "none" }}>
-                  <span>{f.etiqueta} = {formatNumberCO(f.coeficiente, 0, 4)}·X</span>
-                  <strong>{formatCurrencyCO(f.valor, moneda)}</strong>
+          {Number.isFinite(resultado.interesCalculado) && (
+            <div style={{ margin: "12px 0", padding: 13, background: C.successBg, borderRadius: 8, fontSize: 13.5, color: C.navy }}>
+              <strong>{resultado.operacion === "credito" ? "Intereses totales (I)" : "Ganancia neta / intereses (I)"}:</strong> {formatCurrencyCO(resultado.interesCalculado, moneda)}
+              <div style={{ fontSize: 11.5, color: C.slate, marginTop: 4 }}>
+                Total entradas nominales: {formatCurrencyCO(resultado.totalEntradas, moneda)} · Total salidas nominales: {formatCurrencyCO(resultado.totalSalidas, moneda)}.
+              </div>
+              {Number.isFinite(resultado.interesConocido) && (
+                <div style={{ fontSize: 11.5, marginTop: 4, color: Math.abs(resultado.interesConocido - resultado.interesCalculado) < 0.01 ? C.success : C.danger }}>
+                  I ingresado: {formatCurrencyCO(resultado.interesConocido, moneda)} · diferencia frente al I calculado: {formatCurrencyCO(resultado.interesCalculado - resultado.interesConocido, moneda)}.
                 </div>
-              ))}
+              )}
             </div>
           )}
           <Verificacion ok={resultado.verifOk} residual={resultado.residual} />
           <Acordeon title="Ver procedimiento completo">
             <FichaProcedimiento pasos={[
+              { label: "Tipo de operación", content: resultado.operacion === "credito" ? "Crédito" : "Inversión" },
+              { label: "Convención de signos", content: resultado.operacion === "credito" ? "Desde el cliente: entrada = dinero recibido del banco; salida = dinero pagado al banco." : "Desde el cliente: salida = dinero invertido/aportado; entrada = dinero recibido/retirado." },
               { label: "Régimen", content: resultado.regimen },
               ...resultado.pasosConversion,
-              ...(resultado.pasosFlujos || []),
-              { label: "Ecuación de valor general", content: "Σ(entradas trasladadas) − Σ(salidas trasladadas) = Objetivo" },
-              ...(resultado.ecuacionExpandida ? [{ label: "Ecuación de valor con fórmulas y datos", content: resultado.ecuacionExpandida }] : []),
+              ...(resultado.pasosEcuacion || []),
               { label: "Objetivo", content: String(resultado.target) },
               { label: "Incógnita", content: resultado.etiquetaIncognita || (resultado.tipo === "tasa" ? "Tasa de interés" : "—") },
-              { label: "Valor de X", content: resultado.tipo === "monto" ? formatCurrencyCO(resultado.valor, moneda) : String(resultado.valor) },
-              ...(resultado.tipo === "monto" && resultado.incognitasResueltas ? resultado.incognitasResueltas.map((f) => ({
-                label: `${f.etiqueta} = ${formatNumberCO(f.coeficiente, 0, 4)}·X`,
-                content: `${formatNumberCO(f.coeficiente, 0, 4)} × ${formatCurrencyCO(resultado.valor, moneda)} = ${formatCurrencyCO(f.valor, moneda)}`,
-              })) : []),
               { label: "Resultado sin redondear", content: String(resultado.valor) },
+              ...(Number.isFinite(resultado.interesCalculado) ? [{ label: "I — interés / ganancia neta", content: resultado.operacion === "credito" ? `I = salidas − entradas = ${formatCurrencyCO(resultado.interesCalculado, moneda)}` : `I = entradas − salidas = ${formatCurrencyCO(resultado.interesCalculado, moneda)}` }] : []),
               { label: "Comprobación final", content: `Residual = ${resultado.residual.toExponential(3)}` },
             ]} />
           </Acordeon>
