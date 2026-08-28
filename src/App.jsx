@@ -38,6 +38,13 @@ function formatPercentCO(value, decimals = 2) {
   return `${formatNumberCO(value * 100, decimals, decimals)} %`;
 }
 
+// Solo para los procedimientos: conserva la precisión disponible del motor
+// y cambia el punto decimal por coma, sin redondear valores intermedios.
+function procRaw(value) {
+  if (!Number.isFinite(value)) return "—";
+  return String(value).replace(".", ",");
+}
+
 /* ============================================================
    MOTOR FINANCIERO — funciones puras (verificadas con 25/25 pruebas)
    ============================================================ */
@@ -711,42 +718,50 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
           if (!Number.isFinite(vp) || vp <= 0 || !Number.isFinite(tasa)) throw new Error("Ingresa VP y r válidos.");
           valorFinal = futureValueContinuous(vp, tasa, t); vfFinal = valorFinal; vpFinal = vp;
           pasos.push(
-            { label: "5. Fórmula", content: "VF = VP · e^(r·t)" },
-            { label: "6. Sustitución", content: `VF = ${formatNumberCO(vp)} × e^(${formatNumberCO(tasa, 6, 8)} × ${formatNumberCO(t, 2, 6)})` },
-            { label: "7. Operación", content: `VF = ${formatNumberCO(vp)} × e^(${formatNumberCO(tasa * t, 6, 8)}) = ${formatNumberCO(vp)} × ${formatNumberCO(Math.exp(tasa * t), 6, 8)}` },
-            { label: "8. Resultado sin redondear", content: `VF = ${valorFinal}` }
+            { label: "Fórmula general usada en clase", content: "VF = VP · e^(r·t)" },
+            { label: "Reemplazamos los valores", content: `VF = ${procRaw(vp)} · e^(${procRaw(tasa)} · ${procRaw(t)})` },
+            { label: "Resolvemos primero el exponente", content: `r·t = ${procRaw(tasa)} · ${procRaw(t)} = ${procRaw(tasa * t)}` },
+            { label: "Calculamos e^(r·t)", content: `e^(${procRaw(tasa * t)}) = ${procRaw(Math.exp(tasa * t))}` },
+            { label: "Multiplicamos por VP", content: `VF = ${procRaw(vp)} · ${procRaw(Math.exp(tasa * t))} = ${procRaw(valorFinal)}` },
+            { label: "Resultado", content: `VF = ${procRaw(valorFinal)}` }
           );
           etiquetaFinal = "Valor Futuro (VF)";
         } else if (incognita === "VP") {
           if (!Number.isFinite(vf) || !Number.isFinite(tasa)) throw new Error("Ingresa VF y r válidos.");
           valorFinal = presentValueContinuous(vf, tasa, t); vpFinal = valorFinal; vfFinal = vf;
           pasos.push(
-            { label: "5. Fórmula", content: "VP = VF · e^(−r·t)" },
-            { label: "6. Sustitución", content: `VP = ${formatNumberCO(vf)} × e^(−${formatNumberCO(tasa, 6, 8)} × ${formatNumberCO(t, 2, 6)})` },
-            { label: "7. Operación", content: `VP = ${formatNumberCO(vf)} × e^(${formatNumberCO(-tasa * t, 6, 8)}) = ${formatNumberCO(vf)} × ${formatNumberCO(Math.exp(-tasa * t), 6, 8)}` },
-            { label: "8. Resultado sin redondear", content: `VP = ${valorFinal}` }
+            { label: "Partimos de la fórmula vista en clase", content: "VF = VP · e^(r·t)" },
+            { label: "Despejamos VP", content: "VP = VF / e^(r·t) = VF · e^(−r·t)" },
+            { label: "Reemplazamos los valores", content: `VP = ${procRaw(vf)} · e^(−${procRaw(tasa)} · ${procRaw(t)})` },
+            { label: "Resolvemos el exponente", content: `−r·t = −${procRaw(tasa)} · ${procRaw(t)} = ${procRaw(-tasa * t)}` },
+            { label: "Calculamos y multiplicamos", content: `VP = ${procRaw(vf)} · ${procRaw(Math.exp(-tasa * t))} = ${procRaw(valorFinal)}` },
+            { label: "Resultado", content: `VP = ${procRaw(valorFinal)}` }
           );
           etiquetaFinal = "Valor Presente (VP)";
         } else if (incognita === "r") {
           if (!Number.isFinite(vp) || !Number.isFinite(vf) || !t) throw new Error("Ingresa VP, VF y tiempo válidos.");
           valorFinal = solveRateContinuous(vp, vf, t); vpFinal = vp; vfFinal = vf;
           pasos.push(
-            { label: "5. Despeje", content: "r = ln(VF/VP) / t" },
-            { label: "6. Sustitución", content: `r = ln(${formatNumberCO(vf)}/${formatNumberCO(vp)}) / ${formatNumberCO(t, 2, 6)}` },
-            { label: "7. Operación", content: `r = ln(${formatNumberCO(vf / vp, 6, 8)}) / ${formatNumberCO(t, 2, 6)} = ${formatNumberCO(Math.log(vf / vp), 6, 8)} / ${formatNumberCO(t, 2, 6)}` },
-            { label: "8. Resultado sin redondear", content: `r = ${valorFinal} = ${valorFinal * 100} % anual` },
-            { label: "¿Por qué ln?", content: "Usamos logaritmo natural para bajar el exponente y poder despejar la tasa continua r." }
+            { label: "Partimos de la fórmula vista en clase", content: "VF = VP · e^(r·t)" },
+            { label: "Dividimos entre VP", content: "VF / VP = e^(r·t)" },
+            { label: "Aplicamos logaritmo natural", content: "ln(VF / VP) = r·t" },
+            { label: "Despejamos r", content: "r = ln(VF / VP) / t" },
+            { label: "Reemplazamos los valores", content: `r = ln(${procRaw(vf)} / ${procRaw(vp)}) / ${procRaw(t)}` },
+            { label: "Resolvemos", content: `VF/VP = ${procRaw(vf / vp)}; ln(VF/VP) = ${procRaw(Math.log(vf / vp))}; r = ${procRaw(Math.log(vf / vp))} / ${procRaw(t)} = ${procRaw(valorFinal)}` },
+            { label: "Pasamos la tasa a porcentaje", content: `r = ${procRaw(valorFinal)} · 100 = ${procRaw(valorFinal * 100)} % continuo` }
           );
           etiquetaFinal = "Tasa continua (r)";
         } else if (incognita === "t") {
           if (!Number.isFinite(vp) || !Number.isFinite(vf) || !Number.isFinite(tasa) || tasa === 0) throw new Error("Ingresa VP, VF y r válidos.");
           valorFinal = solveTimeContinuous(vp, vf, tasa); vpFinal = vp; vfFinal = vf;
           pasos.push(
-            { label: "3. Despeje", content: "t = ln(VF/VP) / r" },
-            { label: "4. Sustitución", content: `t = ln(${formatNumberCO(vf)}/${formatNumberCO(vp)}) / ${formatNumberCO(tasa, 6, 8)}` },
-            { label: "5. Operación", content: `t = ln(${formatNumberCO(vf / vp, 6, 8)}) / ${formatNumberCO(tasa, 6, 8)} = ${formatNumberCO(Math.log(vf / vp), 6, 8)} / ${formatNumberCO(tasa, 6, 8)}` },
-            { label: "6. Resultado sin redondear", content: `t = ${valorFinal} años` },
-            { label: "7. Unidad", content: "En interés continuo, t se expresa siempre en años." }
+            { label: "Partimos de la fórmula vista en clase", content: "VF = VP · e^(r·t)" },
+            { label: "Dividimos entre VP", content: "VF / VP = e^(r·t)" },
+            { label: "Aplicamos logaritmo natural", content: "ln(VF / VP) = r·t" },
+            { label: "Despejamos t", content: "t = ln(VF / VP) / r" },
+            { label: "Reemplazamos los valores", content: `t = ln(${procRaw(vf)} / ${procRaw(vp)}) / ${procRaw(tasa)}` },
+            { label: "Resolvemos", content: `VF/VP = ${procRaw(vf / vp)}; ln(VF/VP) = ${procRaw(Math.log(vf / vp))}; t = ${procRaw(Math.log(vf / vp))} / ${procRaw(tasa)} = ${procRaw(valorFinal)} años` },
+            { label: "Unidad usada en clase", content: "En interés continuo, t siempre se expresa en años." }
           );
           etiquetaFinal = "Tiempo (t)";
         }
@@ -767,75 +782,93 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
           if (incognita === "VF") {
             valorFinal = futureValueSimple(vp, tasa, n); vfFinal = valorFinal; vpFinal = vp;
             pasos.push(
-              { label: "5. Fórmula", content: "VF = VP · (1 + i·n)" },
-              { label: "6. Sustitución", content: `VF = ${formatNumberCO(vp)} · (1 + ${formatNumberCO(tasa, 6, 8)} × ${formatNumberCO(n, 2, 6)})` },
-              { label: "7. Operación", content: `VF = ${formatNumberCO(vp)} · (1 + ${formatNumberCO(tasa * n, 6, 8)}) = ${formatNumberCO(vp)} · ${formatNumberCO(1 + tasa * n, 6, 8)}` },
-              { label: "8. Resultado sin redondear", content: `VF = ${valorFinal}` }
+              { label: "Fórmula general usada en clase", content: "VF = VP · (1 + i·n)" },
+              { label: "Reemplazamos los valores", content: `VF = ${procRaw(vp)} · (1 + ${procRaw(tasa)} · ${procRaw(n)})` },
+              { label: "Multiplicamos i·n", content: `i·n = ${procRaw(tasa)} · ${procRaw(n)} = ${procRaw(tasa * n)}` },
+              { label: "Resolvemos el paréntesis", content: `1 + i·n = 1 + ${procRaw(tasa * n)} = ${procRaw(1 + tasa * n)}` },
+              { label: "Multiplicamos por VP", content: `VF = ${procRaw(vp)} · ${procRaw(1 + tasa * n)} = ${procRaw(valorFinal)}` },
+              { label: "Resultado", content: `VF = ${procRaw(valorFinal)}` }
             ); etiquetaFinal = "Valor Futuro (VF)";
           }
           else if (incognita === "VP") {
             valorFinal = presentValueSimple(vf, tasa, n); vpFinal = valorFinal; vfFinal = vf;
             pasos.push(
-              { label: "5. Despeje", content: "VP = VF / (1 + i·n)" },
-              { label: "6. Sustitución", content: `VP = ${formatNumberCO(vf)} / (1 + ${formatNumberCO(tasa, 6, 8)} × ${formatNumberCO(n, 2, 6)})` },
-              { label: "7. Operación", content: `VP = ${formatNumberCO(vf)} / ${formatNumberCO(1 + tasa * n, 6, 8)}` },
-              { label: "8. Resultado sin redondear", content: `VP = ${valorFinal}` }
+              { label: "Partimos de la fórmula vista en clase", content: "VF = VP · (1 + i·n)" },
+              { label: "Despejamos VP", content: "VP = VF / (1 + i·n)" },
+              { label: "Reemplazamos los valores", content: `VP = ${procRaw(vf)} / (1 + ${procRaw(tasa)} · ${procRaw(n)})` },
+              { label: "Resolvemos el denominador", content: `1 + i·n = 1 + (${procRaw(tasa)} · ${procRaw(n)}) = ${procRaw(1 + tasa * n)}` },
+              { label: "Dividimos", content: `VP = ${procRaw(vf)} / ${procRaw(1 + tasa * n)} = ${procRaw(valorFinal)}` },
+              { label: "Resultado", content: `VP = ${procRaw(valorFinal)}` }
             ); etiquetaFinal = "Valor Presente (VP)";
           }
           else if (incognita === "i") {
             valorFinal = solveRateSimple(vp, vf, n); vpFinal = vp; vfFinal = vf;
             pasos.push(
-              { label: "5. Despeje", content: "i = (VF/VP − 1) / n" },
-              { label: "6. Sustitución", content: `i = (${formatNumberCO(vf)}/${formatNumberCO(vp)} − 1) / ${formatNumberCO(n, 2, 6)}` },
-              { label: "7. Operación", content: `i = (${formatNumberCO(vf / vp, 6, 8)} − 1) / ${formatNumberCO(n, 2, 6)} = ${formatNumberCO((vf / vp) - 1, 6, 8)} / ${formatNumberCO(n, 2, 6)}` },
-              { label: "8. Resultado sin redondear", content: `i = ${valorFinal} = ${valorFinal * 100} % por período` }
+              { label: "Partimos de la fórmula vista en clase", content: "VF = VP · (1 + i·n)" },
+              { label: "Dividimos entre VP", content: "VF / VP = 1 + i·n" },
+              { label: "Restamos 1", content: "VF / VP − 1 = i·n" },
+              { label: "Despejamos i", content: "i = (VF / VP − 1) / n" },
+              { label: "Reemplazamos los valores", content: `i = (${procRaw(vf)} / ${procRaw(vp)} − 1) / ${procRaw(n)}` },
+              { label: "Resolvemos", content: `VF/VP = ${procRaw(vf / vp)}; VF/VP − 1 = ${procRaw((vf / vp) - 1)}; i = ${procRaw((vf / vp) - 1)} / ${procRaw(n)} = ${procRaw(valorFinal)}` },
+              { label: "Pasamos a porcentaje", content: `i = ${procRaw(valorFinal)} · 100 = ${procRaw(valorFinal * 100)} % por período` }
             ); etiquetaFinal = "Tasa de interés (i)";
           }
           else if (incognita === "n") {
             valorFinal = solveTimeSimple(vp, vf, tasa); vpFinal = vp; vfFinal = vf;
             pasos.push(
-              { label: "3. Despeje", content: "n = (VF/VP − 1) / i" },
-              { label: "4. Sustitución", content: `n = (${formatNumberCO(vf)}/${formatNumberCO(vp)} − 1) / ${formatNumberCO(tasa, 6, 8)}` },
-              { label: "5. Operación", content: `n = (${formatNumberCO(vf / vp, 6, 8)} − 1) / ${formatNumberCO(tasa, 6, 8)} = ${formatNumberCO((vf / vp) - 1, 6, 8)} / ${formatNumberCO(tasa, 6, 8)}` },
-              { label: "6. Resultado sin redondear", content: `n = ${valorFinal} períodos` }
+              { label: "Partimos de la fórmula vista en clase", content: "VF = VP · (1 + i·n)" },
+              { label: "Dividimos entre VP", content: "VF / VP = 1 + i·n" },
+              { label: "Restamos 1", content: "VF / VP − 1 = i·n" },
+              { label: "Despejamos n", content: "n = (VF / VP − 1) / i" },
+              { label: "Reemplazamos los valores", content: `n = (${procRaw(vf)} / ${procRaw(vp)} − 1) / ${procRaw(tasa)}` },
+              { label: "Resolvemos", content: `VF/VP = ${procRaw(vf / vp)}; VF/VP − 1 = ${procRaw((vf / vp) - 1)}; n = ${procRaw((vf / vp) - 1)} / ${procRaw(tasa)} = ${procRaw(valorFinal)} períodos` }
             ); etiquetaFinal = "Número de períodos (n)";
           }
         } else {
           if (incognita === "VF") {
             valorFinal = futureValueCompound(vp, tasa, n); vfFinal = valorFinal; vpFinal = vp;
             pasos.push(
-              { label: "5. Fórmula", content: "VF = VP · (1+i)ⁿ" },
-              { label: "6. Sustitución", content: `VF = ${formatNumberCO(vp)} · (1 + ${formatNumberCO(tasa, 6, 8)})^${formatNumberCO(n, 2, 6)}` },
-              { label: "7. Operación", content: `VF = ${formatNumberCO(vp)} · (${formatNumberCO(1 + tasa, 6, 8)})^${formatNumberCO(n, 2, 6)} = ${formatNumberCO(vp)} · ${formatNumberCO(Math.pow(1 + tasa, n), 6, 8)}` },
-              { label: "8. Resultado sin redondear", content: `VF = ${valorFinal}` }
+              { label: "Fórmula general usada en clase", content: "VF = VP · (1+i)ⁿ" },
+              { label: "Reemplazamos los valores", content: `VF = ${procRaw(vp)} · (1 + ${procRaw(tasa)})^${procRaw(n)}` },
+              { label: "Resolvemos la base", content: `1 + i = 1 + ${procRaw(tasa)} = ${procRaw(1 + tasa)}` },
+              { label: "Elevamos al número de períodos", content: `(1+i)^n = ${procRaw(1 + tasa)}^${procRaw(n)} = ${procRaw(Math.pow(1 + tasa, n))}` },
+              { label: "Multiplicamos por VP", content: `VF = ${procRaw(vp)} · ${procRaw(Math.pow(1 + tasa, n))} = ${procRaw(valorFinal)}` },
+              { label: "Resultado", content: `VF = ${procRaw(valorFinal)}` }
             ); etiquetaFinal = "Valor Futuro (VF)";
           }
           else if (incognita === "VP") {
             valorFinal = presentValueCompound(vf, tasa, n); vpFinal = valorFinal; vfFinal = vf;
             pasos.push(
-              { label: "5. Despeje", content: "VP = VF / (1+i)ⁿ" },
-              { label: "6. Sustitución", content: `VP = ${formatNumberCO(vf)} / (1 + ${formatNumberCO(tasa, 6, 8)})^${formatNumberCO(n, 2, 6)}` },
-              { label: "7. Operación", content: `VP = ${formatNumberCO(vf)} / (${formatNumberCO(1 + tasa, 6, 8)})^${formatNumberCO(n, 2, 6)} = ${formatNumberCO(vf)} / ${formatNumberCO(Math.pow(1 + tasa, n), 6, 8)}` },
-              { label: "8. Resultado sin redondear", content: `VP = ${valorFinal}` }
+              { label: "Partimos de la fórmula vista en clase", content: "VF = VP · (1+i)ⁿ" },
+              { label: "Despejamos VP", content: "VP = VF / (1+i)ⁿ" },
+              { label: "Reemplazamos los valores", content: `VP = ${procRaw(vf)} / (1 + ${procRaw(tasa)})^${procRaw(n)}` },
+              { label: "Calculamos el factor", content: `(1+i)^n = ${procRaw(1 + tasa)}^${procRaw(n)} = ${procRaw(Math.pow(1 + tasa, n))}` },
+              { label: "Dividimos", content: `VP = ${procRaw(vf)} / ${procRaw(Math.pow(1 + tasa, n))} = ${procRaw(valorFinal)}` },
+              { label: "Resultado", content: `VP = ${procRaw(valorFinal)}` }
             ); etiquetaFinal = "Valor Presente (VP)";
           }
           else if (incognita === "i") {
             valorFinal = solveRateCompound(vp, vf, n); vpFinal = vp; vfFinal = vf;
             pasos.push(
-              { label: "5. Despeje", content: "i = (VF/VP)^(1/n) − 1" },
-              { label: "6. Sustitución", content: `i = (${formatNumberCO(vf)}/${formatNumberCO(vp)})^(1/${formatNumberCO(n, 2, 6)}) − 1` },
-              { label: "7. Operación", content: `i = (${formatNumberCO(vf / vp, 6, 8)})^(${formatNumberCO(1 / n, 6, 8)}) − 1` },
-              { label: "8. Resultado sin redondear", content: `i = ${valorFinal} = ${valorFinal * 100} % por período` }
+              { label: "Partimos de la fórmula vista en clase", content: "VF = VP · (1+i)ⁿ" },
+              { label: "Dividimos entre VP", content: "VF / VP = (1+i)ⁿ" },
+              { label: "Aplicamos raíz n-ésima", content: "(VF / VP)^(1/n) = 1+i" },
+              { label: "Despejamos i", content: "i = (VF / VP)^(1/n) − 1" },
+              { label: "Reemplazamos los valores", content: `i = (${procRaw(vf)} / ${procRaw(vp)})^(1/${procRaw(n)}) − 1` },
+              { label: "Resolvemos", content: `VF/VP = ${procRaw(vf / vp)}; 1/n = ${procRaw(1 / n)}; i = ${procRaw(valorFinal)}` },
+              { label: "Pasamos a porcentaje", content: `i = ${procRaw(valorFinal)} · 100 = ${procRaw(valorFinal * 100)} % por período` }
             ); etiquetaFinal = "Tasa de interés (i)";
           }
           else if (incognita === "n") {
             valorFinal = solveTimeCompound(vp, vf, tasa); vpFinal = vp; vfFinal = vf;
             pasos.push(
-              { label: "3. Despeje", content: "n = ln(VF/VP) / ln(1+i)" },
-              { label: "4. Sustitución", content: `n = ln(${formatNumberCO(vf)}/${formatNumberCO(vp)}) / ln(1 + ${formatNumberCO(tasa, 6, 8)})` },
-              { label: "5. Operación", content: `n = ${formatNumberCO(Math.log(vf / vp), 6, 8)} / ${formatNumberCO(Math.log(1 + tasa), 6, 8)}` },
-              { label: "6. Resultado sin redondear", content: `n = ${valorFinal} períodos` },
-              { label: "7. ¿Por qué logaritmos?", content: "Como n está en el exponente, usamos logaritmos para despejarlo." }
+              { label: "Partimos de la fórmula vista en clase", content: "VF = VP · (1+i)ⁿ" },
+              { label: "Dividimos entre VP", content: "VF / VP = (1+i)ⁿ" },
+              { label: "Aplicamos logaritmo", content: "log(VF / VP) = n · log(1+i)" },
+              { label: "Despejamos n", content: "n = log(VF / VP) / log(1+i)" },
+              { label: "Reemplazamos los valores", content: `n = log(${procRaw(vf)} / ${procRaw(vp)}) / log(1 + ${procRaw(tasa)})` },
+              { label: "Resolvemos", content: `log(VF/VP) = ${procRaw(Math.log10(vf / vp))}; log(1+i) = ${procRaw(Math.log10(1 + tasa))}; n = ${procRaw(Math.log10(vf / vp))} / ${procRaw(Math.log10(1 + tasa))} = ${procRaw(valorFinal)} períodos` },
+              { label: "Interpretación de n", content: `La respuesta queda en períodos de la tasa seleccionada. Luego se convierte a años y meses si corresponde.` }
             ); etiquetaFinal = "Número de períodos (n)";
           }
         }
@@ -1161,20 +1194,42 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
         : `${base}·e^(−${formatNumberCO(tasaUsada, 6, 8)}·${formatNumberCO(ad, 2, 6)})`;
     };
 
-    const pasosFormulasFlujos = flowsBase.map((f) => {
+    const pasosFormulasFlujos = flowsBase.map((f, idx) => {
       const delta = focal - f.momento;
-      const dir = Math.abs(delta) < 1e-12 ? "ya está en la fecha focal" : delta > 0 ? "se lleva hacia el futuro" : "se descuenta hacia el pasado";
-      const signoTxt = f.signo === 1 ? "Entrada (+)" : "Salida (−)";
+      const ad = Math.abs(delta);
+      const dir = Math.abs(delta) < 1e-12 ? "ya está en el momento focal" : delta > 0 ? "lo llevamos hacia el futuro" : "lo traemos hacia el pasado";
+      const signoTxt = f.signo === 1 ? "Entrada" : "Salida";
+      const simboloEq = delta > 0 ? `VF${idx + 1}` : delta < 0 ? `VP${idx + 1}` : `${f.etiqueta}_focal`;
+      const factor = trasladoFlujo(1, f.momento, focal, regimen, tasa);
+      let desarrollo;
+      if (Math.abs(delta) < 1e-12) {
+        desarrollo = `${simboloEq} = ${expresionMonto(f, true)} (ya está en el momento focal)`;
+      } else if (regimen === "simple") {
+        desarrollo = delta > 0
+          ? `${simboloEq} = ${expresionMonto(f, true)}(1 + i·n) = ${expresionMonto(f, true)}(1 + ${procRaw(tasa)}·${procRaw(ad)})`
+          : `${simboloEq} = ${expresionMonto(f, true)}/(1 + i·n) = ${expresionMonto(f, true)}/(1 + ${procRaw(tasa)}·${procRaw(ad)})`;
+      } else if (regimen === "compuesto") {
+        desarrollo = delta > 0
+          ? `${simboloEq} = ${expresionMonto(f, true)}(1+i)^n = ${expresionMonto(f, true)}(1+${procRaw(tasa)})^${procRaw(ad)}`
+          : `${simboloEq} = ${expresionMonto(f, true)}/(1+i)^n = ${expresionMonto(f, true)}/(1+${procRaw(tasa)})^${procRaw(ad)}`;
+      } else {
+        desarrollo = delta > 0
+          ? `${simboloEq} = ${expresionMonto(f, true)}e^(r·t) = ${expresionMonto(f, true)}e^(${procRaw(tasa)}·${procRaw(ad)})`
+          : `${simboloEq} = ${expresionMonto(f, true)}e^(−r·t) = ${expresionMonto(f, true)}e^(−${procRaw(tasa)}·${procRaw(ad)})`;
+      }
+      const valorEq = f.esIncognita
+        ? `${procRaw(f.coeficiente * factor)}·X`
+        : procRaw(f.monto * factor);
       return {
-        label: `Traslado de ${f.etiqueta}`,
-        content: `${signoTxt}. ${dir}. ${expresionTraslado(f, true)}`,
+        label: `${simboloEq}: ${f.etiqueta} (${signoTxt})`,
+        content: `${dir}. ${desarrollo} = ${valorEq}`,
       };
     });
 
     const ecuacionExpandida = flowsBase.map((f, idx) => {
-      const prefijo = f.signo === 1 ? (idx === 0 ? "+" : "+") : "−";
+      const prefijo = f.signo === 1 ? "+" : "−";
       return `${prefijo} ${expresionTraslado(f, true)}`;
-    }).join(" ") + ` = ${formatNumberCO(target, 2, 2)}`;
+    }).join(" ") + ` = ${procRaw(target)}`;
 
     const calcularIConFlujos = (flowsMaterializados) => {
       const entradas = flowsMaterializados.filter((f) => f.signo === 1).reduce((acc, f) => acc + f.monto, 0);
@@ -1203,13 +1258,15 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
           .filter((f) => f.esIncognita)
           .map((f) => ({ etiqueta: f.etiqueta, coeficiente: f.coeficiente, valor: f.coeficiente * sol.value }));
         const pasosEcuacion = [
-          { label: "Fórmulas de traslado", content: formulaGeneralTraslado },
+          { label: "Procedimiento usado en clase", content: "Llevamos todos los valores al mismo momento focal. Solo después de tenerlos en el mismo momento los sumamos, restamos o despejamos la incógnita." },
+          { label: "Fórmula que corresponde al traslado", content: formulaGeneralTraslado },
           ...pasosFormulasFlujos,
-          { label: "Ecuación de valor desarrollada", content: ecuacionExpandida },
-          { label: "Separar términos conocidos y términos con X", content: `Suma conocida trasladada = ${formatNumberCO(sol.knownSum, 2, 6)}. Coeficiente total trasladado de X = ${formatNumberCO(sol.unknownCoefSum, 6, 10)}.` },
-          { label: "Despeje de X", content: `X = (Objetivo − suma conocida) / coeficiente de X = (${formatNumberCO(target, 2, 2)} − ${formatNumberCO(sol.knownSum, 2, 6)}) / ${formatNumberCO(sol.unknownCoefSum, 6, 10)}` },
-          { label: "X sin redondear", content: `X = ${sol.value}` },
-          ...valoresIncognitas.map((v) => ({ label: `Valor de ${v.etiqueta}`, content: `${v.etiqueta} = ${formatNumberCO(v.coeficiente, 0, 6)}·X = ${formatNumberCO(v.coeficiente, 0, 6)} × ${sol.value} = ${v.valor}` })),
+          { label: "Planteamos la ecuación de valor", content: ecuacionExpandida },
+          { label: "Agrupamos lo conocido y lo que contiene X", content: `Términos conocidos en el momento focal = ${procRaw(sol.knownSum)}. Términos que acompañan a X = ${procRaw(sol.unknownCoefSum)}·X.` },
+          { label: "Ecuación reducida", content: `${procRaw(sol.knownSum)} + (${procRaw(sol.unknownCoefSum)})·X = ${procRaw(target)}` },
+          { label: "Pasamos lo conocido al otro lado", content: `(${procRaw(sol.unknownCoefSum)})·X = ${procRaw(target)} − (${procRaw(sol.knownSum)}) = ${procRaw(target - sol.knownSum)}` },
+          { label: "Despejamos X", content: `X = ${procRaw(target - sol.knownSum)} / ${procRaw(sol.unknownCoefSum)} = ${procRaw(sol.value)}` },
+          ...valoresIncognitas.map((v) => ({ label: `Hallamos ${v.etiqueta}`, content: Math.abs(v.coeficiente - 1) < 1e-12 ? `${v.etiqueta} = X = ${procRaw(v.valor)}` : `${v.etiqueta} = ${procRaw(v.coeficiente)}·X = ${procRaw(v.coeficiente)}·(${procRaw(sol.value)}) = ${procRaw(v.valor)}` })),
         ];
         setResultado({
           tipo: "monto", valor: sol.value, residual,
@@ -1234,7 +1291,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
           tipo: "momento", valor: sol.value, residual: sol.residual,
           verifOk: Math.abs(sol.residual) < 1e-4,
           focal, tasa, regimen, target, pasosConversion,
-          pasosEcuacion: [{ label: "Fórmulas de traslado", content: formulaGeneralTraslado }, ...pasosFormulasFlujos, { label: "Ecuación de valor desarrollada", content: ecuacionExpandida }],
+          pasosEcuacion: [{ label: "Procedimiento usado en clase", content: "Llevamos cada flujo al mismo momento focal antes de despejar el momento desconocido." }, { label: "Fórmula que corresponde al traslado", content: formulaGeneralTraslado }, ...pasosFormulasFlujos, { label: "Planteamos la ecuación de valor", content: ecuacionExpandida }],
           mesesPorPeriodo, equivalencia, operacion,
           interesCalculado: resumenI.Icalc, totalEntradas: resumenI.entradas, totalSalidas: resumenI.salidas,
           interesConocido: parseFloat(String(interesConocido).replace(",", ".")),
