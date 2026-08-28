@@ -1689,26 +1689,203 @@ function Glosario() {
 /* ============================================================
    INTERACCIONES
    ============================================================ */
-function TarjetaInteraccion({ n, titulo, esError }) {
+
+const INTERACCIONES_DATA = [
+  {
+    n: 1,
+    titulo: "Diseño inicial y corrección de la lógica financiera",
+    prompt: `Estoy construyendo una página que cumpla con los requerimientos del documento que te acabo de enviar, pero necesito que me hagas un prompt para poder subirlo a la aplicación y poder cumplir con todo lo que el documento dice que el trabajo debe tener.`,
+    respuesta: `La IA revisó el documento completo del proyecto y generó un prompt detallado para construir Numeris en Emergent. El prompt definió las tres secciones principales: Educación Financiera, Simulación/Cotización e Interacciones con IA.
+
+También especificó las principales capacidades financieras requeridas: interés simple, compuesto y continuo; selección entre crédito e inversión; COP, USD y EUR; cálculo de VP, VF, tasa y tiempo; múltiples flujos de dinero; coeficientes; momento de un flujo desconocido; periodicidades configurables; conversión del tiempo a períodos; ganancia neta; ecuaciones de valor; procedimientos paso a paso; formato numérico colombiano y requisitos técnicos.
+
+La IA señaló además que Numeris no debía limitarse a una calculadora básica y debía poder resolver ejercicios similares a los trabajados durante el primer corte.`,
+    problema: `Al probar en Emergent la primera versión construida a partir de este prompt, identificamos que la periodicidad de la tasa no era suficientemente clara; no se distinguían adecuadamente n y t; la interfaz de interés continuo se parecía demasiado a la de simple y compuesto; y las explicaciones de los ejercicios eran demasiado básicas.`,
+    correccion: `Se envió un video de la primera versión de Numeris a la IA para que analizara visualmente la herramienta y se utilizó un nuevo prompt especificando los problemas detectados. A partir de esa revisión se reforzó la diferenciación entre los tres regímenes, el manejo de las periodicidades, las variables utilizadas y la explicación paso a paso de los ejercicios.`,
+    resultado: `Numeris pasó a diferenciar de manera mucho más clara los tres regímenes de interés y a explicar cómo se relacionan la tasa, el tiempo y los períodos. En interés simple y compuesto utiliza i y n, mientras que en interés continuo utiliza r y t, expresando siempre t en años. También se mejoró la selección de periodicidades y se incorporó una explicación más completa de los procedimientos.`,
+    trazabilidad: `En Simulación, al seleccionar interés continuo, las variables disponibles cambian automáticamente: el tiempo se expresa mediante t y la tasa continua mediante r. En interés simple y compuesto se utilizan i y n. También es posible seleccionar claramente la periodicidad y, después de calcular, aparece el botón “Ver procedimiento completo”. En interés continuo, el procedimiento aclara que t siempre se expresa en años.`,
+    link: "https://chatgpt.com/share/e/6a91ed48-54c0-8012-a31d-ad9105eb4d9b",
+  },
+  {
+    n: 2,
+    titulo: "Crédito, inversión, entradas, salidas y ganancia neta I",
+    prompt: `Pero en el codigo no se incluye explicacion de cuando es entrada y salida, ni da la opcion de seleccionar si es credito o inversión. Además debe poder tener la opcion de ingresar I osea la ganancia neta y en los resultados debe aparecer cuanto es este valor, tanto para la simulación avanzada como la basica,  además en la explicación basica debe tener la terminologia o las variables vistas en clase para que sea mucho mas facil remplazar. Estos son algunos de los ejercicios vistos para que te des una idea de que aprendimos en clase.
+
+Te voy adjuntar todo el codigo de app y si quieres cambialo para poder copiar y pegar`,
+    respuesta: `La IA analizó el archivo completo App.jsx y los ejercicios de clase proporcionados como referencia. Produjo una nueva versión del código que incorporó selector entre Crédito e Inversión; I como interés o ganancia neta; posibilidad de calcular I o utilizarlo como dato conocido; presentación conjunta de VP, VF e I; interpretación de I según el tipo de operación; uso consistente de VP, VF, i, n, r, t e I; explicación de entradas y salidas; y mejora del sistema de coeficientes entre flujos.
+
+Además detectó que el código anterior permitía escribir coeficientes, pero no manejaba correctamente situaciones donde varios flujos dependían de la misma incógnita X.`,
+    problema: `La versión anterior no diferenciaba claramente entre crédito e inversión; no explicaba cuándo un flujo debía considerarse entrada o salida; no incorporaba I como variable visible; no utilizaba consistentemente las variables vistas en clase; y no manejaba correctamente relaciones como X y 1,4X entre varios flujos desconocidos.`,
+    correccion: `Se proporcionó a ChatGPT el archivo completo App.jsx para trabajar directamente sobre el código existente. La nueva versión incorporó el selector Crédito/Inversión, Entrada/Salida por flujo, la explicación de la convención desde la perspectiva del cliente, I en modo básico y avanzado, el uso de las variables empleadas en clase y la posibilidad de asociar varios flujos a una misma incógnita X mediante coeficientes.
+
+En inversión: I = Entradas − Salidas.
+En crédito: I = Salidas − Entradas.`,
+    resultado: `Numeris puede distinguir entre operaciones de crédito e inversión, interpretar correctamente entradas y salidas y mostrar el valor de I tanto en simulaciones básicas como avanzadas. También puede trabajar con relaciones entre flujos como VP₁ = X y VP₂ = 1,4X sin que el usuario tenga que realizar previamente el álgebra.`,
+    trazabilidad: `En Simulación aparece un selector para indicar si la operación corresponde a una inversión o a un crédito. En el modo avanzado aparece una explicación sobre cómo interpretar Entradas y Salidas. Además, en los resultados de los modos básico y avanzado se muestra el valor de I y durante la explicación se utilizan variables como VP, VF, i, n, r, t e I.`,
+    link: "https://chatgpt.com/share/e/6a91ed48-54c0-8012-a31d-ad9105eb4d9b",
+  },
+  {
+    n: 3,
+    titulo: "Procedimientos adaptados al método utilizado en clase",
+    prompt: `Los procedimientos son un poco diferentes a como lo desarrollamos en clase. Entonces, para asegurarme o asegurar que la plataforma muestre procedimientos similares a los que vimos en clase, te voy a mandar algunos ejemplos y adécuala a eso, sin alterar nada más, solamente esa parte de la explicación, que sean los procedimientos completos, como los que se vieron en clase.`,
+    respuesta: `Se proporcionaron a la IA ejercicios reales de interés compuesto e interés continuo desarrollados durante la clase. Después de analizarlos, la IA modificó únicamente la sección encargada de mostrar los procedimientos.
+
+Identificó que el método utilizado en clase seguía principalmente esta secuencia: Datos → conversión del tiempo → identificación de períodos/años → fórmula → despeje → sustitución → operaciones → resultado.
+
+En problemas con varios flujos, también identificó que primero se lleva cada valor a un mismo momento focal y después se construye la ecuación de valor.`,
+    problema: `Los procedimientos anteriores podían llegar a resultados matemáticamente correctos, pero su desarrollo no se parecía suficientemente a la forma en que los ejercicios eran solucionados durante la clase. Debían mostrar claramente la organización de datos, conversión del tiempo, determinación de n o t, selección de fórmula, despeje, sustitución, traslado de flujos, ecuación de valor, operaciones y resultado final.`,
+    correccion: `Se enviaron ejercicios reales de clase como referencia y la IA modificó únicamente la presentación de los procedimientos.
+
+En modo básico se implementó: Datos → conversión del tiempo → fórmula general → despeje algebraico → sustitución de valores → operaciones intermedias → resultado.
+
+En modo avanzado: Datos → momento focal → traslado individual de cada flujo → fórmula correspondiente → sustitución → ecuación de valor → agrupación de términos → despeje → resultado.
+
+Cuando existen relaciones como X y 1,4X, el procedimiento muestra también cómo se obtiene el valor individual de cada flujo después de encontrar X.`,
+    resultado: `Los procedimientos de Numeris se asemejan mucho más a los desarrollados manualmente durante la asignatura y siguen el orden utilizado en clase. Esto facilita relacionar lo que aparece en la herramienta con la forma tradicional de solucionar los ejercicios en papel.`,
+    trazabilidad: `En Simulación, después de resolver un ejercicio, el usuario puede seleccionar “Ver procedimiento completo”. Este botón despliega un procedimiento detallado utilizando la misma estructura general empleada durante las clases de Matemáticas Financieras.`,
+    link: "https://chatgpt.com/share/e/6a91ed48-54c0-8012-a31d-ad9105eb4d9b",
+  },
+  {
+    n: 4,
+    titulo: "Precisión decimal y prevención de redondeos intermedios",
+    prompt: `Me di cuenta que algunos ejercicios no muestran todos los decimales y esta redondeando inecesariamente, afectando los resultados. Entonces agrega un botón en donde se pueda mostrar más decimales para cada solución sin redindear hasta el resultado final. Sin alterar nada más`,
+    respuesta: `La IA modificó el código para separar el valor utilizado internamente para calcular del valor mostrado visualmente al usuario. También agregó el botón “Mostrar más decimales”.
+
+La modificación permitió conservar una mayor precisión durante las operaciones y cambiar únicamente la forma en que se presenta el resultado. La IA indicó que el botón funcionaría tanto en el modo básico como en el avanzado y podría aplicarse a I, VP, VF, tasas, tiempos y flujos desconocidos como X o 1,4X.`,
+    problema: `El problema no estaba en las fórmulas financieras utilizadas, sino en el manejo de la precisión numérica. Algunos resultados se mostraban con pocos decimales y existía el riesgo de utilizar aproximaciones demasiado temprano. Además, no existía una forma de observar una mayor cantidad de decimales para comparar la respuesta de Numeris con un procedimiento manual.`,
+    correccion: `Se separaron el valor interno utilizado para calcular y el valor formateado mostrado al usuario. El cálculo conserva la mayor precisión posible y el formato convencional se utiliza únicamente para presentar el resultado final. También se agregó el botón “Mostrar más decimales” para inspeccionar una mayor precisión cuando sea necesario.`,
+    resultado: `Numeris conserva la precisión durante los cálculos y permite visualizar una mayor cantidad de decimales sin modificar el valor interno. Esto facilita comparar resultados con procedimientos manuales y detectar diferencias producidas únicamente por aproximaciones numéricas.`,
+    trazabilidad: `En los resultados del Simulador, tanto en modo básico como avanzado, aparece el botón “Mostrar más decimales”. Al seleccionarlo, el usuario puede visualizar una mayor cantidad de decimales del resultado.`,
+    link: "https://chatgpt.com/share/e/6a91ed48-54c0-8012-a31d-ad9105eb4d9b",
+  },
+  {
+    n: 5,
+    titulo: "Error numérico detectado: residuo computacional",
+    esError: true,
+    prompt: `Ya que es un error interno debido al procesador o a la herramienta, quiero que menciones que hay un pequeño error residual cuando se encuentre al momento de calcular cada operación.`,
+    respuesta: `La IA analizó el mecanismo de verificación matemática del código y determinó que la función encargada de mostrar la comprobación debía distinguir entre un error financiero real y una diferencia numérica extremadamente pequeña producida por la precisión computacional.
+
+Identificó que debía modificarse la función Verificacion y propuso agregar una detección automática de pequeñas diferencias producidas durante operaciones como potencias, logaritmos y métodos iterativos.`,
+    problema: `El cálculo podía ser financieramente correcto, pero en determinados ejercicios aparecían diferencias extremadamente pequeñas frente al resultado esperado. Esto podía hacer parecer que Numeris había cometido un error matemático cuando, en realidad, la diferencia provenía de la precisión numérica del sistema.
+
+El error se evidenció con una inversión al 3 % bimestral: $4.000.000 hoy, un segundo aporte de $2.000.000 en un momento desconocido y un valor final de $9.578.199,98640851 a los 3 años.`,
+    valorIncorrecto: "6.99999999997788997 períodos (error residual: -1.73e-5)",
+    valorCorrecto: "7 períodos",
+    razonError: `La diferencia es extremadamente pequeña y proviene de la precisión numérica interna utilizada por el sistema al realizar operaciones como potencias, logaritmos o métodos iterativos. No representa un cambio significativo en la interpretación financiera del resultado.`,
+    correccion: `Se mejoró la función de verificación incorporando un margen de tolerancia para identificar diferencias extremadamente pequeñas. La plataforma conserva el valor calculado, pero cuando detecta una diferencia de este tipo informa al usuario que puede tratarse de un pequeño error residual producido por la precisión numérica interna del sistema.`,
+    resultado: `Numeris realiza una verificación adicional después del cálculo y puede informar cuándo existe un pequeño error residual. Esto permite distinguir entre una diferencia computacional mínima y un verdadero error en el planteamiento financiero.`,
+    trazabilidad: `Después de realizar un cálculo en Simulación aparece una tarjeta de “Verificación matemática”. Cuando corresponde, esta sección muestra el error residual de la operación y explica que una pequeña diferencia puede ser consecuencia de la precisión numérica utilizada internamente por el sistema.`,
+    link: "https://chatgpt.com/share/e/6a91ed48-54c0-8012-a31d-ad9105eb4d9b",
+  },
+];
+
+function BloqueInteraccion({ label, children }) {
   return (
-    <Tarjeta style={{ marginBottom: 16, borderColor: esError ? C.danger + "55" : C.line }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-        <div style={{ fontFamily: F_DISPLAY, fontSize: 18, color: C.navy }}>Interacción {n} — {titulo}</div>
-        <span style={{ fontSize: 10.5, background: C.paperDark, color: C.slate, padding: "3px 8px", borderRadius: 20, fontFamily: F_MONO }}>Plantilla — reemplazar antes de entregar</span>
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: C.navy, marginBottom: 6 }}>{label}</div>
+      <div style={{
+        background: C.paper,
+        border: `1px solid ${C.line}`,
+        borderRadius: 8,
+        padding: "11px 13px",
+        fontSize: 13,
+        color: C.ink,
+        lineHeight: 1.6,
+        whiteSpace: "pre-wrap",
+        overflowWrap: "anywhere",
+      }}>
+        {children}
       </div>
-      <Campo label="1. Prompt dado a la IA"><textarea rows={2} placeholder="Pega aquí el prompt exacto..." style={{ ...inputStyle, resize: "vertical" }} /></Campo>
-      <Campo label="2. Respuesta inicial de la IA"><textarea rows={2} placeholder="Pega aquí la respuesta inicial..." style={{ ...inputStyle, resize: "vertical" }} /></Campo>
-      <Campo label="3. Qué estaba mal o incompleto"><Entrada placeholder="Describe el error o vacío detectado" /></Campo>
-      {esError && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <Campo label="Valor incorrecto"><Entrada placeholder="Ej: $0,00" /></Campo>
-          <Campo label="Valor correcto"><Entrada placeholder="Ej: $0,00" /></Campo>
+    </div>
+  );
+}
+
+function TarjetaInteraccion({ item }) {
+  return (
+    <Tarjeta style={{ marginBottom: 16, borderColor: item.esError ? C.danger + "55" : C.line }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
+        <div style={{ fontFamily: F_DISPLAY, fontSize: 18, color: C.navy }}>
+          Interacción {item.n} — {item.titulo}
         </div>
-      )}
-      <Campo label="4. Cómo se corrigió"><Entrada placeholder="Describe la corrección aplicada" /></Campo>
-      <Campo label="5. Resultado final"><Entrada placeholder="Describe el resultado final" /></Campo>
-      <Campo label="6. Parte visible de la herramienta (trazabilidad)"><Entrada placeholder="Ej: Visible en Simulación → Modo avanzado → ..." /></Campo>
-      <Campo label="7. Enlace original de la conversación"><Entrada placeholder="https://..." /></Campo>
+        {item.esError && (
+          <span style={{
+            fontSize: 10.5,
+            background: C.dangerBg,
+            color: C.danger,
+            padding: "4px 9px",
+            borderRadius: 20,
+            fontFamily: F_MONO,
+            fontWeight: 700,
+            whiteSpace: "nowrap",
+          }}>
+            Error numérico detectado y corregido
+          </span>
+        )}
+      </div>
+
+      <details>
+        <summary style={{
+          cursor: "pointer",
+          fontSize: 13,
+          fontWeight: 700,
+          color: C.goldDeep,
+          marginBottom: 12,
+          userSelect: "none",
+        }}>
+          Ver documentación completa
+        </summary>
+
+        <BloqueInteraccion label="1. Prompt o instrucción dada a la IA">
+          {item.prompt}
+        </BloqueInteraccion>
+
+        <BloqueInteraccion label="2. Lo que produjo inicialmente la IA">
+          {item.respuesta}
+        </BloqueInteraccion>
+
+        <BloqueInteraccion label="3. Qué estaba mal, incompleto o podía mejorarse">
+          {item.problema}
+        </BloqueInteraccion>
+
+        {item.esError && (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10, marginBottom: 14 }}>
+              <BloqueInteraccion label="Valor incorrecto">
+                {item.valorIncorrecto}
+              </BloqueInteraccion>
+              <BloqueInteraccion label="Valor correcto">
+                {item.valorCorrecto}
+              </BloqueInteraccion>
+            </div>
+            <BloqueInteraccion label="Por qué estaba mal">
+              {item.razonError}
+            </BloqueInteraccion>
+          </>
+        )}
+
+        <BloqueInteraccion label="4. Cómo se corrigió o mejoró">
+          {item.correccion}
+        </BloqueInteraccion>
+
+        <BloqueInteraccion label="5. Resultado final">
+          {item.resultado}
+        </BloqueInteraccion>
+
+        <BloqueInteraccion label="6. Parte concreta y visible de la herramienta (trazabilidad)">
+          {item.trazabilidad}
+        </BloqueInteraccion>
+
+        <BloqueInteraccion label="7. Enlace compartible de la conversación original">
+          <a
+            href={item.link}
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: C.navy, fontWeight: 700, textDecoration: "underline", overflowWrap: "anywhere" }}
+          >
+            {item.link}
+          </a>
+        </BloqueInteraccion>
+      </details>
     </Tarjeta>
   );
 }
@@ -1718,12 +1895,13 @@ function Interacciones() {
     <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
       <Etiqueta>Interacciones</Etiqueta>
       <h1 style={{ fontFamily: F_DISPLAY, fontSize: 30, color: C.navy, margin: "0 0 10px" }}>Interacciones</h1>
-      <p style={{ fontSize: 13.5, color: C.slate, marginBottom: 24, maxWidth: 640 }}>
-        Documentamos aquí el proceso real de trabajo con inteligencia artificial durante el desarrollo. Estas tres tarjetas son plantillas: el equipo debe reemplazarlas con interacciones reales antes de la entrega, incluyendo al menos un error numérico o conceptual real.
+      <p style={{ fontSize: 13.5, color: C.slate, marginBottom: 24, maxWidth: 760 }}>
+        Documentamos aquí cinco interacciones reales con inteligencia artificial durante el desarrollo de Numeris. Cada registro muestra la instrucción utilizada, la respuesta inicial, el problema detectado, la corrección aplicada, el resultado final, la parte visible de la herramienta relacionada y el enlace de evidencia. La interacción 5 documenta específicamente un error numérico detectado y corregido.
       </p>
-      <TarjetaInteraccion n={1} titulo="Diseño del motor financiero" />
-      <TarjetaInteraccion n={2} titulo="Error numérico real detectado" esError />
-      <TarjetaInteraccion n={3} titulo="Ajuste de interfaz / usabilidad" />
+
+      {INTERACCIONES_DATA.map((item) => (
+        <TarjetaInteraccion key={item.n} item={item} />
+      ))}
     </Section>
   );
 }
