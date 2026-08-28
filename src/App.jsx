@@ -984,15 +984,15 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
             <div style={{ fontSize: 13, color: C.slate, marginBottom: 4 }}>Resultado de {resultado.operacion === "credito" ? "crédito" : "inversión"} · interés {resultado.regimen}</div>
             <Etiqueta>{resultado.etiquetaFinal}</Etiqueta>
             <div style={{ fontFamily: F_MONO, fontSize: 30, color: C.navy, fontWeight: 700, marginBottom: 6 }}>
-              {resultado.esTiempo ? (resultado.incognita === "n" ? `${formatNumberCO(resultado.valorFinal, 2, masDecimales ? 6 : 2)} períodos` : `${formatNumberCO(resultado.valorFinal, 2, masDecimales ? 6 : 2)} años`) : resultado.esTasa ? formatPercentCO(resultado.valorFinal, masDecimales ? 6 : 2) : formatCurrencyCO(resultado.valorFinal, moneda, 2)}
+              {resultado.esTiempo ? (resultado.incognita === "n" ? `${formatNumberCO(resultado.valorFinal, 2, masDecimales ? 10 : 2)} períodos` : `${formatNumberCO(resultado.valorFinal, 2, masDecimales ? 10 : 2)} años`) : resultado.esTasa ? formatPercentCO(resultado.valorFinal, masDecimales ? 10 : 2) : formatCurrencyCO(resultado.valorFinal, moneda, masDecimales ? 10 : 2)}
             </div>
             {resultado.incognita === "n" && resultado.equivalenciaTemporal && <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Equivalencia: {resultado.equivalenciaTemporal.anios} años y {formatNumberCO(resultado.equivalenciaTemporal.meses, 1, 2)} meses</div>}
             <button onClick={() => setMasDecimales(!masDecimales)} style={{ background: "none", border: "none", color: C.gold, fontSize: 12, cursor: "pointer", padding: 0, marginBottom: 10 }}>{masDecimales ? "Mostrar menos decimales" : "Mostrar más decimales"}</button>
 
             {Number.isFinite(resultado.interesCalculado) && (
               <div style={{ marginTop: 8, padding: 13, background: C.successBg, borderRadius: 8, color: C.navy, fontSize: 13.5 }}>
-                <strong>{resultado.operacion === "credito" ? "Intereses pagados (I)" : "Ganancia neta / intereses (I)"}:</strong> {formatCurrencyCO(resultado.interesCalculado, moneda)}
-                <div style={{ fontSize: 11.5, color: C.slate, marginTop: 4 }}>I = VF − VP = {formatCurrencyCO(resultado.vfFinal, moneda)} − {formatCurrencyCO(resultado.vpFinal, moneda)}</div>
+                <strong>{resultado.operacion === "credito" ? "Intereses pagados (I)" : "Ganancia neta / intereses (I)"}:</strong> {formatCurrencyCO(resultado.interesCalculado, moneda, masDecimales ? 10 : 2)}
+                <div style={{ fontSize: 11.5, color: C.slate, marginTop: 4 }}>I = VF − VP = {formatCurrencyCO(resultado.vfFinal, moneda, masDecimales ? 10 : 2)} − {formatCurrencyCO(resultado.vpFinal, moneda, masDecimales ? 10 : 2)}</div>
               </div>
             )}
 
@@ -1003,7 +1003,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
             </div>
             <Verificacion ok={resultado.verifOk} residual={resultado.residual} />
             <Acordeon title="Ver procedimiento completo — con variables de clase">
-              <FichaProcedimiento pasos={[...resultado.pasos, { label: "Resultado sin redondear", content: String(resultado.valorFinal) }, { label: "Resultado presentado", content: resultado.esTiempo ? formatNumberCO(resultado.valorFinal, 2, 4) : resultado.esTasa ? formatPercentCO(resultado.valorFinal, 4) : formatCurrencyCO(resultado.valorFinal, moneda) }]} />
+              <FichaProcedimiento pasos={[...resultado.pasos, { label: "Resultado sin redondear", content: String(resultado.valorFinal) }, { label: "Resultado presentado", content: resultado.esTiempo ? formatNumberCO(resultado.valorFinal, 2, masDecimales ? 10 : 4) : resultado.esTasa ? formatPercentCO(resultado.valorFinal, masDecimales ? 10 : 4) : formatCurrencyCO(resultado.valorFinal, moneda, masDecimales ? 10 : 2) }]} />
             </Acordeon>
           </Tarjeta>
         )}
@@ -1070,6 +1070,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
   ]);
   const [resultado, setResultado] = useState(null);
   const [error, setError] = useState("");
+  const [masDecimales, setMasDecimales] = useState(false);
 
   function actualizar(id, campo, valor) {
     setFlujos((fs) => fs.map((f) => (f.id === id ? { ...f, [campo]: valor } : f)));
@@ -1469,38 +1470,39 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
         <Tarjeta style={{ marginTop: 20 }}>
           <Etiqueta>Resultado{resultado.etiquetaIncognita ? ` — ${resultado.etiquetaIncognita}` : ""}</Etiqueta>
           <div style={{ fontFamily: F_MONO, fontSize: 28, color: C.navy, fontWeight: 700, marginBottom: 8 }}>
-            {resultado.tipo === "monto" && formatCurrencyCO(resultado.valor, moneda)}
-            {resultado.tipo === "momento" && (resultado.regimen === "continuo" ? `${formatNumberCO(resultado.valor, 2, 4)} años` : `${formatNumberCO(resultado.valor, 2, 4)} periodos`)}
-            {resultado.tipo === "tasa" && formatPercentCO(resultado.valor, 4)}
+            {resultado.tipo === "monto" && formatCurrencyCO(resultado.valor, moneda, masDecimales ? 10 : 2)}
+            {resultado.tipo === "momento" && (resultado.regimen === "continuo" ? `${formatNumberCO(resultado.valor, 2, masDecimales ? 10 : 4)} años` : `${formatNumberCO(resultado.valor, 2, masDecimales ? 10 : 4)} periodos`)}
+            {resultado.tipo === "tasa" && formatPercentCO(resultado.valor, masDecimales ? 10 : 4)}
           </div>
+          <button onClick={() => setMasDecimales(!masDecimales)} style={{ background: "none", border: "none", color: C.gold, fontSize: 12, cursor: "pointer", padding: 0, marginBottom: 10 }}>{masDecimales ? "Mostrar menos decimales" : "Mostrar más decimales"}</button>
           {resultado.tipo === "monto" && Array.isArray(resultado.valoresIncognitas) && resultado.valoresIncognitas.length > 0 && (
             <div style={{ margin: "12px 0", display: "grid", gap: 8 }}>
               {resultado.valoresIncognitas.map((v, idx) => (
                 <div key={`${v.etiqueta}-${idx}`} style={{ padding: 12, background: C.paperDark, borderRadius: 8 }}>
                   <div style={{ fontSize: 12, color: C.slate }}>{v.etiqueta}</div>
-                  <div style={{ fontFamily: F_MONO, fontSize: 17, color: C.navy, fontWeight: 700 }}>{formatCurrencyCO(v.valor, moneda)}</div>
-                  <div style={{ fontSize: 11.5, color: C.slate }}>{formatNumberCO(v.coeficiente, 0, 6)} × X</div>
+                  <div style={{ fontFamily: F_MONO, fontSize: 17, color: C.navy, fontWeight: 700 }}>{formatCurrencyCO(v.valor, moneda, masDecimales ? 10 : 2)}</div>
+                  <div style={{ fontSize: 11.5, color: C.slate }}>{formatNumberCO(v.coeficiente, 0, masDecimales ? 10 : 6)} × X</div>
                 </div>
               ))}
             </div>
           )}
           {resultado.tipo === "momento" && resultado.equivalencia && (
             <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>
-              Equivalencia: {resultado.equivalencia.anios} años y {formatNumberCO(resultado.equivalencia.meses, 1, 2)} meses
+              Equivalencia: {resultado.equivalencia.anios} años y {formatNumberCO(resultado.equivalencia.meses, 1, masDecimales ? 10 : 2)} meses
             </div>
           )}
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>
-            Momento focal utilizado: {focalAnios} años y {focalMeses} meses ({formatNumberCO(resultado.focal, 2, 4)} {resultado.regimen === "continuo" ? "años (t)" : "períodos (n)"})
+            Momento focal utilizado: {focalAnios} años y {focalMeses} meses ({formatNumberCO(resultado.focal, 2, masDecimales ? 10 : 4)} {resultado.regimen === "continuo" ? "años (t)" : "períodos (n)"})
           </div>
           {Number.isFinite(resultado.interesCalculado) && (
             <div style={{ margin: "12px 0", padding: 13, background: C.successBg, borderRadius: 8, fontSize: 13.5, color: C.navy }}>
-              <strong>{resultado.operacion === "credito" ? "Intereses totales (I)" : "Ganancia neta / intereses (I)"}:</strong> {formatCurrencyCO(resultado.interesCalculado, moneda)}
+              <strong>{resultado.operacion === "credito" ? "Intereses totales (I)" : "Ganancia neta / intereses (I)"}:</strong> {formatCurrencyCO(resultado.interesCalculado, moneda, masDecimales ? 10 : 2)}
               <div style={{ fontSize: 11.5, color: C.slate, marginTop: 4 }}>
-                Total entradas nominales: {formatCurrencyCO(resultado.totalEntradas, moneda)} · Total salidas nominales: {formatCurrencyCO(resultado.totalSalidas, moneda)}.
+                Total entradas nominales: {formatCurrencyCO(resultado.totalEntradas, moneda, masDecimales ? 10 : 2)} · Total salidas nominales: {formatCurrencyCO(resultado.totalSalidas, moneda, masDecimales ? 10 : 2)}.
               </div>
               {Number.isFinite(resultado.interesConocido) && (
                 <div style={{ fontSize: 11.5, marginTop: 4, color: Math.abs(resultado.interesConocido - resultado.interesCalculado) < 0.01 ? C.success : C.danger }}>
-                  I ingresado: {formatCurrencyCO(resultado.interesConocido, moneda)} · diferencia frente al I calculado: {formatCurrencyCO(resultado.interesCalculado - resultado.interesConocido, moneda)}.
+                  I ingresado: {formatCurrencyCO(resultado.interesConocido, moneda, masDecimales ? 10 : 2)} · diferencia frente al I calculado: {formatCurrencyCO(resultado.interesCalculado - resultado.interesConocido, moneda, masDecimales ? 10 : 2)}.
                 </div>
               )}
             </div>
@@ -1516,7 +1518,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
               { label: "Objetivo", content: String(resultado.target) },
               { label: "Incógnita", content: resultado.etiquetaIncognita || (resultado.tipo === "tasa" ? "Tasa de interés" : "—") },
               { label: "Resultado sin redondear", content: String(resultado.valor) },
-              ...(Number.isFinite(resultado.interesCalculado) ? [{ label: "I — interés / ganancia neta", content: resultado.operacion === "credito" ? `I = salidas − entradas = ${formatCurrencyCO(resultado.interesCalculado, moneda)}` : `I = entradas − salidas = ${formatCurrencyCO(resultado.interesCalculado, moneda)}` }] : []),
+              ...(Number.isFinite(resultado.interesCalculado) ? [{ label: "I — interés / ganancia neta", content: resultado.operacion === "credito" ? `I = salidas − entradas = ${formatCurrencyCO(resultado.interesCalculado, moneda, masDecimales ? 10 : 2)}` : `I = entradas − salidas = ${formatCurrencyCO(resultado.interesCalculado, moneda, masDecimales ? 10 : 2)}` }] : []),
               { label: "Comprobación final", content: `Residual = ${resultado.residual.toExponential(3)}` },
             ]} />
           </Acordeon>
