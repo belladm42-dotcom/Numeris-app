@@ -822,21 +822,57 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
 
 /* ============================================================
    SIMULAR — MODO AVANZADO (múltiples flujos)
+   Alineado con los ejercicios de clase: Valor Presente 1, Valor
+   Presente 2, desembolsos adicionales y Valor Futuro, con
+   periodicidad configurable y momentos ingresados en años y meses.
    ============================================================ */
 let flujoIdSeq = 1;
+
+const ROLES_FLUJO = [
+  { value: "VP1", label: "Valor Presente 1" },
+  { value: "VP2", label: "Valor Presente 2" },
+  { value: "VP3", label: "Valor Presente 3" },
+  { value: "desembolso", label: "Desembolso adicional" },
+  { value: "pago", label: "Pago / Cuota" },
+  { value: "retiro", label: "Retiro" },
+  { value: "VF", label: "Valor Futuro (resultado)" },
+  { value: "otro", label: "Otro (personalizado)" },
+];
+
+function etiquetaRol(f) {
+  if (f.rol === "otro") return f.descripcionPersonalizada || "Flujo personalizado";
+  const r = ROLES_FLUJO.find((x) => x.value === f.rol);
+  return r ? r.label : "Flujo";
+}
+
 function nuevoFlujo(overrides) {
-  return { id: flujoIdSeq++, descripcion: "", monto: "", momento: "0", direccion: "entrada", esIncognitaMonto: false, esIncognitaMomento: false, coeficiente: "1", ...overrides };
+  return {
+    id: flujoIdSeq++,
+    rol: "desembolso",
+    descripcionPersonalizada: "",
+    monto: "",
+    anios: "0",
+    meses: "0",
+    direccion: "entrada",
+    esIncognitaMonto: false,
+    esIncognitaMomento: false,
+    coeficiente: "1",
+    ...overrides,
+  };
 }
 
 function SimularAvanzado({ moneda, onGuardarHistorial }) {
   const [regimen, setRegimen] = useState("compuesto");
   const [tasaPct, setTasaPct] = useState("3");
-  const [momentoFocal, setMomentoFocal] = useState("6");
+  const [periodicidad, setPeriodicidad] = useState("mensual");
+  const [nPersonalizado, setNPersonalizado] = useState("3");
+  const [focalAnios, setFocalAnios] = useState("0");
+  const [focalMeses, setFocalMeses] = useState("6");
   const [objetivo, setObjetivo] = useState("0");
   const [tipoIncognita, setTipoIncognita] = useState("monto"); // monto | momento | tasa
   const [flujos, setFlujos] = useState([
-    nuevoFlujo({ descripcion: "Desembolso inicial", monto: "10000000", momento: "0", direccion: "salida" }),
-    nuevoFlujo({ descripcion: "Pago único", monto: "", momento: "6", direccion: "entrada", esIncognitaMonto: true }),
+    nuevoFlujo({ rol: "VP1", monto: "10000000", anios: "0", meses: "0", direccion: "salida" }),
+    nuevoFlujo({ rol: "VF", monto: "", anios: "0", meses: "6", direccion: "entrada", esIncognitaMonto: true }),
   ]);
   const [resultado, setResultado] = useState(null);
   const [error, setError] = useState("");
@@ -844,168 +880,162 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
   function actualizar(id, campo, valor) {
     setFlujos((fs) => fs.map((f) => (f.id === id ? { ...f, [campo]: valor } : f)));
   }
-  function agregarFlujo() { setFlujos((fs) => [...fs, nuevoFlujo({ momento: String(fs.length) })]); }
+  function agregarFlujo() {
+    setFlujos((fs) => [...fs, nuevoFlujo({ rol: fs.length === 1 ? "VP2" : "desembolso" })]);
+  }
   function eliminarFlujo(id) { setFlujos((fs) => fs.filter((f) => f.id !== id)); }
+
+  // Meses por periodo según la periodicidad elegida (no aplica en continuo: ahí el tiempo siempre es en años)
+  function obtenerMesesPorPeriodo() {
+    if (regimen === "continuo") return null;
+    const perio = PERIODICIDADES.find((p) => p.value === periodicidad);
+    return periodicidad === "personalizada" ? parseFloat(nPersonalizado) : perio.meses;
+  }
+
+  // Convierte los años/meses de un flujo (o del momento focal) al "momento" en la unidad del régimen:
+  // periodos (simple/compuesto) o años decimales (continuo).
+  function momentoDeAniosMeses(anios, meses, mesesPorPeriodo) {
+    return regimen === "continuo"
+      ? yearsMonthsToDecimalYears(anios, meses)
+      : convertTimeToPeriods(anios, meses, mesesPorPeriodo);
+  }
 
   function resolver() {
     setError(""); setResultado(null);
     const tasa = parseFloat(String(tasaPct).replace(",", ".")) / 100;
-    const focal = parseFloat(momentoFocal);
     const target = parseFloat(String(objetivo).replace(",", ".")) || 0;
+
+    let mesesPorPeriodo = 1;
+    if (regimen !== "continuo") {
+      mesesPorPeriodo = obtenerMesesPorPeriodo();
+      if (!mesesPorPeriodo || mesesPorPeriodo <= 0) { setError("Ingresa cuántos meses tiene el periodo personalizado."); return; }
+    }
+
+    const focalA = parseFloat(focalAnios) || 0, focalM = parseFloat(focalMeses) || 0;
+    if (focalA < 0 || focalM < 0) { setError("El momento focal no puede ser negativo."); return; }
+    const focal = momentoDeAniosMeses(focalA, focalM, mesesPorPeriodo);
 
     const marcadosMonto = flujos.filter((f) => f.esIncognitaMonto);
     const marcadosMomento = flujos.filter((f) => f.esIncognitaMomento);
-    const totalIncognitas = (tipoIncognita === "monto" ? marcadosMonto.length : 0) + (tipoIncognita === "momento" ? marcadosMomento.length : 0) + (tipoIncognita === "tasa" ? 1 : 0);
 
     if (tipoIncognita === "monto" && marcadosMonto.length !== 1) { setError("Marca exactamente un flujo con monto desconocido."); return; }
     if (tipoIncognita === "momento" && marcadosMomento.length !== 1) { setError("Marca exactamente un flujo con momento desconocido."); return; }
     for (const f of flujos) {
-      if (f.momento === "" && !f.esIncognitaMomento) { setError("Todos los flujos deben tener un momento (excepto el marcado como desconocido)."); return; }
+      const a = parseFloat(f.anios) || 0, m = parseFloat(f.meses) || 0;
+      if (a < 0 || m < 0) { setError(`El tiempo de "${etiquetaRol(f)}" no puede ser negativo.`); return; }
+      if ((f.anios === "" || f.meses === "") && !(tipoIncognita === "momento" && f.esIncognitaMomento)) {
+        setError(`Ingresa el momento (años y meses) de "${etiquetaRol(f)}".`); return;
+      }
     }
 
-    const flowsBase = flujos.map((f) => ({
-      monto: parseFloat(String(f.monto).replace(",", ".")) || 0,
-      momento: parseFloat(f.momento) || 0,
-      signo: f.direccion === "entrada" ? 1 : -1,
-      esIncognita: tipoIncognita === "monto" && f.esIncognitaMonto,
-      coeficiente: parseFloat(String(f.coeficiente).replace(",", ".")) || 1,
-    }));
+    const pasosConversion = [];
+    pasosConversion.push({
+      label: "Periodicidad de la tasa",
+      content: regimen === "continuo" ? "No aplica (interés continuo: el tiempo se expresa siempre en años)" : `${PERIODICIDADES.find((p) => p.value === periodicidad)?.label}${periodicidad === "personalizada" ? ` (cada ${mesesPorPeriodo} meses)` : ""}`,
+    });
+    pasosConversion.push({
+      label: "Momento focal",
+      content: regimen === "continuo"
+        ? `${focalA} años y ${focalM} meses = ${formatNumberCO(focal, 2, 4)} años`
+        : `${focalA} años y ${focalM} meses = ${focalA * 12 + focalM} meses → ${focalA * 12 + focalM}/${mesesPorPeriodo} = ${formatNumberCO(focal, 2, 4)} periodos`,
+    });
+
+    const flowsBase = flujos.map((f) => {
+      const a = parseFloat(f.anios) || 0, m = parseFloat(f.meses) || 0;
+      const momento = (tipoIncognita === "momento" && f.esIncognitaMomento) ? 0 : momentoDeAniosMeses(a, m, mesesPorPeriodo);
+      if (!(tipoIncognita === "momento" && f.esIncognitaMomento)) {
+        pasosConversion.push({
+          label: etiquetaRol(f),
+          content: regimen === "continuo"
+            ? `${a} años y ${m} meses = ${formatNumberCO(momento, 2, 4)} años`
+            : `${a} años y ${m} meses = ${a * 12 + m} meses → ${a * 12 + m}/${mesesPorPeriodo} = ${formatNumberCO(momento, 2, 4)} periodos`,
+        });
+      } else {
+        pasosConversion.push({ label: etiquetaRol(f), content: "Momento desconocido (incógnita a despejar)" });
+      }
+      return {
+        rol: f.rol,
+        etiqueta: etiquetaRol(f),
+        monto: parseFloat(String(f.monto).replace(",", ".")) || 0,
+        momento,
+        signo: f.direccion === "entrada" ? 1 : -1,
+        esIncognita: tipoIncognita === "monto" && f.esIncognitaMonto,
+        coeficiente: parseFloat(String(f.coeficiente).replace(",", ".")) || 1,
+      };
+    });
 
     try {
       let valorHistorial = null;
-let tipoResultadoHistorial = "moneda";
+      let tipoResultadoHistorial = "moneda";
 
-if (tipoIncognita === "monto") {
-  const sol = solveUnknownCashFlow(
-    flowsBase,
-    focal,
-    regimen,
-    tasa,
-    target
-  );
+      if (tipoIncognita === "monto") {
+        const sol = solveUnknownCashFlow(flowsBase, focal, regimen, tasa, target);
+        if (!sol.ok || !validateSolution(sol.value)) {
+          throw new Error("Con los datos ingresados no encontramos una solución financiera válida.");
+        }
+        let total = 0;
+        for (const f of flowsBase) {
+          total += f.signo * (f.esIncognita ? f.coeficiente * sol.value : f.monto) * trasladoFlujo(1, f.momento, focal, regimen, tasa);
+        }
+        const residual = total - target;
+        setResultado({
+          tipo: "monto", valor: sol.value, residual,
+          verifOk: Math.abs(residual) < Math.max(1, Math.abs(sol.value)) * 1e-5,
+          focal, tasa, regimen, target, pasosConversion, mesesPorPeriodo,
+          etiquetaIncognita: etiquetaRol(flujos.find((f) => f.esIncognitaMonto)),
+        });
+        valorHistorial = sol.value; tipoResultadoHistorial = "moneda";
+      } else if (tipoIncognita === "momento") {
+        const idx = flujos.findIndex((f) => f.esIncognitaMomento);
+        const rangoBusqueda = regimen === "continuo" ? [0, 60] : [0, 600];
+        const sol = solveUnknownCashFlowTime(flowsBase, focal, regimen, tasa, target, idx, rangoBusqueda);
+        if (!sol.ok) {
+          throw new Error("Con los datos ingresados no encontramos una solución financiera válida. Revisa los valores, la tasa y los momentos.");
+        }
+        const equivalencia = regimen === "continuo" ? periodsToYearsMonths(sol.value, 12) : periodsToYearsMonths(sol.value, mesesPorPeriodo);
+        setResultado({
+          tipo: "momento", valor: sol.value, residual: sol.residual,
+          verifOk: Math.abs(sol.residual) < 1e-4,
+          focal, tasa, regimen, target, pasosConversion, mesesPorPeriodo, equivalencia,
+          etiquetaIncognita: etiquetaRol(flujos.find((f) => f.esIncognitaMomento)),
+        });
+        valorHistorial = sol.value; tipoResultadoHistorial = "tiempo";
+      } else {
+        const sol = solveUnknownRateMultiFlow(flowsBase, focal, regimen, target);
+        if (!sol.ok) {
+          throw new Error("Con los datos ingresados no encontramos una tasa que satisfaga la ecuación de valor.");
+        }
+        setResultado({
+          tipo: "tasa", valor: sol.value, residual: sol.residual,
+          verifOk: Math.abs(sol.residual) < 1e-4,
+          focal, regimen, target, pasosConversion, mesesPorPeriodo,
+        });
+        valorHistorial = sol.value; tipoResultadoHistorial = "tasa";
+      }
 
-  if (!sol.ok || !validateSolution(sol.value)) {
-    throw new Error(
-      "Con los datos ingresados no encontramos una solución financiera válida."
-    );
-  }
-
-  // Verificación
-  let total = 0;
-
-  for (const f of flowsBase) {
-    total +=
-      f.signo *
-      (f.esIncognita ? f.coeficiente * sol.value : f.monto) *
-      trasladoFlujo(1, f.momento, focal, regimen, tasa);
-  }
-
-  const residual = total - target;
-
-  setResultado({
-    tipo: "monto",
-    valor: sol.value,
-    residual,
-    verifOk:
-      Math.abs(residual) <
-      Math.max(1, Math.abs(sol.value)) * 1e-5,
-    focal,
-    tasa,
-    regimen,
-    target,
-  });
-
-  valorHistorial = sol.value;
-  tipoResultadoHistorial = "moneda";
-}
-
-else if (tipoIncognita === "momento") {
-  const idx = flujos.findIndex(
-    (f) => f.esIncognitaMomento
-  );
-
-  const sol = solveUnknownCashFlowTime(
-    flowsBase,
-    focal,
-    regimen,
-    tasa,
-    target,
-    idx
-  );
-
-  if (!sol.ok) {
-    throw new Error(
-      "Con los datos ingresados no encontramos una solución financiera válida. Revisa los valores, la tasa y los momentos."
-    );
-  }
-
-  setResultado({
-    tipo: "momento",
-    valor: sol.value,
-    residual: sol.residual,
-    verifOk: Math.abs(sol.residual) < 1e-4,
-    focal,
-    tasa,
-    regimen,
-    target,
-  });
-
-  valorHistorial = sol.value;
-  tipoResultadoHistorial = "tiempo";
-}
-
-else {
-  const sol = solveUnknownRateMultiFlow(
-    flowsBase,
-    focal,
-    regimen,
-    target
-  );
-
-  if (!sol.ok) {
-    throw new Error(
-      "Con los datos ingresados no encontramos una tasa que satisfaga la ecuación de valor."
-    );
-  }
-
-  setResultado({
-    tipo: "tasa",
-    valor: sol.value,
-    residual: sol.residual,
-    verifOk: Math.abs(sol.residual) < 1e-4,
-    focal,
-    regimen,
-    target,
-  });
-
-  valorHistorial = sol.value;
-  tipoResultadoHistorial = "tasa";
-}
-
-// GUARDAR RESULTADO EN HISTORIAL
-onGuardarHistorial({
-  tipo: "avanzado",
-  regimen,
-  incognita: tipoIncognita,
-  resultado: valorHistorial,
-  resultadoTipo: tipoResultadoHistorial,
-  fecha: new Date().toISOString(),
-  moneda,
-});
+      onGuardarHistorial({
+        tipo: "avanzado", regimen, incognita: tipoIncognita,
+        resultado: valorHistorial, resultadoTipo: tipoResultadoHistorial, moneda,
+      });
     } catch (e) {
       setError(e.message);
     }
   }
 
-  const maxMomento = Math.max(focalSafe(momentoFocal), ...flujos.map((f) => parseFloat(f.momento) || 0), 1);
-  function focalSafe(v) { const n = parseFloat(v); return Number.isFinite(n) ? n : 1; }
+  const mesesPorPeriodoActual = obtenerMesesPorPeriodo();
+  function momentoParaTimeline(f) {
+    const a = parseFloat(f.anios) || 0, m = parseFloat(f.meses) || 0;
+    return momentoDeAniosMeses(a, m, mesesPorPeriodoActual || 1);
+  }
+  const focalParaTimeline = momentoDeAniosMeses(parseFloat(focalAnios) || 0, parseFloat(focalMeses) || 0, mesesPorPeriodoActual || 1);
+  const maxMomento = Math.max(focalParaTimeline, ...flujos.map((f) => momentoParaTimeline(f)), 1);
 
   return (
     <div>
       <Tarjeta style={{ marginBottom: 20 }}>
         <Etiqueta>Motor general de ecuaciones de valor</Etiqueta>
         <p style={{ fontSize: 13.5, color: C.slate, margin: "0 0 16px" }}>
-          Para comparar cantidades de dinero ubicadas en momentos diferentes, las llevamos a un mismo momento focal y construimos una ecuación de valor.
+          Para comparar cantidades de dinero ubicadas en momentos diferentes (ej. Valor Presente 1, Valor Presente 2 y Valor Futuro) las llevamos a un mismo momento focal y construimos una ecuación de valor. La tasa y el tiempo deben quedar en la misma unidad de periodo: la herramienta no convierte tasas entre periodicidades.
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14 }}>
           <Campo label="Régimen">
@@ -1014,40 +1044,63 @@ onGuardarHistorial({
           <Campo label={regimen === "continuo" ? "Tasa continua r (% anual)" : "Tasa i (% por periodo)"}>
             <Entrada value={tasaPct} onChange={(e) => setTasaPct(e.target.value)} disabled={tipoIncognita === "tasa"} />
           </Campo>
-          <Campo label="Momento focal">
-            <Entrada value={momentoFocal} onChange={(e) => setMomentoFocal(e.target.value)} />
-          </Campo>
-          <Campo label="Valor objetivo en el momento focal" help="0 = equilibrio (entradas = salidas)">
-            <Entrada value={objetivo} onChange={(e) => setObjetivo(e.target.value)} />
-          </Campo>
+          {regimen !== "continuo" && (
+            <Campo label="Periodicidad de la tasa">
+              <Selector value={periodicidad} onChange={(e) => setPeriodicidad(e.target.value)} options={PERIODICIDADES.map((p) => ({ value: p.value, label: p.label }))} />
+            </Campo>
+          )}
+          {regimen !== "continuo" && periodicidad === "personalizada" && (
+            <Campo label="¿Cada cuántos meses?">
+              <Entrada value={nPersonalizado} onChange={(e) => setNPersonalizado(e.target.value)} placeholder="5" />
+            </Campo>
+          )}
           <Campo label="Incógnita">
             <Selector value={tipoIncognita} onChange={(e) => setTipoIncognita(e.target.value)}
               options={[{ value: "monto", label: "Valor de un flujo" }, { value: "momento", label: "Momento de un flujo" }, { value: "tasa", label: "Tasa de interés" }]} />
+          </Campo>
+          <Campo label="Momento focal — tiempo total">
+            <div style={{ display: "flex", gap: 8 }}>
+              <Entrada value={focalAnios} onChange={(e) => setFocalAnios(e.target.value)} placeholder="Años" />
+              <Entrada value={focalMeses} onChange={(e) => setFocalMeses(e.target.value)} placeholder="Meses" />
+            </div>
+          </Campo>
+          <Campo label="Valor objetivo en el momento focal" help="0 = equilibrio (entradas = salidas)">
+            <Entrada value={objetivo} onChange={(e) => setObjetivo(e.target.value)} />
           </Campo>
         </div>
       </Tarjeta>
 
       <Tarjeta style={{ marginBottom: 20 }}>
-        <Etiqueta>Flujos de dinero</Etiqueta>
+        <Etiqueta>Flujos de dinero (Valor Presente 1, Valor Presente 2, desembolsos, Valor Futuro...)</Etiqueta>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ textAlign: "left", color: C.slate, fontSize: 11.5, textTransform: "uppercase" }}>
-                <th style={{ padding: 6 }}>Descripción</th><th style={{ padding: 6 }}>Monto</th><th style={{ padding: 6 }}>Momento</th>
+                <th style={{ padding: 6 }}>Rol</th><th style={{ padding: 6 }}>Monto</th><th style={{ padding: 6 }}>Momento (años y meses)</th>
                 <th style={{ padding: 6 }}>Dirección</th><th style={{ padding: 6 }}>Coef. (×flujo)</th><th style={{ padding: 6 }}>¿Desconocido?</th><th />
               </tr>
             </thead>
             <tbody>
               {flujos.map((f) => (
                 <tr key={f.id} style={{ borderTop: `1px solid ${C.line}` }}>
-                  <td style={{ padding: 6 }}><Entrada value={f.descripcion} onChange={(e) => actualizar(f.id, "descripcion", e.target.value)} style={{ minWidth: 110 }} /></td>
+                  <td style={{ padding: 6 }}>
+                    <Selector value={f.rol} onChange={(e) => actualizar(f.id, "rol", e.target.value)} options={ROLES_FLUJO} style={{ ...selectStyle, minWidth: 170 }} />
+                    {f.rol === "otro" && (
+                      <Entrada value={f.descripcionPersonalizada} onChange={(e) => actualizar(f.id, "descripcionPersonalizada", e.target.value)} placeholder="Nombre del flujo" style={{ marginTop: 6, minWidth: 150 }} />
+                    )}
+                  </td>
                   <td style={{ padding: 6 }}>
                     {(tipoIncognita === "monto" && f.esIncognitaMonto) ? <span style={{ fontFamily: F_MONO, color: C.gold }}>{f.coeficiente}·X</span>
                       : <Entrada value={f.monto} onChange={(e) => actualizar(f.id, "monto", e.target.value)} style={{ minWidth: 100 }} />}
                   </td>
                   <td style={{ padding: 6 }}>
-                    {(tipoIncognita === "momento" && f.esIncognitaMomento) ? <span style={{ fontFamily: F_MONO, color: C.gold }}>?</span>
-                      : <Entrada value={f.momento} onChange={(e) => actualizar(f.id, "momento", e.target.value)} style={{ minWidth: 70 }} />}
+                    {(tipoIncognita === "momento" && f.esIncognitaMomento) ? <span style={{ fontFamily: F_MONO, color: C.gold }}>? años / ? meses</span>
+                      : (
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <Entrada value={f.anios} onChange={(e) => actualizar(f.id, "anios", e.target.value)} placeholder="Años" style={{ minWidth: 60 }} />
+                          <Entrada value={f.meses} onChange={(e) => actualizar(f.id, "meses", e.target.value)} placeholder="Meses" style={{ minWidth: 60 }} />
+                        </div>
+                      )}
                   </td>
                   <td style={{ padding: 6 }}>
                     <Selector value={f.direccion} onChange={(e) => actualizar(f.id, "direccion", e.target.value)} options={[{ value: "entrada", label: "Entrada ↑" }, { value: "salida", label: "Salida ↓" }]} style={{ ...selectStyle, minWidth: 100 }} />
@@ -1068,6 +1121,9 @@ onGuardarHistorial({
           </table>
         </div>
         <Boton small variant="outline" onClick={agregarFlujo} style={{ marginTop: 12 }}><Plus size={14} /> Agregar flujo</Boton>
+        <div style={{ marginTop: 10, fontSize: 12, color: C.slate }}>
+          Ingresa el momento de cada flujo en años y meses; la herramienta lo convierte automáticamente {regimen === "continuo" ? "a años decimales" : "al número de periodos según la periodicidad elegida arriba"}.
+        </div>
 
         {/* Línea de tiempo visual */}
         <div style={{ marginTop: 22, borderTop: `1px solid ${C.line}`, paddingTop: 18 }}>
@@ -1075,13 +1131,13 @@ onGuardarHistorial({
           <div style={{ position: "relative", height: 70, background: C.paper, borderRadius: 8 }}>
             <div style={{ position: "absolute", left: 20, right: 20, top: 35, height: 2, background: C.line }} />
             {flujos.map((f) => {
-              const m = parseFloat(f.momento) || 0;
+              const m = momentoParaTimeline(f);
               const pct = 20 + (m / maxMomento) * 60;
               const esIn = f.direccion === "entrada";
               return (
-                <div key={f.id} title={`${f.descripcion || "Flujo"} · momento ${m}`} style={{ position: "absolute", left: `${pct}%`, top: esIn ? 6 : 38, transform: "translateX(-50%)", textAlign: "center" }}>
+                <div key={f.id} title={`${etiquetaRol(f)} · ${f.anios} años y ${f.meses} meses`} style={{ position: "absolute", left: `${pct}%`, top: esIn ? 6 : 38, transform: "translateX(-50%)", textAlign: "center" }}>
                   {esIn ? <ArrowUp size={16} color={C.success} /> : <ArrowDown size={16} color={C.danger} />}
-                  <div style={{ fontSize: 10, color: C.slate, whiteSpace: "nowrap" }}>{m}</div>
+                  <div style={{ fontSize: 9.5, color: C.slate, whiteSpace: "nowrap" }}>{etiquetaRol(f)}</div>
                 </div>
               );
             })}
@@ -1094,21 +1150,28 @@ onGuardarHistorial({
 
       {resultado && (
         <Tarjeta style={{ marginTop: 20 }}>
-          <Etiqueta>Resultado</Etiqueta>
+          <Etiqueta>Resultado{resultado.etiquetaIncognita ? ` — ${resultado.etiquetaIncognita}` : ""}</Etiqueta>
           <div style={{ fontFamily: F_MONO, fontSize: 28, color: C.navy, fontWeight: 700, marginBottom: 8 }}>
             {resultado.tipo === "monto" && formatCurrencyCO(resultado.valor, moneda)}
-            {resultado.tipo === "momento" && `${formatNumberCO(resultado.valor, 2, 4)} (unidad del régimen)`}
+            {resultado.tipo === "momento" && (resultado.regimen === "continuo" ? `${formatNumberCO(resultado.valor, 2, 4)} años` : `${formatNumberCO(resultado.valor, 2, 4)} periodos`)}
             {resultado.tipo === "tasa" && formatPercentCO(resultado.valor, 4)}
           </div>
-          <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Momento focal utilizado: {resultado.focal}</div>
+          {resultado.tipo === "momento" && resultado.equivalencia && (
+            <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>
+              Equivalencia: {resultado.equivalencia.anios} años y {formatNumberCO(resultado.equivalencia.meses, 1, 2)} meses
+            </div>
+          )}
+          <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>
+            Momento focal utilizado: {focalAnios} años y {focalMeses} meses ({formatNumberCO(resultado.focal, 2, 4)} {resultado.regimen === "continuo" ? "años" : "periodos"})
+          </div>
           <Verificacion ok={resultado.verifOk} residual={resultado.residual} />
           <Acordeon title="Ver procedimiento completo">
             <FichaProcedimiento pasos={[
               { label: "Régimen", content: resultado.regimen },
-              { label: "Momento focal", content: String(resultado.focal) },
+              ...resultado.pasosConversion,
               { label: "Ecuación de valor", content: "Σ(entradas trasladadas) − Σ(salidas trasladadas) = Objetivo" },
               { label: "Objetivo", content: String(resultado.target) },
-              { label: "Incógnita", content: resultado.tipo === "monto" ? "Valor de flujo" : resultado.tipo === "momento" ? "Momento de flujo" : "Tasa" },
+              { label: "Incógnita", content: resultado.etiquetaIncognita || (resultado.tipo === "tasa" ? "Tasa de interés" : "—") },
               { label: "Resultado sin redondear", content: String(resultado.valor) },
               { label: "Comprobación final", content: `Residual = ${resultado.residual.toExponential(3)}` },
             ]} />
@@ -1121,57 +1184,66 @@ onGuardarHistorial({
 
 /* ============================================================
    SIMULAR — CONTENEDOR + HISTORIAL
+   (Un único sistema de historial, persistido en localStorage,
+   compartido entre el modo básico y el modo avanzado.)
    ============================================================ */
 function Simular({ moneda }) {
   const [modo, setModo] = useState("basico");
   const [historial, setHistorial] = useState([]);
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
 
- const cargar = useCallback(() => {
-  try {
-    const raw = localStorage.getItem("numeris_historial");
-    const datos = raw ? JSON.parse(raw) : [];
-    setHistorial(Array.isArray(datos) ? datos : []);
-  } catch (error) {
-    console.error("Error cargando historial:", error);
+  const cargar = useCallback(async () => {
+    const datos = await cargarHistorial();
+    setHistorial(datos);
+  }, []);
+
+  useEffect(() => { cargar(); }, [cargar]);
+
+  async function guardar(entry) {
+    await guardarHistorial(entry);
+    cargar();
+  }
+
+  async function limpiar() {
+    await borrarHistorial();
     setHistorial([]);
   }
-}, []);
 
-useEffect(() => {
-  cargar();
-}, [cargar]);
+  return (
+    <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
+      <Etiqueta>Simulación</Etiqueta>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
+        <h1 style={{ fontFamily: F_DISPLAY, fontSize: 30, color: C.navy, margin: 0 }}>Simulador</h1>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Boton small variant={modo === "basico" ? "gold" : "outline"} onClick={() => setModo("basico")}>Modo básico</Boton>
+          <Boton small variant={modo === "avanzado" ? "gold" : "outline"} onClick={() => setModo("avanzado")}>Modo avanzado (varios flujos)</Boton>
+          <Boton small variant="ghost" onClick={() => setMostrarHistorial((v) => !v)}>{mostrarHistorial ? "Ocultar historial" : "Ver historial"}</Boton>
+        </div>
+      </div>
 
-function guardar(entry) {
-  try {
-    const actual = JSON.parse(localStorage.getItem("numeris_historial") || "[]");
+      {mostrarHistorial && (
+        <Tarjeta style={{ marginBottom: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <Etiqueta>Historial (guardado en este navegador)</Etiqueta>
+            {historial.length > 0 && <Boton small variant="danger" onClick={limpiar}><RotateCcw size={13} /> Borrar historial</Boton>}
+          </div>
+          {historial.length === 0 ? (
+            <div style={{ fontSize: 13, color: C.slate }}>Aún no hay cálculos guardados.</div>
+          ) : (
+            <div style={{ display: "grid", gap: 8 }}>
+              {historial.map((h) => (
+                <div key={h.id} style={{ fontSize: 12.5, color: C.ink, borderBottom: `1px solid ${C.line}`, paddingBottom: 6 }}>
+                  <span style={{ color: C.slate }}>{new Date(h.fecha).toLocaleString("es-CO")}</span> · {h.tipo === "avanzado" ? "Modo avanzado" : "Modo básico"} · {h.regimen} · <strong>{formatearResultadoHistorial(h)}</strong>
+                </div>
+              ))}
+            </div>
+          )}
+        </Tarjeta>
+      )}
 
-    const nuevo = {
-      id: Date.now(),
-      fecha: new Date().toISOString(),
-      ...entry,
-    };
-
-    const actualizado = [nuevo, ...actual].slice(0, 30);
-
-    localStorage.setItem(
-      "numeris_historial",
-      JSON.stringify(actualizado)
-    );
-
-    setHistorial(actualizado);
-  } catch (error) {
-    console.error("Error guardando historial:", error);
-  }
-}
-
-function limpiar() {
-  try {
-    localStorage.removeItem("numeris_historial");
-    setHistorial([]);
-  } catch (error) {
-    console.error("Error borrando historial:", error);
-  }
+      {modo === "basico" ? <SimularBasico moneda={moneda} onGuardarHistorial={guardar} /> : <SimularAvanzado moneda={moneda} onGuardarHistorial={guardar} />}
+    </Section>
+  );
 }
 
 /* ============================================================
