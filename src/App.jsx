@@ -1925,7 +1925,7 @@ export default function App() {
       <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 20 }}>
         <Section style={{ padding: "22px 20px", fontSize: 11.5, color: C.slate, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
           <span>Numeris · Proyecto académico · Matemáticas Financieras · Primer Corte 2026-2</span>
-          <span>Desarrollado con asistencia de Replit Agent y herramientas de inteligencia artificial.</span>
+          <span>Desarrollado con asistencia de Replit Agent ChatGPT Business y Cloude </span>
         </Section>
       </div>
     </div>
