@@ -512,7 +512,55 @@ function BloqueRegimen({ nombre, formula, despejes, sencilla, usoCasos, diferenc
     </div>
   );
 }
+function BloqueTemaNuevo({
+  queEs,
+  importancia,
+  formula,
+  variables,
+  ejemplo,
+  diferencia,
+  errorComun
+}) {
+  return (
+    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
+      <h3 style={{ color: C.navy }}>¿Qué es?</h3>
+      <p>{queEs}</p>
+
+      <h3 style={{ color: C.navy }}>¿Por qué es importante?</h3>
+      <p>{importancia}</p>
+
+      <h3 style={{ color: C.navy }}>Fórmula</h3>
+      <div style={{
+        fontFamily: F_MONO,
+        background: C.paper,
+        padding: 14,
+        borderRadius: 8
+      }}>
+        {formula}
+      </div>
+
+      <h3 style={{ color: C.navy }}>Variables</h3>
+      <p>{variables}</p>
+
+      <h3 style={{ color: C.navy }}>Ejemplo práctico</h3>
+      <p>{ejemplo}</p>
+
+      <h3 style={{ color: C.navy }}>Diferencia importante</h3>
+      <p>{diferencia}</p>
+
+      <div style={{
+        marginTop: 12,
+        padding: 12,
+        background: `${C.gold}1a`,
+        borderRadius: 8
+      }}>
+        <strong>Error común:</strong> {errorComun}
+      </div>
+
+    </div>
+  );
+}
 function Aprender() {
   return (
     <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
@@ -578,10 +626,31 @@ function Aprender() {
           ]}
         />
       </Acordeon>
+<Acordeon title="4 · Conversión de tasas">
 
+<BloqueTemaNuevo
+
+queEs="La conversión de tasas permite expresar una misma tasa financiera de otra manera. Por ejemplo, una tasa nominal anual puede convertirse en una tasa mensual equivalente."
+
+importancia="Es importante porque los bancos pueden presentar tasas diferentes que representan el mismo comportamiento financiero."
+
+formula="ip = NA / nc"
+
+variables="NA = tasa nominal anual. ip = tasa periódica. nc = número de capitalizaciones en un año."
+
+ejemplo="Una tasa del 24% NAM significa 24% nominal anual con capitalización mensual. Para encontrar la tasa mensual: 24% / 12 = 2% mensual."
+
+diferencia="Una tasa nominal es una forma de expresar una tasa, mientras que una tasa efectiva representa el resultado real después de la capitalización."
+
+errorComun="Comparar dos tasas solo mirando el porcentaje sin revisar su periodicidad."
+
+/>
+
+</Acordeon>
       <div style={{ marginTop: 18, padding: 16, background: C.paperDark, borderRadius: 8, fontSize: 13, color: C.slate }}>
         <strong style={{ color: C.navy }}>Notación:</strong> para interés simple y compuesto usamos <em>i</em> (tasa por periodo) y <em>n</em> (número de periodos). Para interés continuo usamos <em>r</em> (tasa continua) y <em>t</em> (tiempo en años). Nunca usamos una "T" aislada: siempre indicamos "Momento del flujo" con su unidad explícita.
       </div>
+      
     </Section>
   );
 }
