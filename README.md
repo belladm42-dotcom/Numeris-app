@@ -1,6 +1,6 @@
 # Numeris — Educación y simulación financiera
 
-Proyecto académico · Matemáticas Financieras · Primer Corte 2026-2
+Proyecto académico · Matemáticas Financieras · 2026-2
 
 ## Publicar en 5 minutos (gratis, sin backend)
 
