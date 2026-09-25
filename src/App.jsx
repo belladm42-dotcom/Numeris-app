@@ -515,13 +515,15 @@ function BloqueRegimen({ nombre, formula, despejes, sencilla, usoCasos, diferenc
 function BloqueTemaNuevo({
   nivel5,
   queEs,
-  importancia,
   funcionamiento,
+  importancia,
   formula,
   variables,
-  ejemplo,
+  ejemploTitulo,
+  ejemploPasos,
   diferencia,
-  errorComun
+  errorComun,
+  conceptosRelacionados
 }) {
   return (
     <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
@@ -563,9 +565,41 @@ function BloqueTemaNuevo({
 
       <h3 style={{ color: C.navy }}>Variables</h3>
       <p>{variables}</p>
+      
+<h3 style={{ color: C.navy }}>Ejemplo práctico resuelto</h3>
 
-      <h3 style={{ color: C.navy }}>Ejemplo práctico resuelto</h3>
-      <p>{ejemplo}</p>
+<div style={{
+  background: "#F8F5EE",
+  border: `1px solid ${C.line}`,
+  borderRadius: 10,
+  padding: 16
+}}>
+
+  <div style={{
+    fontWeight: 700,
+    color: C.navy,
+    marginBottom: 12
+  }}>
+    {ejemploTitulo}
+  </div>
+
+  {ejemploPasos.map((paso, index) => (
+    <div 
+      key={index}
+      style={{
+        background: C.white,
+        marginBottom: 8,
+        padding: 10,
+        borderRadius: 6,
+        fontFamily: index > 0 ? F_MONO : F_BODY,
+        color: C.ink
+      }}
+    >
+      {paso}
+    </div>
+  ))}
+
+</div>
 
       <h3 style={{ color: C.navy }}>Diferencia importante</h3>
       <p>{diferencia}</p>
@@ -662,7 +696,23 @@ formula="ip = NA / nc"
 
 variables="NA = tasa nominal anual. ip = tasa periódica de cada periodo. nc = número de veces que ocurre ese periodo durante un año."
 
-ejemplo="Un banco ofrece un crédito con una tasa de 24% NAM (Nominal Anual con capitalización mensual). Como un año tiene 12 meses, dividimos: 24% / 12 = 2% mensual. Esto significa que cada mes se aplica una tasa del 2%."
+ejemploTitulo="Crédito de vivienda con tasa 12% NAM"
+
+ejemploPasos={[
+"1. Datos: Tasa nominal anual = 12% NAM (capitalización mensual).",
+
+"2. Identificamos la cantidad de periodos: nc = 12 meses por año.",
+
+"3. Convertimos la tasa anual a mensual:",
+
+"ip = NA / nc",
+
+"ip = 12% / 12",
+
+"ip = 1% mensual",
+
+"4. Interpretación: cada mes se aplica aproximadamente una tasa del 1% sobre el saldo del crédito."
+]}
 
 diferencia="Una tasa nominal es una forma de presentar una tasa, mientras que una tasa efectiva muestra el efecto real del dinero después de considerar la forma en que se aplican los intereses."
 
