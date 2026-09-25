@@ -513,10 +513,10 @@ function BloqueRegimen({ nombre, formula, despejes, sencilla, usoCasos, diferenc
   );
 }
 function BloqueTemaNuevo({
-  function BloqueTemaNuevo({
   nivel5,
   queEs,
   importancia,
+  funcionamiento,
   formula,
   variables,
   ejemplo,
@@ -525,30 +525,28 @@ function BloqueTemaNuevo({
 }) {
   return (
     <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
-<h3 style={{ color: C.navy }}>Nivel 5 años</h3>
-<p>
-  Cambiar una tasa de forma es como cambiar una medida de centímetros a metros.
-  La cantidad sigue siendo la misma, pero la estamos expresando de otra manera.
-  Con las tasas pasa algo parecido: una tasa mensual y una tasa anual pueden representar
-  el mismo crecimiento del dinero, pero están escritas con diferentes unidades de tiempo.
-</p>
-      <div style={{
-  background: C.paperDark,
-  padding: "12px 14px",
-  borderRadius: 8,
-  marginBottom: 16,
-  color: C.navy,
-  fontWeight: 600,
-  display: "flex",
-  alignItems: "center",
-  gap: 8
-}}>
-  🧸 <span>Nivel 5 años</span>
-</div>
 
-<p>{nivel5}</p>
+      <div style={{
+        background: C.paperDark,
+        padding: "12px 14px",
+        borderRadius: 8,
+        marginBottom: 16,
+        color: C.navy,
+        fontWeight: 600,
+        display: "flex",
+        alignItems: "center",
+        gap: 8
+      }}>
+        🧸 <span>Nivel 5 años</span>
+      </div>
+
+      <p>{nivel5}</p>
+
       <h3 style={{ color: C.navy }}>¿Qué es?</h3>
       <p>{queEs}</p>
+
+      <h3 style={{ color: C.navy }}>¿Cómo funciona?</h3>
+      <p>{funcionamiento}</p>
 
       <h3 style={{ color: C.navy }}>¿Por qué es importante?</h3>
       <p>{importancia}</p>
@@ -566,7 +564,7 @@ function BloqueTemaNuevo({
       <h3 style={{ color: C.navy }}>Variables</h3>
       <p>{variables}</p>
 
-      <h3 style={{ color: C.navy }}>Ejemplo práctico</h3>
+      <h3 style={{ color: C.navy }}>Ejemplo práctico resuelto</h3>
       <p>{ejemplo}</p>
 
       <h3 style={{ color: C.navy }}>Diferencia importante</h3>
@@ -578,7 +576,7 @@ function BloqueTemaNuevo({
         background: `${C.gold}1a`,
         borderRadius: 8
       }}>
-        <strong>Error común:</strong> {errorComun}
+        <strong>⚠️ Error común:</strong> {errorComun}
       </div>
 
     </div>
@@ -660,7 +658,6 @@ queEs="La conversión de tasas es cambiar una tasa de una forma a otra sin cambi
 importancia="Los bancos pueden mostrar tasas de diferentes maneras. Si queremos comparar dos opciones de crédito o inversión, primero debemos expresar las tasas en la misma forma para saber cuál realmente cuesta más o genera más dinero."
 
 funcionamiento="Primero observamos cómo está escrita la tasa: si está en años, meses, si es nominal, efectiva, anticipada o vencida. Después realizamos los pasos matemáticos necesarios para convertirla a la forma que necesitamos."
-
 formula="ip = NA / nc"
 
 variables="NA = tasa nominal anual. ip = tasa periódica de cada periodo. nc = número de veces que ocurre ese periodo durante un año."
