@@ -651,7 +651,7 @@ function Aprender() {
 
 <BloqueTemaNuevo
 
-nivel5="Imagina que tienes una caja con juguetes. Tu mamá puede contar tus juguetes diciendo que tienes cierta cantidad en un año, pero tú también puedes querer saber cuántos tienes en cada mes. Los juguetes siguen siendo los mismos, solamente estamos cambiando la forma de contarlos. Con las tasas pasa algo parecido: el dinero sigue creciendo de la misma manera, pero cambiamos la forma de expresar ese crecimiento."
+nivel5="🧸 Imagina que tienes una alcancía mágica. Cada día aparecen monedas nuevas, pero alguien puede preguntarte: ¿cuántas monedas aparecen en un día?, ¿en una semana? o ¿en un mes? La cantidad de monedas es la misma, solo estamos cambiando la forma de contar el tiempo. Las tasas funcionan igual: nos dicen cómo cambia el dinero, pero debemos expresarlas en el mismo periodo para poder compararlas."
 
 queEs="La conversión de tasas es cambiar una tasa de una forma a otra sin cambiar su verdadero valor financiero. Por ejemplo, una tasa puede estar expresada en años y podemos transformarla para saber cuánto corresponde en meses."
 
