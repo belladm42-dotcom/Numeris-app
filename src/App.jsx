@@ -166,15 +166,48 @@ const GLOSARIO = [
   { t: "r", d: "Tasa usada en interés continuo." },
   { t: "t", d: "Tiempo expresado siempre en años, usado en interés continuo." },
   { t: "Capital", d: "Monto de dinero sobre el cual se calculan los intereses." },
-  { t: "Interés", d: "Costo o rendimiento del dinero en el tiempo." },
-  { t: "Periodo", d: "Intervalo de tiempo al que corresponde la tasa (mes, bimestre, trimestre...)." },
+  { t: "Interés", d: "Costo o rendimiento del dinero en el tiempo. Es el dinero extra que se gana o que se paga por usar un dinero durante un tiempo." },
+  { t: "Periodo", d: "Es el tiempo que usamos para contar una tasa. Puede ser un mes, tres meses, seis meses, un año, etc" },
   { t: "Flujo", d: "Movimiento de dinero (entrada o salida) en un momento determinado." },
   { t: "Momento", d: "Instante en el tiempo en que ocurre un flujo, medido en periodos o años." },
   { t: "Momento focal", d: "Instante elegido para comparar varios flujos que ocurren en momentos distintos." },
   { t: "Ecuación de valor", d: "Igualdad que resulta de trasladar todos los flujos a un mismo momento focal." },
   { t: "Coeficiente", d: "Relación proporcional entre el valor de un flujo y otro (ej. Flujo 2 = 1,4 × Flujo 1)." },
-  { t: "Capitalización", d: "Trasladar un valor hacia el futuro sumando los intereses generados." },
   { t: "Descuento", d: "Trasladar un valor hacia el pasado, restando el efecto del interés." },
+  t: "Tasa nominal", 
+  d: "Es una forma de escribir una tasa diciendo cuánto cambia el dinero durante un año. Nos ayuda a saber cómo está organizada una tasa, pero todavía no nos dice exactamente cuánto cambia el dinero."
+},
+
+{ 
+  t: "Tasa efectiva", 
+  d: "Es la tasa que nos muestra cuánto cambió realmente el dinero después de sumar los intereses."
+},
+
+{ 
+  t: "Tasa periódica", 
+  d: "Es la parte de la tasa que usamos en cada momento. Por ejemplo, si una tasa es mensual, la tasa periódica nos dice cuánto cambia el dinero cada mes."
+},
+
+{ 
+  t: "Tasa equivalente", 
+  d: "Son dos tasas diferentes que parecen distintas, pero al final hacen que el dinero crezca o cueste lo mismo."
+},
+
+{ 
+  t: "Tasa vencida", 
+  d: "Es cuando primero pasa el tiempo y después se paga el interés."
+},
+
+{ 
+  t: "Tasa anticipada", 
+  d: "Es cuando primero se paga o se descuenta el interés y después pasa el tiempo."
+},
+
+{ 
+  t: "Capitalización", 
+  d: "Es cuando los intereses se juntan con el dinero que ya teníamos y empiezan a generar más intereses."
+},
+  
 ];
 
 const EJEMPLOS = {
@@ -622,7 +655,8 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
       <Acordeon title="2 · ¿Qué es una tasa nominal?">
         <p><strong>¿Qué es?</strong> La tasa nominal es como el precio que ves pegado en la vitrina de una tienda: te da una idea, pero no es exactamente lo que vas a pagar al final. Es un número de referencia, no el número real.</p>
         <p style={{ color: C.slate }}><strong>¿Cuándo se usa?</strong> Los bancos casi siempre te muestran primero la tasa nominal, porque el número se ve más chiquito y más bonito. Pero ojo: no es lo que de verdad te va a costar o a rendir el dinero.</p>
-      </Acordeon>
+        <p> <strong>¿Por qué existe?</strong> Las entidades financieras la utilizan porque permite comunicar fácilmente las condiciones de un crédito o una inversión.</p>
+  </Acordeon>
 
       {/* SECCIÓN 3 */}
       <Acordeon title="3 · Pasar de nominal a periódica (repartir la tasa)">
@@ -631,7 +665,7 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
         <p><strong>NA:</strong> la tasa de todo el año. <strong>nc:</strong> en cuántos pedacitos la vamos a repartir (12 si es mensual, 4 si es trimestral...). <strong>ip:</strong> lo que le toca a cada pedacito.</p>
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
-          <p>María pide un crédito y el banco le dice: "24% NAM". Eso quiere decir 24% en todo el año, pero cobrado cada mes. Como el crédito se cobra mes a mes, necesitamos saber cuánto es "el pedacito" de cada mes.</p>
+          <p>María quiere comprar un apartamento y solicita un crédito de vivienda en un banco colombiano. El banco le informa que la tasa es 24% NAM. Eso quiere decir 24% en todo el año, pero cobrado cada mes. Como el crédito se cobra mes a mes, necesitamos saber cuánto es "el pedacito" de cada mes.</p>
           <Acordeon title="Ver procedimiento completo">
             <FichaProcedimiento pasos={[
               { label: "Datos", content: "NA = 24 % (todo el año) · nc = 12 (se reparte en 12 meses)" },
@@ -651,7 +685,7 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
         <p><strong>ip:</strong> el pedacito (por ejemplo, de un mes). <strong>nc:</strong> cuántos pedacitos hay en el año. <strong>NA:</strong> la torta completa del año.</p>
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
-          <p>Una cuenta de ahorros te da un pedacito de 1% cada mes.</p>
+          <p>Carlos tiene un ahorro programado en una entidad financiera y recibe una rentabilidad del 1% mensual (un pedacito de 1% cada mes). Quiere saber cómo expresar esa tasa de manera anual.</p>
           <Acordeon title="Ver procedimiento completo">
             <FichaProcedimiento pasos={[
               { label: "Datos", content: "ip = 1 % cada mes · nc = 12 meses en el año" },
@@ -667,6 +701,9 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
       {/* SECCIÓN 5 */}
       <Acordeon title="5 · ¿Qué es una tasa efectiva?">
         <p><strong>¿Qué es?</strong> La tasa efectiva es el número de VERDAD. Te dice exactamente cuánto creció o cuánto costó el dinero, contando todos los intereses que generaron más intereses. No es una idea aproximada, es lo real.</p>
+        <p style={{marginTop:12}}> 
+  <strong>¿Cuándo se usa?</strong> Se usa cuando necesitas saber el costo real de un crédito o la ganancia verdadera de una inversión, ya que calcula cómo se van sumando los intereses a lo largo del tiempo. 
+</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 10 }}>
           <TarjetaMini titulo="Nominal">Es el precio de la vitrina. Da una idea, pero no es el número final.</TarjetaMini>
           <TarjetaMini titulo="Efectiva">Es lo que pagas de verdad en la caja. El número real.</TarjetaMini>
@@ -695,7 +732,7 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
 
       {/* SECCIÓN 7 */}
       <Acordeon title="7 · Capitalización (cuando el interés hace más interés)">
-        <p>Capitalizar es como una alcancía mágica: metes moneditas, y esas moneditas hacen que aparezcan moneditas nuevas. Después, esas moneditas nuevas también hacen aparecer más moneditas. Y así.</p>
+        <p> Capitalizar significa que los intereses obtenidos se suman al dinero inicial. Después, ese nuevo valor puede generar nuevos intereses en los siguientes periodos, o en otras palabras: Capitalizar es como una alcancía mágica: metes moneditas, y esas moneditas hacen que aparezcan moneditas nuevas. Después, esas moneditas nuevas también hacen aparecer más moneditas. Y así.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
           <TarjetaMini titulo="Mensual">La alcancía mágica hace moneditas nuevas 12 veces al año (una vez por mes).</TarjetaMini>
           <TarjetaMini titulo="Trimestral">La alcancía mágica hace moneditas nuevas 4 veces al año (cada tres meses).</TarjetaMini>
@@ -777,7 +814,7 @@ function Aprender() {
   return (
     <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
       <Etiqueta>Educación financiera</Etiqueta>
-      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 32, color: C.navy, margin: "0 0 26px" }}>Los tres regímenes de interés</h1>
+      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 32, color: C.navy, margin: "0 0 26px" }}>Conceptos financieros fundamentales</h1>
 
       <Acordeon title="1 · Interés simple" defaultOpen>
         <BloqueRegimen
