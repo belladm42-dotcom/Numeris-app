@@ -158,7 +158,8 @@ const PERIODICIDADES = [
   { value: "personalizada", label: "Cada N meses", meses: null },
 ];
 
-const GLOSARIO = [
+const GLOSARIO = 
+  [
   { t: "VP", d: "Valor Presente: dinero equivalente en el momento inicial." },
   { t: "VF", d: "Valor Futuro: valor que tendrá o tendría una cantidad en un momento futuro." },
   { t: "i", d: "Tasa de interés por periodo, usada en interés simple y compuesto." },
@@ -173,41 +174,14 @@ const GLOSARIO = [
   { t: "Momento focal", d: "Instante elegido para comparar varios flujos que ocurren en momentos distintos." },
   { t: "Ecuación de valor", d: "Igualdad que resulta de trasladar todos los flujos a un mismo momento focal." },
   { t: "Coeficiente", d: "Relación proporcional entre el valor de un flujo y otro (ej. Flujo 2 = 1,4 × Flujo 1)." },
-  { t: "Descuento", d: "Trasladar un valor hacia el pasado, restando el efecto del interés." },
-  t: "Tasa nominal", 
-  d: "Es una forma de escribir una tasa diciendo cuánto cambia el dinero durante un año. Nos ayuda a saber cómo está organizada una tasa, pero todavía no nos dice exactamente cuánto cambia el dinero."
-},
-
-{ 
-  t: "Tasa efectiva", 
-  d: "Es la tasa que nos muestra cuánto cambió realmente el dinero después de sumar los intereses."
-},
-
-{ 
-  t: "Tasa periódica", 
-  d: "Es la parte de la tasa que usamos en cada momento. Por ejemplo, si una tasa es mensual, la tasa periódica nos dice cuánto cambia el dinero cada mes."
-},
-
-{ 
-  t: "Tasa equivalente", 
-  d: "Son dos tasas diferentes que parecen distintas, pero al final hacen que el dinero crezca o cueste lo mismo."
-},
-
-{ 
-  t: "Tasa vencida", 
-  d: "Es cuando primero pasa el tiempo y después se paga el interés."
-},
-
-{ 
-  t: "Tasa anticipada", 
-  d: "Es cuando primero se paga o se descuenta el interés y después pasa el tiempo."
-},
-
-{ 
-  t: "Capitalización", 
-  d: "Es cuando los intereses se juntan con el dinero que ya teníamos y empiezan a generar más intereses."
-},
-  
+  { t: "Descuento", d: "Es cuando llevamos un valor del futuro hacia el presente, teniendo en cuenta el efecto del interés." },
+  { t: "Tasa nominal", d: "Es una forma de escribir una tasa diciendo cómo cambia el dinero durante un año." },
+  { t: "Tasa efectiva", d: "Es la tasa que muestra cuánto cambió realmente el dinero después de sumar los intereses." },
+  { t: "Tasa periódica", d: "Es la tasa que usamos en cada momento. Por ejemplo, una tasa mensual muestra cuánto cambia el dinero cada mes."},
+  { t: "Tasa equivalente", d: "Son tasas diferentes que al final hacen que el dinero crezca o cueste lo mismo." },
+  { t: "Tasa vencida", d: "Es cuando primero pasa el tiempo y después se paga el interés." },
+  { t: "Tasa anticipada", d: "Es cuando primero se paga o se descuenta el interés y después pasa el tiempo." },
+  { t: "Capitalización", d: "Es cuando los intereses se unen al dinero que ya teníamos y después pueden generar más intereses." },
 ];
 
 const EJEMPLOS = {
