@@ -651,7 +651,7 @@ function Aprender() {
 
 <BloqueTemaNuevo
 
-nivel5="🧸 Imagina que tienes una alcancía mágica. Cada día aparecen monedas nuevas, pero alguien puede preguntarte: ¿cuántas monedas aparecen en un día?, ¿en una semana? o ¿en un mes? La cantidad de monedas es la misma, solo estamos cambiando la forma de contar el tiempo. Las tasas funcionan igual: nos dicen cómo cambia el dinero, pero debemos expresarlas en el mismo periodo para poder compararlas."
+nivel5=" Imagina que tienes una alcancía mágica. Cada día aparecen monedas nuevas, pero alguien puede preguntarte: ¿cuántas monedas aparecen en un día?, ¿en una semana? o ¿en un mes? La cantidad de monedas es la misma, solo estamos cambiando la forma de contar el tiempo. Las tasas funcionan igual: nos dicen cómo cambia el dinero, pero debemos expresarlas en el mismo periodo para poder compararlas."
 
 queEs="La conversión de tasas es cambiar una tasa de una forma a otra sin cambiar su verdadero valor financiero. Por ejemplo, una tasa puede estar expresada en años y podemos transformarla para saber cuánto corresponde en meses."
 
