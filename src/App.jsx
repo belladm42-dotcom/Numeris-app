@@ -523,7 +523,13 @@ function BloqueTemaNuevo({
 }) {
   return (
     <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
-
+<h3 style={{ color: C.navy }}>Nivel 5 años</h3>
+<p>
+  Cambiar una tasa de forma es como cambiar una medida de centímetros a metros.
+  La cantidad sigue siendo la misma, pero la estamos expresando de otra manera.
+  Con las tasas pasa algo parecido: una tasa mensual y una tasa anual pueden representar
+  el mismo crecimiento del dinero, pero están escritas con diferentes unidades de tiempo.
+</p>
       <h3 style={{ color: C.navy }}>¿Qué es?</h3>
       <p>{queEs}</p>
 
@@ -630,19 +636,21 @@ function Aprender() {
 
 <BloqueTemaNuevo
 
-queEs="La conversión de tasas permite expresar una misma tasa financiera de otra manera. Por ejemplo, una tasa nominal anual puede convertirse en una tasa mensual equivalente."
+queEs="Imagina que dos personas te dicen cuánto crece su dinero, pero una habla en meses y otra en años. Aunque usen números diferentes, pueden estar hablando del mismo crecimiento. La conversión de tasas sirve para cambiar la forma de expresar una tasa sin cambiar su verdadero valor financiero."
 
-importancia="Es importante porque los bancos pueden presentar tasas diferentes que representan el mismo comportamiento financiero."
+importancia="Las entidades financieras pueden mostrar las tasas de diferentes maneras. Por eso no podemos decidir cuál tasa es mejor solamente mirando el porcentaje. Primero debemos convertirlas a una misma forma para poder compararlas correctamente."
 
 formula="ip = NA / nc"
 
-variables="NA = tasa nominal anual. ip = tasa periódica. nc = número de capitalizaciones en un año."
+variables="NA = tasa nominal anual (la forma en que se anuncia la tasa). ip = tasa periódica (la tasa de cada periodo). nc = cantidad de veces que la tasa se aplica en un año."
 
-ejemplo="Una tasa del 24% NAM significa 24% nominal anual con capitalización mensual. Para encontrar la tasa mensual: 24% / 12 = 2% mensual."
+ejemplo="Un banco ofrece un crédito con una tasa de 24% NAM (Nominal Anual con capitalización mensual). Esto significa que el 24% se reparte durante los 12 meses del año. Para saber cuánto corresponde cada mes hacemos: 24% / 12 = 2% mensual. Por lo tanto, cada mes la tasa aplicada es del 2%."
 
-diferencia="Una tasa nominal es una forma de expresar una tasa, mientras que una tasa efectiva representa el resultado real después de la capitalización."
+diferencia="Una tasa nominal es como una forma de anunciar una tasa, pero no muestra directamente cuánto crece o cuesta el dinero. Una tasa efectiva muestra el resultado real teniendo en cuenta cómo se acumulan los intereses. Por eso ambas tasas pueden tener porcentajes diferentes aunque representen la misma operación financiera."
 
-errorComun="Comparar dos tasas solo mirando el porcentaje sin revisar su periodicidad."
+errorComun="Pensar que una tasa del 24% siempre es igual a otra tasa del 24%. La capitalización y el momento del pago pueden cambiar completamente el resultado."
+
+/>
 
 />
 
