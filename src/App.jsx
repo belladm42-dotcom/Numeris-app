@@ -513,6 +513,8 @@ function BloqueRegimen({ nombre, formula, despejes, sencilla, usoCasos, diferenc
   );
 }
 function BloqueTemaNuevo({
+  function BloqueTemaNuevo({
+  nivel5,
   queEs,
   importancia,
   formula,
@@ -530,6 +532,21 @@ function BloqueTemaNuevo({
   Con las tasas pasa algo parecido: una tasa mensual y una tasa anual pueden representar
   el mismo crecimiento del dinero, pero están escritas con diferentes unidades de tiempo.
 </p>
+      <div style={{
+  background: C.paperDark,
+  padding: "12px 14px",
+  borderRadius: 8,
+  marginBottom: 16,
+  color: C.navy,
+  fontWeight: 600,
+  display: "flex",
+  alignItems: "center",
+  gap: 8
+}}>
+  🧸 <span>Nivel 5 años</span>
+</div>
+
+<p>{nivel5}</p>
       <h3 style={{ color: C.navy }}>¿Qué es?</h3>
       <p>{queEs}</p>
 
@@ -636,23 +653,27 @@ function Aprender() {
 
 <BloqueTemaNuevo
 
-queEs="Imagina que dos personas te dicen cuánto crece su dinero, pero una habla en meses y otra en años. Aunque usen números diferentes, pueden estar hablando del mismo crecimiento. La conversión de tasas sirve para cambiar la forma de expresar una tasa sin cambiar su verdadero valor financiero."
+nivel5="Imagina que tienes una caja con juguetes. Tu mamá puede contar tus juguetes diciendo que tienes cierta cantidad en un año, pero tú también puedes querer saber cuántos tienes en cada mes. Los juguetes siguen siendo los mismos, solamente estamos cambiando la forma de contarlos. Con las tasas pasa algo parecido: el dinero sigue creciendo de la misma manera, pero cambiamos la forma de expresar ese crecimiento."
 
-importancia="Las entidades financieras pueden mostrar las tasas de diferentes maneras. Por eso no podemos decidir cuál tasa es mejor solamente mirando el porcentaje. Primero debemos convertirlas a una misma forma para poder compararlas correctamente."
+queEs="La conversión de tasas es cambiar una tasa de una forma a otra sin cambiar su verdadero valor financiero. Por ejemplo, una tasa puede estar expresada en años y podemos transformarla para saber cuánto corresponde en meses."
+
+importancia="Los bancos pueden mostrar tasas de diferentes maneras. Si queremos comparar dos opciones de crédito o inversión, primero debemos expresar las tasas en la misma forma para saber cuál realmente cuesta más o genera más dinero."
+
+funcionamiento="Primero observamos cómo está escrita la tasa: si está en años, meses, si es nominal, efectiva, anticipada o vencida. Después realizamos los pasos matemáticos necesarios para convertirla a la forma que necesitamos."
 
 formula="ip = NA / nc"
 
-variables="NA = tasa nominal anual (la forma en que se anuncia la tasa). ip = tasa periódica (la tasa de cada periodo). nc = cantidad de veces que la tasa se aplica en un año."
+variables="NA = tasa nominal anual. ip = tasa periódica de cada periodo. nc = número de veces que ocurre ese periodo durante un año."
 
-ejemplo="Un banco ofrece un crédito con una tasa de 24% NAM (Nominal Anual con capitalización mensual). Esto significa que el 24% se reparte durante los 12 meses del año. Para saber cuánto corresponde cada mes hacemos: 24% / 12 = 2% mensual. Por lo tanto, cada mes la tasa aplicada es del 2%."
+ejemplo="Un banco ofrece un crédito con una tasa de 24% NAM (Nominal Anual con capitalización mensual). Como un año tiene 12 meses, dividimos: 24% / 12 = 2% mensual. Esto significa que cada mes se aplica una tasa del 2%."
 
-diferencia="Una tasa nominal es como una forma de anunciar una tasa, pero no muestra directamente cuánto crece o cuesta el dinero. Una tasa efectiva muestra el resultado real teniendo en cuenta cómo se acumulan los intereses. Por eso ambas tasas pueden tener porcentajes diferentes aunque representen la misma operación financiera."
+diferencia="Una tasa nominal es una forma de presentar una tasa, mientras que una tasa efectiva muestra el efecto real del dinero después de considerar la forma en que se aplican los intereses."
 
-errorComun="Pensar que una tasa del 24% siempre es igual a otra tasa del 24%. La capitalización y el momento del pago pueden cambiar completamente el resultado."
-
-/>
+errorComun="Pensar que dos tasas son iguales solamente porque tienen el mismo porcentaje. Antes de comparar tasas debemos revisar el periodo y la forma en que se calculan."
 
 />
+
+
 
 </Acordeon>
       <div style={{ marginTop: 18, padding: 16, background: C.paperDark, borderRadius: 8, fontSize: 13, color: C.slate }}>
