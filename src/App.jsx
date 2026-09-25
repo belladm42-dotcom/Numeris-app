@@ -512,132 +512,263 @@ function BloqueRegimen({ nombre, formula, despejes, sencilla, usoCasos, diferenc
     </div>
   );
 }
-function BloqueTemaNuevo({
-  nivel5,
-  queEs,
-  funcionamiento,
-  importancia,
-  tiposTasas,
-  conceptosRelacionados,
-  proceso,
-  formula,
-  variables,
-  ejemplos,
-  diferencia,
-  errorComun
-}) {
+
+/* ============================================================
+   CONVERSIÓN DE TASAS — módulo educativo (construido desde cero)
+   Sigue el orden de la presentación de clase "Tipos de tasas y
+   conversión": nombre/apellidos, nominal↔periódica, efectiva,
+   equivalencia entre efectivas, capitalización, vencida↔anticipada,
+   ejemplo completo NAC→NAS y errores comunes.
+   ============================================================ */
+
+function TarjetaMini({ titulo, children, tono = "neutral" }) {
+  const fondos = {
+    neutral: C.paperDark,
+    azul: "#EAF2FF",
+    alerta: C.dangerBg,
+  };
+  const bordes = {
+    neutral: C.line,
+    azul: "#B8D0F5",
+    alerta: `${C.danger}55`,
+  };
+  return (
+    <div style={{
+      background: fondos[tono], border: `1px solid ${bordes[tono]}`, borderRadius: 8,
+      padding: "14px 16px", flex: "1 1 180px", minWidth: 180,
+    }}>
+      <div style={{ fontWeight: 700, color: C.navy, fontSize: 13.5, marginBottom: 6 }}>{titulo}</div>
+      <div style={{ fontSize: 13.5, color: C.ink, lineHeight: 1.55 }}>{children}</div>
+    </div>
+  );
+}
+
+function BloqueFormula({ children }) {
+  return (
+    <div style={{
+      fontFamily: F_MONO, fontSize: 18, background: C.paper, padding: "14px 18px",
+      borderRadius: 8, margin: "10px 0", color: C.navy, overflowX: "auto",
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function NivelCinco({ children }) {
+  return (
+    <div style={{
+      background: "#FDF3E7", border: `1px solid ${C.gold}55`, borderRadius: 10,
+      padding: "16px 18px", marginBottom: 20,
+    }}>
+      <div style={{
+        fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.1em", textTransform: "uppercase",
+        color: C.goldDeep, fontWeight: 700, marginBottom: 8, display: "flex", alignItems: "center", gap: 6,
+      }}>
+        🧸 Nivel 5 años
+      </div>
+      <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65, whiteSpace: "pre-line" }}>{children}</div>
+    </div>
+  );
+}
+
+function ConversionTasas() {
   return (
     <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
-      <div style={{
-        background: C.paperDark,
-        padding: "12px 14px",
-        borderRadius: 8,
-        marginBottom: 16,
-        color: C.navy,
-        fontWeight: 600,
-        display: "flex",
-        alignItems: "center",
-        gap: 8
-      }}>
-        🧸 <span>Nivel 5 años</span>
-      </div>
+      <NivelCinco>
+        {`Imagina que tienes una plantica y le echas agua todos los días.
+La planta va creciendo poquito a poquito, cada día.
 
-      <p>{nivel5}</p>
+Un amigo te pregunta: "¿cuánto creció tu planta?"
+Tú le puedes contestar de dos formas:
+— "Creció mucho en todo el año."
+— "Creció un poquitico cada mes."
 
-<Acordeon title="¿Cómo funciona?">
-  <p>{funcionamiento}</p>
-</Acordeon>
+Es la MISMA planta y el MISMO crecimiento. Solo que lo estás contando distinto: a veces por año, a veces por mes.
 
-<Acordeon title="¿Por qué es importante?">
-  <p>{importancia}</p>
-</Acordeon>
+Con el dinero pasa igual: una tasa te dice cómo crece o cómo cuesta el dinero, pero la podemos contar por año, por mes, por lo que sea.
+Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambia, solo cambiamos cómo lo decimos.`}
+      </NivelCinco>
 
-<Acordeon title="Tipos de tasas: nominal y efectiva">
-  <p>{tiposTasas}</p>
-</Acordeon>
+      {/* SECCIÓN 1 */}
+      <Acordeon title="1 · Las tasas tienen nombre y apellido" defaultOpen>
+        <p>Piensa en una tasa como si fuera una persona: tiene un <strong>nombre</strong> y dos <strong>apellidos</strong>. Si conoces los tres, ya sabes todo lo que necesitas saber de esa tasa.</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
+          <TarjetaMini titulo="Nombre">
+            Te dice si es <strong>Nominal</strong> o <strong>Efectiva</strong>. Es como preguntar: ¿es el número "de mentiritas" (nominal) o es el número "de verdad-verdad" (efectiva)?
+          </TarjetaMini>
+          <TarjetaMini titulo="Primer apellido">
+            Te dice cada cuánto tiempo se cobran los intereses. Por ejemplo: cada mes, cada tres meses, cada seis meses.
+          </TarjetaMini>
+          <TarjetaMini titulo="Segundo apellido">
+            Te dice CUÁNDO se paga el interés: al final (<strong>vencida</strong>) o al principio (<strong>anticipada</strong>).
+          </TarjetaMini>
+        </div>
+        <div style={{ marginTop: 16, padding: 16, background: C.navyDeep, borderRadius: 10 }}>
+          <div style={{ fontFamily: F_MONO, fontSize: 22, color: C.white, fontWeight: 700, marginBottom: 10 }}>24% NAM</div>
+          <div style={{ display: "flex", gap: 18, flexWrap: "wrap", fontSize: 13, color: "#C9D2DF" }}>
+            <span><strong style={{ color: C.goldLight }}>24%</strong> → el número de la tasa</span>
+            <span><strong style={{ color: C.goldLight }}>N</strong> → Nominal (el "nombre")</span>
+            <span><strong style={{ color: C.goldLight }}>A</strong> → Anual (habla de todo el año)</span>
+            <span><strong style={{ color: C.goldLight }}>M</strong> → capitalización Mensual (primer apellido)</span>
+          </div>
+          <div style={{ marginTop: 10, fontSize: 13, color: "#C9D2DF" }}>
+            En español fácil: "Durante todo el año esto vale 24%, pero se va cobrando poquito cada mes, 12 veces en total."
+          </div>
+        </div>
+      </Acordeon>
 
-<Acordeon title="Capitalización">
-  <p>
-    La capitalización es el momento en que los intereses se suman al dinero inicial.
-    <br /><br />
-    Una capitalización mensual significa que los intereses se agregan cada mes.
-    <br />
-    Una capitalización trimestral significa que se agregan cada tres meses.
-    <br />
-    Una capitalización semestral significa que se agregan cada seis meses.
-    <br /><br />
-    Mientras más veces se agreguen intereses, más oportunidades tiene el dinero de generar nuevos intereses.
-  </p>
-</Acordeon>
+      {/* SECCIÓN 2 */}
+      <Acordeon title="2 · ¿Qué es una tasa nominal?">
+        <p><strong>¿Qué es?</strong> La tasa nominal es como el precio que ves pegado en la vitrina de una tienda: te da una idea, pero no es exactamente lo que vas a pagar al final. Es un número de referencia, no el número real.</p>
+        <p style={{ color: C.slate }}><strong>¿Cuándo se usa?</strong> Los bancos casi siempre te muestran primero la tasa nominal, porque el número se ve más chiquito y más bonito. Pero ojo: no es lo que de verdad te va a costar o a rendir el dinero.</p>
+      </Acordeon>
 
-<Acordeon title="Tasa anticipada y tasa vencida">
-  <p>{conceptosRelacionados}</p>
-</Acordeon>
+      {/* SECCIÓN 3 */}
+      <Acordeon title="3 · Pasar de nominal a periódica (repartir la tasa)">
+        <p>Si tienes la tasa nominal de todo el año y quieres saber cuánto le toca a cada mes (o a cada trimestre, etc.), simplemente la <strong>repartes</strong>. Es como repartir una torta entre los pedacitos del año.</p>
+        <BloqueFormula>ip = NA / nc</BloqueFormula>
+        <p><strong>NA:</strong> la tasa de todo el año. <strong>nc:</strong> en cuántos pedacitos la vamos a repartir (12 si es mensual, 4 si es trimestral...). <strong>ip:</strong> lo que le toca a cada pedacito.</p>
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
+          <p>María pide un crédito y el banco le dice: "24% NAM". Eso quiere decir 24% en todo el año, pero cobrado cada mes. Como el crédito se cobra mes a mes, necesitamos saber cuánto es "el pedacito" de cada mes.</p>
+          <Acordeon title="Ver procedimiento completo">
+            <FichaProcedimiento pasos={[
+              { label: "Datos", content: "NA = 24 % (todo el año) · nc = 12 (se reparte en 12 meses)" },
+              { label: "Fórmula", content: "ip = NA / nc" },
+              { label: "Sustitución", content: "ip = 24 % / 12" },
+              { label: "Resultado", content: "ip = 2 %" },
+              { label: "Interpretación", content: "Cada mes le toca un pedacito de 2 % del crédito de María." },
+            ]} />
+          </Acordeon>
+        </div>
+      </Acordeon>
 
-<Acordeon title="Proceso general de conversión">
-  <p>{proceso}</p>
-</Acordeon>
+      {/* SECCIÓN 4 */}
+      <Acordeon title="4 · Pasar de periódica a nominal (juntar los pedacitos)">
+        <p>Ahora es al revés: si ya tienes el pedacito de un mes y quieres saber cuánto sería en todo el año, en vez de repartir, <strong>multiplicas</strong>. Juntas todos los pedacitos.</p>
+        <BloqueFormula>NA = ip × nc</BloqueFormula>
+        <p><strong>ip:</strong> el pedacito (por ejemplo, de un mes). <strong>nc:</strong> cuántos pedacitos hay en el año. <strong>NA:</strong> la torta completa del año.</p>
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
+          <p>Una cuenta de ahorros te da un pedacito de 1% cada mes.</p>
+          <Acordeon title="Ver procedimiento completo">
+            <FichaProcedimiento pasos={[
+              { label: "Datos", content: "ip = 1 % cada mes · nc = 12 meses en el año" },
+              { label: "Fórmula", content: "NA = ip × nc" },
+              { label: "Sustitución", content: "NA = 1 % × 12" },
+              { label: "Resultado", content: "NA = 12 % NAM" },
+              { label: "Interpretación", content: "El mismo 1% de cada mes, contado por año, se convierte en 12%." },
+            ]} />
+          </Acordeon>
+        </div>
+      </Acordeon>
 
-      <h3 style={{ color: C.navy }}>Fórmula</h3>
-      <div style={{
-        fontFamily: F_MONO,
-        background: C.paper,
-        padding: 14,
-        borderRadius: 8
-      }}>
-        {formula}
-      </div>
+      {/* SECCIÓN 5 */}
+      <Acordeon title="5 · ¿Qué es una tasa efectiva?">
+        <p><strong>¿Qué es?</strong> La tasa efectiva es el número de VERDAD. Te dice exactamente cuánto creció o cuánto costó el dinero, contando todos los intereses que generaron más intereses. No es una idea aproximada, es lo real.</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 10 }}>
+          <TarjetaMini titulo="Nominal">Es el precio de la vitrina. Da una idea, pero no es el número final.</TarjetaMini>
+          <TarjetaMini titulo="Efectiva">Es lo que pagas de verdad en la caja. El número real.</TarjetaMini>
+        </div>
+      </Acordeon>
 
-      <h3 style={{ color: C.navy }}>Variables</h3>
-      <p>{variables}</p>
-      
-<h3 style={{ color: C.navy }}>Ejemplo práctico resuelto</h3>
+      {/* SECCIÓN 6 */}
+      <Acordeon title="6 · Cambiar una tasa efectiva de tamaño (mes → año, etc.)">
+        <p>A veces tienes una tasa efectiva "de un tamaño" (por ejemplo, la de cada mes) y necesitas esa misma tasa pero "de otro tamaño" (por ejemplo, la de todo el año). Para eso usamos esta fórmula. Parece complicada, pero solo hace un cambio de tamaño sin cambiar lo que la tasa realmente vale.</p>
+        <BloqueFormula>(1 + iy)^(ny/nx) − 1 = ix</BloqueFormula>
+        <p><strong>iy:</strong> la tasa que ya tienes. <strong>ny:</strong> cada cuánto se cobra esa tasa que ya tienes, en un año. <strong>ix:</strong> la tasa nueva que quieres encontrar. <strong>nx:</strong> cada cuánto se cobra la tasa nueva, en un año.</p>
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
+          <p>Tienes 2% mensual y quieres saber cuánto es eso en un año completo (efectiva anual).</p>
+          <Acordeon title="Ver procedimiento completo">
+            <FichaProcedimiento pasos={[
+              { label: "Datos", content: "iy = 2 % · ny = 12 (se cobra 12 veces al año) · nx = 1 (queremos el tamaño 'año')" },
+              { label: "Fórmula", content: "EA = (1 + iy)^(ny/nx) − 1" },
+              { label: "Sustitución", content: "EA = (1 + 0,02)^12 − 1" },
+              { label: "Resultado", content: `EA = ${formatPercentCO(Math.pow(1.02, 12) - 1, 2)}` },
+              { label: "Interpretación", content: "El 2 % de cada mes se ve chiquito, pero como se va sumando mes tras mes, al final del año el crecimiento real es mucho más grande." },
+            ]} />
+          </Acordeon>
+        </div>
+      </Acordeon>
 
-<div style={{
-  background: "#EAF2FF",
-  border: "1px solid #B8D0F5",
-  borderRadius: 10,
-  padding: 16
-}}>
+      {/* SECCIÓN 7 */}
+      <Acordeon title="7 · Capitalización (cuando el interés hace más interés)">
+        <p>Capitalizar es como una alcancía mágica: metes moneditas, y esas moneditas hacen que aparezcan moneditas nuevas. Después, esas moneditas nuevas también hacen aparecer más moneditas. Y así.</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
+          <TarjetaMini titulo="Mensual">La alcancía mágica hace moneditas nuevas 12 veces al año (una vez por mes).</TarjetaMini>
+          <TarjetaMini titulo="Trimestral">La alcancía mágica hace moneditas nuevas 4 veces al año (cada tres meses).</TarjetaMini>
+          <TarjetaMini titulo="Semestral">La alcancía mágica hace moneditas nuevas 2 veces al año (cada seis meses).</TarjetaMini>
+        </div>
+        <p style={{ color: C.slate }}>Mientras más seguido aparezcan moneditas nuevas, más rápido crece la alcancía, porque hay más oportunidades de que el dinero haga más dinero.</p>
+      </Acordeon>
 
-  <div style={{
-    fontWeight: 700,
-    color: C.navy,
-    marginBottom: 12
-  }}>
-    {ejemploTitulo}
-  </div>
+      {/* SECCIÓN 8 */}
+      <Acordeon title="8 · Tasa vencida y tasa anticipada (¿cuándo se paga?)">
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="Vencida">
+            Pagas el interés AL FINAL. Es como comer en un restaurante: primero comes, y al final pagas la cuenta.
+          </TarjetaMini>
+          <TarjetaMini titulo="Anticipada">
+            Pagas el interés AL PRINCIPIO. Es como el cine: primero pagas la boleta, y después ves la película.
+          </TarjetaMini>
+        </div>
+      </Acordeon>
 
-  {ejemploPasos.map((paso, index) => (
-    <div 
-      key={index}
-      style={{
-        background: C.white,
-        marginBottom: 8,
-        padding: 10,
-        borderRadius: 6,
-        fontFamily: index > 0 ? F_MONO : F_BODY,
-        color: C.ink
-      }}
-    >
-      {paso}
-    </div>
-  ))}
+      {/* SECCIÓN 9 */}
+      <Acordeon title="9 · Pasar de vencida a anticipada (y al revés)">
+        <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontSize: 12.5, color: C.slate, marginBottom: 4 }}>De vencida a anticipada</div>
+            <BloqueFormula>ia = iv / (1 + iv)</BloqueFormula>
+          </div>
+          <div>
+            <div style={{ fontSize: 12.5, color: C.slate, marginBottom: 4 }}>De anticipada a vencida</div>
+            <BloqueFormula>iv = ia / (1 − ia)</BloqueFormula>
+          </div>
+        </div>
+        <p><strong>iv:</strong> la tasa vencida (se paga al final). <strong>ia:</strong> la tasa anticipada (se paga al principio).</p>
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
+          <p>Te prestan $10.000.000 con una tasa del 5%. Mira cómo cambia todo según CUÁNDO se cobre el interés:</p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "10px 0" }}>
+            <TarjetaMini titulo="Vencida">
+              Te dan $10.000.000 completos. Al final devuelves $10.500.000. El interés real fue 5 %.
+            </TarjetaMini>
+            <TarjetaMini titulo="Anticipada">
+              Te descuentan el interés de una vez: solo te dan $9.500.000. Pero igual devuelves $10.000.000. Como te dieron menos plata al principio, el interés real termina siendo más alto: 5,26 %.
+            </TarjetaMini>
+          </div>
+          <p style={{ color: C.slate }}>La tasa "cambia" simplemente porque cambia el momento en que se cobra el interés: antes o después.</p>
+        </div>
+      </Acordeon>
 
-</div>
+      {/* SECCIÓN 10 */}
+      <Acordeon title="10 · Un ejemplo completo, paso a pasito (23,54 % NAC → NAS)">
+        <p>Aquí vamos a cambiar una tasa de un tamaño a otro, pasito a pasito, sin saltarnos nada. <strong>NAC:</strong> nominal anual, se cobra cada 4 meses (cuatrimestral). <strong>NAS:</strong> nominal anual, se cobra cada 6 meses (semestral).</p>
+        <FichaProcedimiento pasos={[
+          { label: "Paso 1 — Repartir la tasa nominal en su pedacito", content: "23,54 % / 3 = 7,85 % (el pedacito de cada cuatrimestre)" },
+          { label: "Paso 2 — Cambiar el pedacito de tamaño", content: "(1 + 7,85 %)^(3/2) − 1 = 12 % (ahora el pedacito es de cada semestre)" },
+          { label: "Paso 3 — Volver a armar la tasa nominal", content: "12 % × 2 = 24 % NAS" },
+        ]} />
+        <p style={{ marginTop: 12, color: C.slate }}>Ojo: el dinero NO cambió. Solo cambiamos la forma de contar la tasa, para poder compararla o usarla en otra cuenta.</p>
+      </Acordeon>
 
-      <h3 style={{ color: C.navy }}>Diferencia importante</h3>
-      <p>{diferencia}</p>
-
-      <div style={{
-        marginTop: 12,
-        padding: 12,
-        background: `${C.gold}1a`,
-        borderRadius: 8
-      }}>
-        <strong>⚠️ Error común:</strong> {errorComun}
-      </div>
+      {/* SECCIÓN 11 */}
+      <Acordeon title="11 · Errores comunes (para no caer en la trampa)">
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <TarjetaMini titulo="1. Dividir una tasa trimestral entre 3" tono="alerta">
+            Es un error muy común. "Trimestral" no se divide entre 3: se divide entre 4, porque en un año caben 4 trimestres (4 × 3 meses = 12 meses).
+          </TarjetaMini>
+          <TarjetaMini titulo="2. Pensar que si el número es igual, la tasa es igual" tono="alerta">
+            24% NAM y 24% NAT NO son lo mismo, aunque el número "24%" se vea igual. Todo depende de cada cuánto se cobra.
+          </TarjetaMini>
+          <TarjetaMini titulo="3. Saltarse pasos al convertir anticipada a vencida" tono="alerta">
+            No puedes pasar de una tasa nominal anticipada a una nominal vencida de un solo brinco. Primero tienes que pasar por la tasa periódica o efectiva, paso a paso.
+          </TarjetaMini>
+        </div>
+      </Acordeon>
 
     </div>
   );
@@ -707,976 +838,11 @@ function Aprender() {
           ]}
         />
       </Acordeon>
-<Acordeon title="4 · Conversión de tasas">
 
-<BloqueTemaNuevo
+      <Acordeon title="4 · Conversión de tasas">
+        <ConversionTasas />
+      </Acordeon>
 
-nivel5="Imagina que tienes una planta mágica que crece con el tiempo. Una persona puede decir cuánto creció durante un año, pero otra puede preguntar cuánto creció cada mes. La planta es la misma y su crecimiento también, solo estamos mirando la información de una forma diferente. Con el dinero pasa algo parecido: una tasa nos dice cómo cambia el dinero, pero podemos expresar ese cambio usando diferentes tiempos. Convertir una tasa significa cambiar la forma en que la escribimos sin cambiar lo que realmente representa."
-
-queEs="Una tasa de interés es un número que nos indica cómo cambia una cantidad de dinero durante un tiempo. Puede mostrar cuánto gana una inversión o cuánto cuesta un crédito. La conversión de tasas permite cambiar la forma en que está escrita una tasa para poder compararla o utilizarla en otro cálculo."
-
-funcionamiento="Para convertir una tasa primero debemos identificar qué tipo de tasa tenemos. Revisamos si es nominal o efectiva, cada cuánto ocurre la capitalización y si el pago es anticipado o vencido. Después realizamos los pasos matemáticos necesarios para obtener una tasa equivalente."
-
-importancia="Las entidades financieras pueden presentar tasas con diferentes formas. Una tasa puede estar expresada de manera nominal, efectiva, mensual, trimestral o con otro periodo. Si comparamos números sin convertirlos correctamente podemos tomar decisiones equivocadas."
-
-tiposTasas="Las tasas tienen nombre y apellido. El nombre indica si la tasa es nominal o efectiva. El primer apellido indica cada cuánto ocurre la capitalización. El segundo apellido indica el momento del pago: anticipado o vencido."
-
-conceptosRelacionados="Una tasa nominal sirve como referencia para comunicar una condición financiera, pero no representa directamente el valor real del dinero. Una tasa efectiva muestra el resultado real después de considerar cómo se acumulan los intereses."
-
-proceso="El proceso general es: 1) identificar la tasa inicial, 2) reconocer sus características (nominal o efectiva, periodo de capitalización y momento de pago), 3) convertir a una tasa periódica si es necesario, 4) cambiar el periodo de capitalización utilizando equivalencias y 5) expresar la tasa final en la forma solicitada."
-
-formula="Las tasas tienen diferentes fórmulas según la conversión que se quiera realizar."
-
-variables="Las variables más utilizadas son: NA = tasa nominal anual. ip = tasa periódica. nc = número de periodos de capitalización en un año. iy = tasa conocida. ix = tasa equivalente que queremos encontrar. ny y nx = número de capitalizaciones al año de cada tasa."
-
-ejemploTitulo="Cómo interpretar una tasa 24% NAM"
-
-ejemploPasos={[
-"Situación: Un banco ofrece un crédito con una tasa de 24% NAM.",
-
-"¿Qué significa NAM?",
-"N significa nominal, A significa anual y M significa capitalización mensual.",
-
-"Esto quiere decir que el banco está expresando una tasa anual del 24%, pero los intereses se calculan 12 veces durante el año.",
-
-"Para conocer cuánto corresponde en cada mes debemos convertir la tasa nominal a periódica."
-]}
-
-diferencia="Una tasa nominal y una tasa efectiva no significan lo mismo. La nominal explica cómo está organizada una tasa, mientras que la efectiva muestra el resultado real después de tener en cuenta la capitalización."
-
-errorComun="Pensar que dos tasas con el mismo porcentaje representan lo mismo sin revisar si son nominales, efectivas, anticipadas, vencidas o con diferentes periodos de capitalización."
-
-/>
-  <Acordeon title="Conversión de tasa nominal y tasa periódica">
-
-<p>
-Cuando tenemos una tasa nominal y queremos saber cuánto corresponde en cada periodo de capitalización, convertimos la tasa nominal en una tasa periódica.
-</p>
-
-<div style={{
-background: C.paper,
-padding: 14,
-borderRadius: 8,
-fontFamily: F_MONO,
-fontSize: 17,
-color: C.navy
-}}>
-ip = NA / nc
-</div>
-
-<p>
-<strong>Donde:</strong><br/>
-NA = tasa nominal anual.<br/>
-ip = tasa periódica.<br/>
-nc = número de periodos de capitalización en un año.
-</p>
-
-<h4 style={{color:C.navy}}>Ejemplo: Nominal a periódica</h4>
-
-<p>
-Un banco ofrece un crédito con una tasa de:
-</p>
-
-<div style={{
-background:"#EAF2FF",
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-24% NAM
-</div>
-
-<p>
-Esto significa que tenemos una tasa nominal anual del 24% con capitalización mensual.
-</p>
-
-<p>
-Como durante un año existen 12 capitalizaciones:
-</p>
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-ip = 24% / 12
-<br/><br/>
-ip = 2% mensual
-</div>
-
-<p>
-<strong>Interpretación:</strong><br/>
-El banco anuncia una tasa anual del 24%, pero realmente calcula los intereses utilizando una tasa del 2% cada mes.
-</p>
-
-
-<h4 style={{color:C.navy}}>Conversión periódica a nominal</h4>
-
-<p>
-Si conocemos la tasa periódica y queremos volver a expresarla como nominal anual usamos:
-</p>
-
-<div style={{
-background:C.paper,
-padding:14,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-NA = ip × nc
-</div>
-
-<p>
-<strong>Ejemplo:</strong><br/>
-Una inversión genera una tasa del 1% mensual.
-</p>
-
-<div style={{
-background:"#EAF2FF",
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-NA = 1% × 12
-<br/><br/>
-NA = 12% NAM
-</div>
-
-<p>
-<strong>Interpretación:</strong><br/>
-La tasa mensual del 1% también puede expresarse como una tasa nominal anual del 12% con capitalización mensual.
-</p>
-
-</Acordeon>
-  <Acordeon title="Tasa efectiva y conversión entre tasas equivalentes">
-
-<p>
-La tasa efectiva es la tasa que muestra lo que realmente ocurre con el dinero después de tener en cuenta la forma en que se acumulan los intereses.
-</p>
-
-<p>
-Mientras la tasa nominal funciona como una forma de comunicar una tasa, la tasa efectiva nos permite conocer el resultado real de una operación financiera.
-</p>
-
-<h4 style={{color:C.navy}}>¿Por qué existen las tasas efectivas?</h4>
-
-<p>
-Porque una misma tasa nominal puede producir diferentes resultados dependiendo de cuántas veces se agreguen los intereses durante el año.
-</p>
-
-<p>
-Por ejemplo, una tasa nominal con capitalización mensual no tiene el mismo resultado que una tasa nominal con capitalización trimestral, aunque tengan el mismo porcentaje anunciado.
-</p>
-
-
-<h4 style={{color:C.navy}}>Conversión entre tasas efectivas equivalentes</h4>
-
-<p>
-Cuando queremos cambiar una tasa efectiva de un periodo a otro, buscamos una tasa que produzca exactamente el mismo resultado financiero.
-</p>
-
-<div style={{
-background:C.paper,
-padding:14,
-borderRadius:8,
-fontFamily:F_MONO,
-fontSize:16,
-color:C.navy
-}}>
-(1 + iᵧ)^(nᵧ/nₓ) - 1 = iₓ
-</div>
-
-
-<p>
-<strong>Donde:</strong>
-<br/><br/>
-
-iᵧ = tasa conocida.
-<br/>
-nᵧ = número de periodos de capitalización en un año de la tasa conocida.
-<br/>
-iₓ = tasa equivalente que queremos encontrar.
-<br/>
-nₓ = número de periodos de capitalización en un año de la nueva tasa.
-</p>
-
-
-<h4 style={{color:C.navy}}>Ejemplo: convertir una tasa mensual a anual</h4>
-
-<p>
-Una cuenta de ahorro ofrece una rentabilidad del 2% efectivo mensual. Queremos saber cuál es la tasa efectiva anual equivalente.
-</p>
-
-
-<div style={{
-background:"#EAF2FF",
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-Datos:
-<br/><br/>
-iᵧ = 2% mensual
-<br/>
-nᵧ = 12 periodos al año
-<br/>
-nₓ = 1 periodo anual
-</div>
-
-
-<p>
-Aplicamos la fórmula:
-</p>
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-EA = (1 + 0,02)¹² - 1
-</div>
-
-
-<div style={{
-background:"#EAF2FF",
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-EA = 26,82%
-</div>
-
-
-<p>
-<strong>Interpretación:</strong>
-<br/>
-Aunque la tasa mensual parece pequeña, los intereses se van acumulando cada mes. Como los intereses generados también pueden producir nuevos intereses, el resultado real al terminar el año es mayor.
-</p>
-
-
-<h4 style={{color:C.navy}}>Diferencia entre nominal y efectiva</h4>
-
-<p>
-<strong>Tasa nominal:</strong> nos dice cómo está organizada una tasa y cómo se aplican los intereses.
-</p>
-
-<p>
-<strong>Tasa efectiva:</strong> nos dice cuál es el resultado real del dinero después de la capitalización.
-</p>
-
-</Acordeon>
-<Acordeon title="Capitalización: ¿cada cuánto se acumulan los intereses?">
-
-<p>
-La capitalización indica cada cuánto tiempo los intereses que se generan se agregan al dinero inicial.
-</p>
-
-<p>
-Cuando los intereses se agregan al dinero, ese nuevo valor puede empezar a generar más intereses en los siguientes periodos.
-</p>
-
-
-<h4 style={{color:C.navy}}>🧸 Explicación sencilla</h4>
-
-<p>
-Imagina que tienes una alcancía donde cada cierto tiempo aparecen monedas nuevas. Si esas monedas se quedan dentro de la alcancía, después también pueden ayudarte a conseguir más monedas.
-</p>
-
-<p>
-Con el dinero pasa algo parecido: cuando los intereses se agregan al saldo, esos intereses también pueden producir nuevos intereses.
-</p>
-
-
-<h4 style={{color:C.navy}}>Capitalización mensual</h4>
-
-<p>
-Significa que los intereses se agregan:
-</p>
-
-<div style={{
-background:"#EAF2FF",
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-12 veces durante un año
-</div>
-
-<p>
-Ejemplo:
-Una tasa 24% NAM significa que la tasa es nominal anual y que los intereses se calculan 12 veces en el año.
-</p>
-
-
-<h4 style={{color:C.navy}}>Capitalización trimestral</h4>
-
-<p>
-Significa que los intereses se agregan:
-</p>
-
-<div style={{
-background:"#EAF2FF",
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-4 veces durante un año
-</div>
-
-<p>
-Ejemplo:
-Una tasa 24% NAT tiene una capitalización trimestral, por lo que durante un año ocurren cuatro momentos donde se aplican intereses.
-</p>
-
-
-<h4 style={{color:C.navy}}>Capitalización semestral</h4>
-
-<p>
-Significa que los intereses se agregan:
-</p>
-
-<div style={{
-background:"#EAF2FF",
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-2 veces durante un año
-</div>
-
-
-<h4 style={{color:C.navy}}>
-¿Qué pasa cuando una tasa capitaliza más veces?
-</h4>
-
-<p>
-Cuando los intereses se agregan con mayor frecuencia, existen más momentos durante el año donde esos intereses pueden comenzar a generar nuevos intereses.
-</p>
-
-<p>
-Por eso, dos tasas con el mismo porcentaje nominal pueden producir resultados diferentes si tienen diferentes formas de capitalización.
-</p>
-
-
-<h4 style={{color:C.navy}}>
-Ejemplo de comparación
-</h4>
-
-<p>
-Supongamos dos inversiones:
-</p>
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-A: 24% NAM
-<br/>
-B: 24% NAT
-</div>
-
-<p>
-Aunque ambas dicen 24%, no significan exactamente lo mismo porque la primera capitaliza 12 veces al año y la segunda 4 veces.
-</p>
-
-<p>
-Para compararlas correctamente debemos convertirlas a una misma base, normalmente una tasa efectiva equivalente.
-</p>
-
-
-<h4 style={{color:C.navy}}>
-Relación con la conversión de tasas
-</h4>
-
-<p>
-La capitalización es importante porque nos dice qué conversión debemos realizar. Antes de cambiar una tasa debemos saber cuántas veces ocurre el proceso de aplicar intereses durante el año.
-</p>
-
-</Acordeon>
-  <Acordeon title="Tasa anticipada y tasa vencida">
-
-<p>
-Además de indicar cuánto vale una tasa y cada cuánto se capitaliza, también debemos saber <strong>en qué momento ocurre el pago de los intereses</strong>.
-</p>
-
-<p>
-Ese momento puede ser:
-</p>
-
-<div style={{
-background:"#EAF2FF",
-padding:12,
-borderRadius:8
-}}>
-<strong>Vencida:</strong> los intereses ocurren al final del periodo.
-<br/><br/>
-<strong>Anticipada:</strong> los intereses ocurren al inicio del periodo.
-</div>
-
-
-<h4 style={{color:C.navy}}>🧸 Explicación sencilla</h4>
-
-<p>
-Imagina que compras algo y tienes que pagar una moneda por usarlo durante un mes.
-</p>
-
-<p>
-Si pagas la moneda cuando termina el mes, es un pago vencido.
-</p>
-
-<p>
-Si primero entregas la moneda y después usas el producto durante el mes, es un pago anticipado.
-</p>
-
-<p>
-La diferencia está en el momento en que ocurre el pago.
-</p>
-
-
-<h4 style={{color:C.navy}}>Tasa vencida</h4>
-
-<p>
-En una tasa vencida, primero pasa el periodo y después se pagan o calculan los intereses.
-</p>
-
-<p>
-Es una modalidad común en créditos tradicionales, donde una persona recibe el dinero y después realiza los pagos correspondientes.
-</p>
-
-
-<h4 style={{color:C.navy}}>Ejemplo de tasa vencida</h4>
-
-<p>
-Una persona recibe un préstamo de:
-</p>
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-VP = $10.000.000
-<br/>
-Tasa = 5%
-</div>
-
-<p>
-Como es vencida, la persona recibe los $10.000.000 completos y al final devuelve:
-</p>
-
-<div style={{
-background:"#EAF2FF",
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-VF = $10.500.000
-</div>
-
-<p>
-Calculamos el interés real:
-</p>
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-i = (10.500.000 / 10.000.000) - 1
-<br/><br/>
-i = 5%
-</div>
-
-<p>
-<strong>Interpretación:</strong><br/>
-La persona recibió todo el dinero y pagó el interés al finalizar el periodo.
-</p>
-
-
-<h4 style={{color:C.navy}}>Tasa anticipada</h4>
-
-<p>
-En una tasa anticipada, el interés se descuenta o se paga antes de recibir el dinero.
-</p>
-
-<p>
-Por esta razón, aunque la tasa anunciada sea igual, el costo real puede ser diferente.
-</p>
-
-
-<h4 style={{color:C.navy}}>Ejemplo de tasa anticipada</h4>
-
-<p>
-La persona necesita un préstamo de:
-</p>
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-Valor solicitado = $10.000.000
-<br/>
-Tasa anticipada = 5%
-</div>
-
-<p>
-Como el interés se descuenta al inicio, la persona no recibe los $10.000.000 completos:
-</p>
-
-<div style={{
-background:"#EAF2FF",
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-Dinero recibido = $9.500.000
-</div>
-
-<p>
-El interés real es:
-</p>
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-i = (10.000.000 / 9.500.000) - 1
-<br/><br/>
-i = 5,26%
-</div>
-
-<p>
-<strong>Interpretación:</strong><br/>
-Aunque la tasa anunciada era del 5%, como el interés se descontó antes de recibir el dinero, el costo real fue mayor.
-</p>
-
-
-<h4 style={{color:C.navy}}>
-Diferencia entre anticipada y vencida
-</h4>
-
-<p>
-Una tasa vencida calcula los intereses después de que pasa el periodo.
-</p>
-
-<p>
-Una tasa anticipada calcula los intereses antes de que empiece el periodo.
-</p>
-
-<p>
-Por eso no podemos comparar directamente una tasa anticipada con una vencida sin realizar la conversión correspondiente.
-</p>
-
-
-</Acordeon>
-
-  <Acordeon title="Conversión entre tasa anticipada y tasa vencida">
-
-<p>
-Cuando una tasa anticipada y una tasa vencida representan la misma operación financiera, podemos transformarlas entre ellas utilizando fórmulas de equivalencia.
-</p>
-
-<p>
-Es importante recordar que estas conversiones se realizan sobre tasas periódicas o efectivas, no directamente sobre tasas nominales.
-</p>
-
-
-<h4 style={{color:C.navy}}>De tasa vencida a tasa anticipada</h4>
-
-<div style={{
-background:C.paper,
-padding:14,
-borderRadius:8,
-fontFamily:F_MONO,
-fontSize:17,
-color:C.navy
-}}>
-iₐ = iᵥ / (1 + iᵥ)
-</div>
-
-
-<p>
-<strong>Donde:</strong>
-<br/><br/>
-
-iᵥ = tasa vencida.
-<br/>
-iₐ = tasa anticipada.
-</p>
-
-
-<h4 style={{color:C.navy}}>Ejemplo</h4>
-
-<p>
-Tenemos una tasa vencida del 5% y queremos convertirla a anticipada.
-</p>
-
-<div style={{
-background:"#EAF2FF",
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-iₐ = 0,05 / (1 + 0,05)
-<br/><br/>
-iₐ = 0,0476
-<br/><br/>
-iₐ = 4,76%
-</div>
-
-<p>
-<strong>Interpretación:</strong><br/>
-Una tasa vencida del 5% equivale aproximadamente a una tasa anticipada del 4,76%.
-</p>
-
-
-
-<h4 style={{color:C.navy}}>De tasa anticipada a tasa vencida</h4>
-
-<div style={{
-background:C.paper,
-padding:14,
-borderRadius:8,
-fontFamily:F_MONO,
-fontSize:17,
-color:C.navy
-}}>
-iᵥ = iₐ / (1 - iₐ)
-</div>
-
-
-<p>
-<strong>Donde:</strong>
-<br/><br/>
-
-iₐ = tasa anticipada.
-<br/>
-iᵥ = tasa vencida.
-</p>
-
-
-<h4 style={{color:C.navy}}>Ejemplo</h4>
-
-<p>
-Tenemos una tasa anticipada del 5% y queremos convertirla a vencida.
-</p>
-
-<div style={{
-background:"#EAF2FF",
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-iᵥ = 0,05 / (1 - 0,05)
-<br/><br/>
-iᵥ = 0,0526
-<br/><br/>
-iᵥ = 5,26%
-</div>
-
-
-<p>
-<strong>Interpretación:</strong><br/>
-Una tasa anticipada del 5% equivale aproximadamente a una tasa vencida del 5,26%.
-</p>
-
-
-</Acordeon>
-
-
-
-<Acordeon title="La lógica completa para convertir cualquier tasa">
-
-<p>
-Convertir una tasa no significa aplicar una fórmula al azar. Primero debemos identificar qué información tiene la tasa y hacia dónde queremos llevarla.
-</p>
-
-
-<div style={{
-background:"#EAF2FF",
-padding:14,
-borderRadius:8,
-lineHeight:1.7
-}}>
-
-<strong>Paso 1:</strong><br/>
-Identificar la tasa inicial.
-<br/>
-Ejemplo: nominal, efectiva, anticipada o vencida.
-<br/><br/>
-
-<strong>Paso 2:</strong><br/>
-Identificar la capitalización.
-<br/>
-Preguntarnos: ¿cuántas veces ocurre durante un año?
-<br/><br/>
-
-<strong>Paso 3:</strong><br/>
-Pasar a una tasa periódica si es necesario.
-<br/><br/>
-
-<strong>Paso 4:</strong><br/>
-Cambiar el periodo utilizando equivalencias.
-<br/><br/>
-
-<strong>Paso 5:</strong><br/>
-Expresar la tasa final con el nombre solicitado.
-
-</div>
-
-
-<p>
-La idea principal es que la tasa nunca cambia su valor financiero. Lo único que cambia es la forma en que la estamos escribiendo.
-</p>
-
-
-</Acordeon>
-
-
-
-<Acordeon title="Error común: convertir tasas de forma incorrecta">
-
-<div style={{
-background:C.dangerBg,
-padding:14,
-borderRadius:8,
-color:C.danger
-}}>
-
-<strong>Error:</strong><br/>
-Comparar o convertir tasas solamente mirando el porcentaje.
-
-</div>
-
-
-<p>
-Ejemplo:
-</p>
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-24% NAM
-<br/>
-24% NAT
-</div>
-
-
-<p>
-Aunque ambas dicen 24%, no representan exactamente lo mismo porque tienen diferente frecuencia de capitalización.
-</p>
-
-
-<p>
-También es un error convertir directamente una tasa nominal anticipada a nominal vencida.
-</p>
-
-
-<p>
-Primero debemos pasar por una tasa periódica o efectiva y después realizar la conversión correspondiente.
-</p>
-
-
-</Acordeon>
-  
-<Acordeon title="Ejemplo completo resuelto: convertir una tasa NAC a NAS">
-
-<p>
-En este ejemplo vamos a transformar una tasa que tiene una forma de escritura a otra forma equivalente.
-</p>
-
-<div style={{
-background:"#EAF2FF",
-padding:14,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-Tasa inicial:
-<br/>
-23,54% NAC
-<br/><br/>
-Tasa solicitada:
-<br/>
-NAS
-</div>
-
-
-<p>
-Recordemos:
-</p>
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8
-}}>
-<strong>NAC:</strong> Nominal Anual con Capitalización Cuatrimestral.
-<br/><br/>
-<strong>NAS:</strong> Nominal Anual con Capitalización Semestral.
-</div>
-
-
-<h4 style={{color:C.navy}}>Paso 1: Convertir de nominal a periódica</h4>
-
-<p>
-Primero debemos quitar el "apellido" de la capitalización y encontrar la tasa periódica correspondiente.
-</p>
-
-<p>
-Como la capitalización es cuatrimestral:
-</p>
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-Un año tiene:
-<br/>
-12 meses / 4 meses = 3 periodos
-</div>
-
-
-<p>
-Aplicamos:
-</p>
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-ip = NA / nc
-<br/><br/>
-ip = 23,54% / 3
-<br/><br/>
-ip = 7,85% cuatrimestral
-</div>
-
-
-<p>
-<strong>Interpretación:</strong><br/>
-Ahora sabemos cuánto corresponde en cada periodo cuatrimestral.
-</p>
-
-
-<h4 style={{color:C.navy}}>Paso 2: Cambiar el periodo de capitalización</h4>
-
-<p>
-Ahora debemos pasar de una tasa cuatrimestral a una tasa semestral equivalente.
-</p>
-
-<p>
-Utilizamos la equivalencia entre tasas:
-</p>
-
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-(1 + iᵧ)^(nᵧ/nₓ) - 1 = iₓ
-</div>
-
-
-<p>
-Reemplazamos:
-</p>
-
-<div style={{
-background:"#EAF2FF",
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-(1 + 7,85%)^(3/2) - 1
-<br/><br/>
-= 12% periódica semestral
-</div>
-
-
-<p>
-<strong>Interpretación:</strong><br/>
-La tasa del 7,85% cuatrimestral produce el mismo resultado financiero que una tasa del 12% semestral.
-</p>
-
-
-<h4 style={{color:C.navy}}>Paso 3: Convertir de periódica a nominal</h4>
-
-<p>
-Ahora volvemos a expresar la tasa como una tasa nominal anual con capitalización semestral.
-</p>
-
-<p>
-Como existen:
-</p>
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-2 semestres en un año
-</div>
-
-
-<p>
-Aplicamos:
-</p>
-
-<div style={{
-background:C.paper,
-padding:12,
-borderRadius:8,
-fontFamily:F_MONO
-}}>
-NA = ip × nc
-<br/><br/>
-NA = 12% × 2
-<br/><br/>
-NA = 24% NAS
-</div>
-
-
-<h4 style={{color:C.navy}}>
-Resultado final
-</h4>
-
-<div style={{
-background:"#EAF2FF",
-padding:14,
-borderRadius:8,
-fontFamily:F_MONO,
-fontSize:18
-}}>
-23,54% NAC = 24% NAS aproximadamente
-</div>
-
-
-<p>
-<strong>Interpretación final:</strong><br/>
-La tasa no cambió su valor financiero. Lo único que hicimos fue cambiar la forma de expresarla: primero encontramos la tasa periódica y luego la escribimos con una nueva frecuencia de capitalización.
-</p>
-
-
-</Acordeon>
       <div style={{ marginTop: 18, padding: 16, background: C.paperDark, borderRadius: 8, fontSize: 13, color: C.slate }}>
         <strong style={{ color: C.navy }}>Notación:</strong> para interés simple y compuesto usamos <em>i</em> (tasa por periodo) y <em>n</em> (número de periodos). Para interés continuo usamos <em>r</em> (tasa continua) y <em>t</em> (tiempo en años). Nunca usamos una "T" aislada: siempre indicamos "Momento del flujo" con su unidad explícita.
       </div>
