@@ -593,13 +593,7 @@ Tú le puedes contestar de dos formas:
 
 Es la MISMA planta y el MISMO crecimiento. Solo que lo estás contando distinto: a veces por año, a veces por mes.
 
-Con el dinero pasa igual: una tasa te dice cómo crece o cómo cuesta el dinero, pero la podemos contar por año, por mes, por lo que sea.
-
-Por ejemplo, si tienes dinero guardado en una inversión, ese dinero puede ganar un poquito de interés cada mes. Pero también puedes mirar cuánto ganó en todo el año.
-
-Es el mismo dinero y el mismo crecimiento. Solo cambia la forma de contarlo: por mes o por año.
-
-Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambia, solo cambiamos cómo lo decimos.`}
+Con el dinero pasa igual: una tasa te dice cómo crece o cómo cuesta el dinero, pero la podemos contar por año, por mes, por lo que sea. Por ejemplo, si tienes dinero guardado en una inversión, ese dinero puede ganar un poquito de interés cada mes. Pero también puedes mirar cuánto ganó en todo el año. Es el mismo dinero y el mismo crecimiento. Solo cambia la forma de contarlo: por mes o por año. Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambia, solo cambiamos cómo lo decimos.`}
       </NivelCinco>
 
       {/* SECCIÓN 1 */}
