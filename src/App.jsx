@@ -613,7 +613,7 @@ Por ejemplo, si tienes dinero guardado en una inversión, ese dinero puede ganar
 Es el mismo dinero y el mismo crecimiento. Solo cambia la forma de contarlo: por mes o por año.
 
 Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambia, solo cambiamos cómo lo decimos.`}
-</NivelCinco>
+
 
       </NivelCinco>
 
