@@ -158,8 +158,7 @@ const PERIODICIDADES = [
   { value: "personalizada", label: "Cada N meses", meses: null },
 ];
 
-const GLOSARIO = 
-  [
+const GLOSARIO = [
   { t: "VP", d: "Valor Presente: dinero equivalente en el momento inicial." },
   { t: "VF", d: "Valor Futuro: valor que tendrá o tendría una cantidad en un momento futuro." },
   { t: "i", d: "Tasa de interés por periodo, usada en interés simple y compuesto." },
@@ -167,21 +166,15 @@ const GLOSARIO =
   { t: "r", d: "Tasa usada en interés continuo." },
   { t: "t", d: "Tiempo expresado siempre en años, usado en interés continuo." },
   { t: "Capital", d: "Monto de dinero sobre el cual se calculan los intereses." },
-  { t: "Interés", d: "Costo o rendimiento del dinero en el tiempo. Es el dinero extra que se gana o que se paga por usar un dinero durante un tiempo." },
-  { t: "Periodo", d: "Es el tiempo que usamos para contar una tasa. Puede ser un mes, tres meses, seis meses, un año, etc" },
+  { t: "Interés", d: "Costo o rendimiento del dinero en el tiempo." },
+  { t: "Periodo", d: "Intervalo de tiempo al que corresponde la tasa (mes, bimestre, trimestre...)." },
   { t: "Flujo", d: "Movimiento de dinero (entrada o salida) en un momento determinado." },
   { t: "Momento", d: "Instante en el tiempo en que ocurre un flujo, medido en periodos o años." },
   { t: "Momento focal", d: "Instante elegido para comparar varios flujos que ocurren en momentos distintos." },
   { t: "Ecuación de valor", d: "Igualdad que resulta de trasladar todos los flujos a un mismo momento focal." },
   { t: "Coeficiente", d: "Relación proporcional entre el valor de un flujo y otro (ej. Flujo 2 = 1,4 × Flujo 1)." },
-  { t: "Descuento", d: "Es cuando llevamos un valor del futuro hacia el presente, teniendo en cuenta el efecto del interés." },
-  { t: "Tasa nominal", d: "Es una forma de escribir una tasa diciendo cómo cambia el dinero durante un año." },
-  { t: "Tasa efectiva", d: "Es la tasa que muestra cuánto cambió realmente el dinero después de sumar los intereses." },
-  { t: "Tasa periódica", d: "Es la tasa que usamos en cada momento. Por ejemplo, una tasa mensual muestra cuánto cambia el dinero cada mes."},
-  { t: "Tasa equivalente", d: "Son tasas diferentes que al final hacen que el dinero crezca o cueste lo mismo." },
-  { t: "Tasa vencida", d: "Es cuando primero pasa el tiempo y después se paga el interés." },
-  { t: "Tasa anticipada", d: "Es cuando primero se paga o se descuenta el interés y después pasa el tiempo." },
-  { t: "Capitalización", d: "Es cuando los intereses se unen al dinero que ya teníamos y después pueden generar más intereses." },
+  { t: "Capitalización", d: "Trasladar un valor hacia el futuro sumando los intereses generados." },
+  { t: "Descuento", d: "Trasladar un valor hacia el pasado, restando el efecto del interés." },
 ];
 
 const EJEMPLOS = {
@@ -481,36 +474,56 @@ function Inicio({ ir }) {
 /* ============================================================
    APRENDER
    ============================================================ */
-function BloqueRegimen({ nombre, formula, despejes, sencilla, usoCasos, diferencia, ejemploTexto, pasosEjemplo, notaEspecial }) {
-  const [modo, setModo] = useState("sencilla");
+/* ============================================================
+   APRENDER
+   ============================================================ */
+function ExplicacionSencilla({ children }) {
   return (
-    <div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-        <Boton small variant={modo === "sencilla" ? "gold" : "outline"} onClick={() => setModo("sencilla")}>Explicación sencilla</Boton>
-        <Boton small variant={modo === "matematica" ? "gold" : "outline"} onClick={() => setModo("matematica")}>Explicación matemática</Boton>
+    <div style={{
+      background: "#FDF3E7", border: `1px solid ${C.gold}55`, borderRadius: 10,
+      padding: "16px 18px", margin: "14px 0",
+    }}>
+      <div style={{
+        fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.1em", textTransform: "uppercase",
+        color: C.goldDeep, fontWeight: 700, marginBottom: 8,
+      }}>
+        💡 Explicación sencilla
       </div>
-      {modo === "sencilla" ? (
-        <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
-          <p>{sencilla}</p>
-          {usoCasos && <p style={{ color: C.slate }}><strong>¿En qué casos se usa?</strong> {usoCasos}</p>}
-          {diferencia && <p style={{ color: C.slate }}>{diferencia}</p>}
-        </div>
-      ) : (
-        <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.7 }}>
-          <div style={{ fontFamily: F_MONO, fontSize: 20, background: C.paper, padding: "14px 18px", borderRadius: 8, margin: "6px 0 14px", color: C.navy }}>{formula}</div>
-          <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Despejes:</div>
-          <ul style={{ fontFamily: F_MONO, fontSize: 14, paddingLeft: 18, margin: 0 }}>
-            {despejes.map((d, i) => <li key={i} style={{ marginBottom: 4 }}>{d}</li>)}
-          </ul>
-        </div>
-      )}
+      <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65, whiteSpace: "pre-line" }}>{children}</div>
+    </div>
+  );
+}
+
+function BloqueInteres({
+  queEs, analogia, comoFunciona, usoLabel, usoRespuesta,
+  formula, despejes, ejemploTexto, pasosEjemplo, notaEspecial,
+}) {
+  return (
+    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
+      <p><strong>¿Qué es?</strong> {queEs}</p>
+
+      <ExplicacionSencilla>{analogia}</ExplicacionSencilla>
+
+      <p><strong>¿Cómo funciona?</strong> {comoFunciona}</p>
+      <p style={{ color: C.slate }}><strong>{usoLabel}</strong> {usoRespuesta}</p>
+
       {notaEspecial && (
-        <div style={{ marginTop: 14, padding: 12, background: `${C.gold}1a`, borderRadius: 6, fontSize: 13, color: C.goldDeep, fontWeight: 600 }}>
+        <div style={{ marginTop: 10, marginBottom: 10, padding: 12, background: `${C.gold}1a`, borderRadius: 6, fontSize: 13, color: C.goldDeep, fontWeight: 600 }}>
           {notaEspecial}
         </div>
       )}
+
+      <div style={{ marginTop: 16 }}>
+        <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Fórmula</div>
+        <div style={{ fontFamily: F_MONO, fontSize: 20, background: C.paper, padding: "14px 18px", borderRadius: 8, marginBottom: 10, color: C.navy }}>{formula}</div>
+        <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Despejes (para hallar cada variable)</div>
+        <ul style={{ fontFamily: F_MONO, fontSize: 14, paddingLeft: 18, margin: 0 }}>
+          {despejes.map((d, i) => <li key={i} style={{ marginBottom: 4 }}>{d}</li>)}
+        </ul>
+      </div>
+
       <div style={{ marginTop: 18 }}>
-        <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
+        <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico resuelto</div>
         <p style={{ fontSize: 14, color: C.ink }}>{ejemploTexto}</p>
         <Acordeon title="Ver procedimiento completo">
           <FichaProcedimiento pasos={pasosEjemplo} />
@@ -593,7 +606,8 @@ Tú le puedes contestar de dos formas:
 
 Es la MISMA planta y el MISMO crecimiento. Solo que lo estás contando distinto: a veces por año, a veces por mes.
 
-Con el dinero pasa igual: una tasa te dice cómo crece o cómo cuesta el dinero, pero la podemos contar por año, por mes, por lo que sea. Por ejemplo, si tienes dinero guardado en una inversión, ese dinero puede ganar un poquito de interés cada mes. Pero también puedes mirar cuánto ganó en todo el año. Es el mismo dinero y el mismo crecimiento. Solo cambia la forma de contarlo: por mes o por año. Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambia, solo cambiamos cómo lo decimos.`}
+Con el dinero pasa igual: una tasa te dice cómo crece o cómo cuesta el dinero, pero la podemos contar por año, por mes, por lo que sea.
+Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambia, solo cambiamos cómo lo decimos.`}
       </NivelCinco>
 
       {/* SECCIÓN 1 */}
@@ -628,8 +642,7 @@ Con el dinero pasa igual: una tasa te dice cómo crece o cómo cuesta el dinero,
       <Acordeon title="2 · ¿Qué es una tasa nominal?">
         <p><strong>¿Qué es?</strong> La tasa nominal es como el precio que ves pegado en la vitrina de una tienda: te da una idea, pero no es exactamente lo que vas a pagar al final. Es un número de referencia, no el número real.</p>
         <p style={{ color: C.slate }}><strong>¿Cuándo se usa?</strong> Los bancos casi siempre te muestran primero la tasa nominal, porque el número se ve más chiquito y más bonito. Pero ojo: no es lo que de verdad te va a costar o a rendir el dinero.</p>
-        <p> <strong>¿Por qué existe?</strong> Las entidades financieras la utilizan porque permite comunicar fácilmente las condiciones de un crédito o una inversión.</p>
-  </Acordeon>
+      </Acordeon>
 
       {/* SECCIÓN 3 */}
       <Acordeon title="3 · Pasar de nominal a periódica (repartir la tasa)">
@@ -638,7 +651,7 @@ Con el dinero pasa igual: una tasa te dice cómo crece o cómo cuesta el dinero,
         <p><strong>NA:</strong> la tasa de todo el año. <strong>nc:</strong> en cuántos pedacitos la vamos a repartir (12 si es mensual, 4 si es trimestral...). <strong>ip:</strong> lo que le toca a cada pedacito.</p>
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
-          <p>María quiere comprar un apartamento y solicita un crédito de vivienda en un banco colombiano. El banco le informa que la tasa es 24% NAM. Eso quiere decir 24% en todo el año, pero cobrado cada mes. Como el crédito se cobra mes a mes, necesitamos saber cuánto es "el pedacito" de cada mes.</p>
+          <p>María pide un crédito y el banco le dice: "24% NAM". Eso quiere decir 24% en todo el año, pero cobrado cada mes. Como el crédito se cobra mes a mes, necesitamos saber cuánto es "el pedacito" de cada mes.</p>
           <Acordeon title="Ver procedimiento completo">
             <FichaProcedimiento pasos={[
               { label: "Datos", content: "NA = 24 % (todo el año) · nc = 12 (se reparte en 12 meses)" },
@@ -658,7 +671,7 @@ Con el dinero pasa igual: una tasa te dice cómo crece o cómo cuesta el dinero,
         <p><strong>ip:</strong> el pedacito (por ejemplo, de un mes). <strong>nc:</strong> cuántos pedacitos hay en el año. <strong>NA:</strong> la torta completa del año.</p>
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
-          <p>Carlos tiene un ahorro programado en una entidad financiera y recibe una rentabilidad del 1% mensual (un pedacito de 1% cada mes). Quiere saber cómo expresar esa tasa de manera anual.</p>
+          <p>Una cuenta de ahorros te da un pedacito de 1% cada mes.</p>
           <Acordeon title="Ver procedimiento completo">
             <FichaProcedimiento pasos={[
               { label: "Datos", content: "ip = 1 % cada mes · nc = 12 meses en el año" },
@@ -674,9 +687,6 @@ Con el dinero pasa igual: una tasa te dice cómo crece o cómo cuesta el dinero,
       {/* SECCIÓN 5 */}
       <Acordeon title="5 · ¿Qué es una tasa efectiva?">
         <p><strong>¿Qué es?</strong> La tasa efectiva es el número de VERDAD. Te dice exactamente cuánto creció o cuánto costó el dinero, contando todos los intereses que generaron más intereses. No es una idea aproximada, es lo real.</p>
-        <p style={{marginTop:12}}> 
-  <strong>¿Cuándo se usa?</strong> Se usa cuando necesitas saber el costo real de un crédito o la ganancia verdadera de una inversión, ya que calcula cómo se van sumando los intereses a lo largo del tiempo. 
-</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 10 }}>
           <TarjetaMini titulo="Nominal">Es el precio de la vitrina. Da una idea, pero no es el número final.</TarjetaMini>
           <TarjetaMini titulo="Efectiva">Es lo que pagas de verdad en la caja. El número real.</TarjetaMini>
@@ -705,7 +715,7 @@ Con el dinero pasa igual: una tasa te dice cómo crece o cómo cuesta el dinero,
 
       {/* SECCIÓN 7 */}
       <Acordeon title="7 · Capitalización (cuando el interés hace más interés)">
-        <p> Capitalizar significa que los intereses obtenidos se suman al dinero inicial. Después, ese nuevo valor puede generar nuevos intereses en los siguientes periodos, o en otras palabras: Capitalizar es como una alcancía mágica: metes moneditas, y esas moneditas hacen que aparezcan moneditas nuevas. Después, esas moneditas nuevas también hacen aparecer más moneditas. Y así.</p>
+        <p>Capitalizar es como una alcancía mágica: metes moneditas, y esas moneditas hacen que aparezcan moneditas nuevas. Después, esas moneditas nuevas también hacen aparecer más moneditas. Y así.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
           <TarjetaMini titulo="Mensual">La alcancía mágica hace moneditas nuevas 12 veces al año (una vez por mes).</TarjetaMini>
           <TarjetaMini titulo="Trimestral">La alcancía mágica hace moneditas nuevas 4 veces al año (cada tres meses).</TarjetaMini>
@@ -787,14 +797,24 @@ function Aprender() {
   return (
     <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
       <Etiqueta>Educación financiera</Etiqueta>
-      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 32, color: C.navy, margin: "0 0 26px" }}>Conceptos financieros fundamentales</h1>
+      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 32, color: C.navy, margin: "0 0 26px" }}>Los tres regímenes de interés</h1>
 
       <Acordeon title="1 · Interés simple" defaultOpen>
-        <BloqueRegimen
+        <BloqueInteres
+          queEs="El interés simple es la forma más fácil de ganar o pagar intereses. Siempre se calcula sobre el mismo numerito del principio. Ese numerito nunca cambia."
+          analogia={`Imagina que le prestas tu bicicleta a un amigo.
+
+Cada mes, tu amigo te regala UNA moneda de las gracias.
+Pase el tiempo que pase, siempre te da la MISMA moneda.
+
+¿Por qué? Porque siempre te está pagando por la MISMA bicicleta.
+
+El interés simple es igual: siempre se calcula sobre el mismo numerito del principio, sin importar cuántos meses pasen.`}
+          comoFunciona="Cada mes se cobra el mismo interés. Ese interés NO se junta con el numerito del principio. Se queda guardado aparte, como moneditas sueltas en un frasco."
+          usoLabel="¿Cuándo se usa?"
+          usoRespuesta="En préstamos cortos, y en cuentas donde lo que ganas no se vuelve a sumar para ganar más."
           formula="VF = VP · (1 + i · n)"
           despejes={["VP = VF / (1 + i·n)", "i = (VF/VP − 1) / n", "n = (VF/VP − 1) / i"]}
-          sencilla="El interés simple calcula los intereses usando siempre como base el capital inicial. Por eso, si las demás condiciones no cambian, cada periodo agrega la misma cantidad de interés."
-          usoCasos="Créditos de corto plazo, algunos descuentos comerciales y ejercicios donde el interés no se reinvierte."
           ejemploTexto="Un capital de $ 1.000.000,00 COP se invierte al 2,00 % mensual simple durante 10 meses."
           pasosEjemplo={[
             { label: "Datos", content: "VP = $1.000.000,00 · i = 2,00 % mensual · n = 10 periodos" },
@@ -811,11 +831,22 @@ function Aprender() {
       </Acordeon>
 
       <Acordeon title="2 · Interés compuesto">
-        <BloqueRegimen
+        <BloqueInteres
+          queEs="El interés compuesto es cuando el interés que ganaste se junta con tu dinero. Y ese dinero más grande gana todavía más interés."
+          analogia={`Imagina una bola de nieve.
+
+La empujas cuesta abajo y empieza chiquitica.
+Mientras rueda, se le va pegando más nieve.
+Y esa nieve nueva hace que se le pegue TODAVÍA más nieve.
+
+Cada vuelta, la bola es más grande que la vuelta de antes.
+
+El dinero hace lo mismo: gana intereses, esos intereses se vuelven parte del dinero, y ese dinero más grande gana más intereses todavía.`}
+          comoFunciona="Al final de cada mes, el interés se suma al dinero que ya tenías. Al mes siguiente, el interés se calcula sobre ese dinero más grande. Por eso crece cada vez más rápido."
+          usoLabel="¿Por qué es diferente al interés simple?"
+          usoRespuesta="En el simple, siempre pagas sobre el mismo numerito. En el compuesto, el numerito crece cada mes. Por eso el compuesto siempre da más dinero que el simple, con el mismo tiempo y la misma tasa."
           formula="VF = VP · (1 + i)ⁿ"
           despejes={["VP = VF / (1+i)ⁿ", "i = (VF/VP)^(1/n) − 1", "n = ln(VF/VP) / ln(1+i)"]}
-          sencilla="Los intereses se suman al saldo. Después, ese saldo mayor también genera intereses."
-          diferencia="A diferencia del interés simple, la base de cálculo crece periodo a periodo porque los intereses se capitalizan."
           ejemploTexto="Un capital de $ 1.000.000,00 COP se invierte al 3,00 % trimestral compuesto durante 4 trimestres."
           pasosEjemplo={[
             { label: "Datos", content: "VP = $1.000.000,00 · i = 3,00 % trimestral · n = 4 periodos" },
@@ -830,12 +861,20 @@ function Aprender() {
       </Acordeon>
 
       <Acordeon title="3 · Interés continuo">
-        <BloqueRegimen
+        <BloqueInteres
+          queEs="El interés continuo es como el compuesto, pero sin esperar nada. En vez de sumar los intereses cada mes, los va sumando todo el tiempo, sin parar nunca."
+          analogia={`¿Te acuerdas de la bola de nieve de hace un momento?
+
+Ahora imagina que no espera a dar una vuelta completa para que se le pegue nieve.
+Se le va pegando nieve en CADA segundito, sin parar.
+
+Por eso esta bola crece un poquito más rápido que la del interés compuesto normal.`}
+          comoFunciona="El dinero no espera a que termine el mes para crecer. Va creciendo poquito a poquito, todo el tiempo, sin pausas. Para calcular esto usamos un número especial que se llama 'e'."
+          usoLabel="¿Dónde se usa y en qué se diferencia del compuesto?"
+          usoRespuesta="Se usa más en cuentas avanzadas de bancos y en estudios financieros, no tanto en la vida diaria. La diferencia con el compuesto es que el compuesto suma los intereses cada cierto tiempo (cada mes, por ejemplo), y el continuo los va sumando sin parar nunca."
+          notaEspecial="En interés continuo, t siempre se expresa en años. Ejemplo: 2 años y 6 meses = 2 + 6/12 = 2,5 años."
           formula="VF = VP · e^(r·t)"
           despejes={["VP = VF · e^(−r·t)", "r = ln(VF/VP) / t", "t = ln(VF/VP) / r"]}
-          sencilla="Es el caso límite del interés compuesto cuando la capitalización ocurre en cada instante, sin esperar a que termine un periodo."
-          usoCasos="Modelos financieros y de crecimiento continuo, valoración de instrumentos y contextos teóricos."
-          notaEspecial="En interés continuo, t siempre se expresa en años. Ejemplo: 2 años y 6 meses = 2 + 6/12 = 2,5 años."
           ejemploTexto="Un capital de $ 850.000,00 COP se invierte al 8,95 % continuo durante 2 años y 6 meses (t = 2,5 años)."
           pasosEjemplo={[
             { label: "Datos", content: "VP = $850.000,00 · r = 8,95 % continua · tiempo = 2 años 6 meses" },
