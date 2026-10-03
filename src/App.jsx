@@ -660,7 +660,7 @@ function Inicio({ ir }) {
   return (
     <Section style={{ paddingTop: 56, paddingBottom: 60 }}>
       <div style={{ maxWidth: 660 }}>
-        <Etiqueta>Caso aplicado · Matemáticas Financieras · Primer corte 2026-2</Etiqueta>
+        <Etiqueta>Caso aplicado · Matemáticas Financieras · Segundo corte 2026-2</Etiqueta>
         <h1 style={{ fontFamily: F_DISPLAY, fontSize: 44, lineHeight: 1.1, color: C.navy, margin: "0 0 18px" }}>
           Entiende tu dinero antes de decidir.
         </h1>
@@ -696,7 +696,7 @@ function Inicio({ ir }) {
       </div>
 
       <div style={{ marginTop: 30, fontSize: 11.5, color: C.slate, lineHeight: 1.7 }}>
-        Proyecto académico · Matemáticas Financieras · Primer Corte 2026-2<br />
+        Proyecto académico · Matemáticas Financieras · Segundo Corte 2026-2<br />
         Desarrollado con asistencia de Replit Agent y herramientas de inteligencia artificial.
       </div>
     </Section>
@@ -2779,7 +2779,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
           <Campo label={regimen === "continuo" ? "Tiempo total → t (años)" : "Tiempo total → se convierte a n períodos"}>
             <div style={{ display: "flex", gap: 8 }}><Entrada value={anios} onChange={(e) => setAnios(e.target.value)} placeholder="Años" /><Entrada value={meses} onChange={(e) => setMeses(e.target.value)} placeholder="Meses (0–11)" /></div>
             <div style={{ marginTop: 7, fontSize: 12, color: C.slate }}>
-              {regimen === "continuo" ? `t = años + meses/12. Aquí no usamos n.` : `n = meses totales ÷ ${mesesPeriodoVista || "meses por período"}. La tasa NO se convierte.`}
+              {regimen === "continuo" ? `t = años + meses/12. Aquí no usamos n.` : regimen === "compuesto" ? `n = meses totales ÷ ${mesesPeriodoVista || "meses por período"}. La tasa se convierte automáticamente a efectiva vencida del período de la operación.` : `n = meses totales ÷ ${mesesPeriodoVista || "meses por período"}. En interés simple la tasa NO se convierte.`}
             </div>
           </Campo>
         )}
@@ -2881,6 +2881,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
   const [objetivo, setObjetivo] = useState("0");
   const [interesConocido, setInteresConocido] = useState("");
   const [tipoIncognita, setTipoIncognita] = useState("monto"); // monto | momento | tasa
+  const [tasaDef, setTasaDef] = useState({ tipo: "efectiva", modalidad: "vencida", periodo: "mensual", meses: "5" });
   const [flujos, setFlujos] = useState([
     nuevoFlujo({ rol: "VP1", monto: "10000000", anios: "0", meses: "0", direccion: "salida" }),
     nuevoFlujo({ rol: "VF", monto: "", anios: "0", meses: "6", direccion: "entrada", esIncognitaMonto: true }),
@@ -2914,7 +2915,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
 
   function resolver() {
     setError(""); setResultado(null);
-    const tasa = parseFloat(String(tasaPct).replace(",", ".")) / 100;
+    let tasa = parseFloat(String(tasaPct).replace(",", ".")) / 100;
     const target = parseFloat(String(objetivo).replace(",", ".")) || 0;
 
     let mesesPorPeriodo = 1;
@@ -2941,6 +2942,23 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
     }
 
     const pasosConversion = [];
+    // Interés compuesto: conversión automática con el motor central (no aplica a simple ni continuo).
+    if (regimen === "compuesto" && tipoIncognita !== "tasa") {
+      const tasaIngresada = parseNumCO(tasaPct);
+      if (!Number.isFinite(tasaIngresada)) { setError("La tasa ingresada debe ser numérica."); return; }
+      try {
+        const conv = convertirTasaAPeriodoOperacion({
+          tasaPct: tasaIngresada, tipoEntrada: tasaDef.tipo, modalidadEntrada: tasaDef.modalidad, periodoEntrada: tasaDef.periodo,
+          mesesEntradaPersonalizados: parseNumCO(tasaDef.meses), periodoOperacion: "personalizado_meses", mesesOperacionPersonalizados: mesesPorPeriodo,
+        });
+        tasa = conv.iEfectivaVencida;
+        pasosConversion.push({ label: "Tasa ingresada (conversión automática, solo interés compuesto)", content: descripcionTasa({ tasaPct: tasaIngresada, tipo: tasaDef.tipo, modalidad: tasaDef.modalidad, periodo: tasaDef.periodo, meses: tasaDef.meses }) });
+        conv.pasos.slice(1, -1).forEach((p) => pasosConversion.push({ label: `Conversión — ${p.label}`, content: p.content }));
+        pasosConversion.push({ label: "Tasa efectiva vencida final usada", content: `i = ${formatPercentCO(tasa, 4)} efectiva vencida del periodo de los flujos. Esta es la tasa que entra en la ecuación de valor.` });
+      } catch (e) { setError(e.message); return; }
+    } else if (regimen === "compuesto") {
+      pasosConversion.push({ label: "Tasa como incógnita (interés compuesto)", content: "No hay conversión automática porque la tasa es lo que se despeja. El resultado queda como tasa efectiva vencida del periodo seleccionado." });
+    }
     pasosConversion.push({
       label: "Periodicidad de la tasa",
       content: regimen === "continuo" ? "No aplica (interés continuo: el tiempo se expresa siempre en años)" : `${PERIODICIDADES.find((p) => p.value === periodicidad)?.label}${periodicidad === "personalizada" ? ` (cada ${mesesPorPeriodo} meses)` : ""}`,
@@ -3156,7 +3174,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
       <Tarjeta style={{ marginBottom: 20 }}>
         <Etiqueta>Motor general de ecuaciones de valor</Etiqueta>
         <p style={{ fontSize: 13.5, color: C.slate, margin: "0 0 16px" }}>
-          Para comparar cantidades de dinero ubicadas en momentos diferentes (ej. Valor Presente 1, Valor Presente 2 y Valor Futuro) las llevamos a un mismo momento focal y construimos una ecuación de valor. La tasa y el tiempo deben quedar en la misma unidad de periodo: la herramienta no convierte tasas entre periodicidades.
+          Para comparar cantidades de dinero ubicadas en momentos diferentes (ej. Valor Presente 1, Valor Presente 2 y Valor Futuro) las llevamos a un mismo momento focal y construimos una ecuación de valor. En interés simple y continuo la tasa y el tiempo deben quedar en la misma unidad y la herramienta NO convierte tasas. En interés compuesto, cuando la incógnita no es la tasa, la herramienta convierte automáticamente la tasa ingresada a efectiva vencida del periodo de los flujos.
         </p>
         <div style={{ padding: 13, background: C.paperDark, borderRadius: 8, fontSize: 12.5, lineHeight: 1.55, color: C.slate, marginBottom: 16 }}>
           <strong style={{ color: C.navy }}>¿Qué significa entrada y salida?</strong><br />
@@ -3172,11 +3190,11 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
           <Campo label="Régimen">
             <Selector value={regimen} onChange={(e) => setRegimen(e.target.value)} options={[{ value: "simple", label: "Simple" }, { value: "compuesto", label: "Compuesto" }, { value: "continuo", label: "Continuo" }]} />
           </Campo>
-          <Campo label={regimen === "continuo" ? "Tasa continua r (% anual)" : "Tasa i (% por periodo)"}>
+          <Campo label={regimen === "continuo" ? "Tasa continua r (% anual)" : regimen === "compuesto" ? "Valor de la tasa (%)" : "Tasa i (% por periodo)"}>
             <Entrada value={tasaPct} onChange={(e) => setTasaPct(e.target.value)} disabled={tipoIncognita === "tasa"} />
           </Campo>
           {regimen !== "continuo" && (
-            <Campo label="Periodicidad de la tasa">
+            <Campo label={regimen === "compuesto" ? "Periodo de los flujos (al que se convierte la tasa)" : "Periodicidad de la tasa"}>
               <Selector value={periodicidad} onChange={(e) => setPeriodicidad(e.target.value)} options={PERIODICIDADES.map((p) => ({ value: p.value, label: p.label }))} />
             </Campo>
           )}
@@ -3202,6 +3220,15 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
             <Entrada value={interesConocido} onChange={(e) => setInteresConocido(e.target.value)} placeholder="Ej. 332.500" />
           </Campo>
         </div>
+        {regimen === "compuesto" && tipoIncognita !== "tasa" && (
+          <div style={{ marginTop: 14, padding: 12, border: `1px solid ${C.line}`, borderRadius: 8, background: C.paper }}>
+            <div style={{ fontSize: 12, color: C.slate, marginBottom: 8 }}>Conversión automática (solo interés compuesto): ingresa cualquier tasa y la herramienta la convierte a efectiva vencida del periodo de los flujos. En interés simple y continuo no se convierte.</div>
+            <EditorTasa valor={tasaDef} onChange={setTasaDef} conValor={false} />
+          </div>
+        )}
+        {regimen === "compuesto" && tipoIncognita === "tasa" && (
+          <div style={{ marginTop: 14, fontSize: 12, color: C.slate }}>La tasa es la incógnita: no se hace conversión automática. El resultado será una tasa efectiva vencida del periodo seleccionado.</div>
+        )}
       </Tarjeta>
 
       <Tarjeta style={{ marginBottom: 20 }}>
@@ -3291,6 +3318,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
             {resultado.tipo === "momento" && (resultado.regimen === "continuo" ? `${formatNumberCO(resultado.valor, 2, masDecimales ? 10 : 4)} años` : `${formatNumberCO(resultado.valor, 2, masDecimales ? 10 : 4)} periodos`)}
             {resultado.tipo === "tasa" && formatPercentCO(resultado.valor, masDecimales ? 10 : 4)}
           </div>
+          {resultado.tipo === "tasa" && resultado.regimen === "compuesto" && <div style={{ fontSize: 13, color: C.slate, marginBottom: 8 }}>Tasa efectiva vencida del periodo seleccionado para los flujos.</div>}
           <button onClick={() => setMasDecimales(!masDecimales)} style={{ background: "none", border: "none", color: C.gold, fontSize: 12, cursor: "pointer", padding: 0, marginBottom: 10 }}>{masDecimales ? "Mostrar menos decimales" : "Mostrar más decimales"}</button>
           {resultado.tipo === "monto" && Array.isArray(resultado.valoresIncognitas) && resultado.valoresIncognitas.length > 0 && (
             <div style={{ margin: "12px 0", display: "grid", gap: 8 }}>
@@ -3715,7 +3743,7 @@ function Comparar({ moneda }) {
       <Tarjeta style={{ marginBottom: 20 }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16 }}>
           <Campo label={`Capital (VP) — ${moneda}`}><Entrada type="number" value={capital} onChange={(e) => setCapital(Number(e.target.value) || 0)} /></Campo>
-          <Campo label="Tasa por periodo (%)"><Entrada type="number" value={tasaPct} onChange={(e) => setTasaPct(Number(e.target.value) || 0)} /></Campo>
+          <Campo label="Tasa del periodo para comparar (%)"><Entrada type="number" value={tasaPct} onChange={(e) => setTasaPct(Number(e.target.value) || 0)} /></Campo>
           <Campo label="Número de periodos"><Entrada type="number" value={periodos} onChange={(e) => setPeriodos(Math.max(1, Math.min(60, Number(e.target.value) || 1)))} /></Campo>
         </div>
       </Tarjeta>
@@ -3751,7 +3779,7 @@ function Comparar({ moneda }) {
         El interés <strong>simple</strong> crece linealmente porque siempre calcula sobre el capital inicial. El interés <strong>compuesto</strong> crece más rápido porque cada periodo capitaliza sobre el saldo anterior. El interés <strong>continuo</strong> es el límite del compuesto cuando la capitalización ocurre en cada instante, por lo que supera ligeramente al compuesto discreto para la misma tasa nominal.
       </div>
       <div style={{ padding: 14, background: C.paperDark, borderRadius: 8, fontSize: 12, color: C.slate }}>
-        Esta comparación es educativa. Las tasas deben interpretarse según su unidad; la herramienta no convierte tasas entre periodicidades en este corte.
+        Esta comparación es educativa y usa una misma tasa del periodo para observar cómo cambian los resultados entre interés simple, compuesto y continuo. La conversión automática de tasas se realiza en el simulador de interés compuesto, en la calculadora de tasas y en el simulador de anualidades.
       </div>
     </Section>
   );
@@ -4015,8 +4043,8 @@ export default function App() {
       {seccion === "interacciones" && <Interacciones />}
       <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 20 }}>
         <Section style={{ padding: "22px 20px", fontSize: 11.5, color: C.slate, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-          <span>Numeris · Proyecto académico · Matemáticas Financieras · Primer Corte 2026-2</span>
-          <span>Desarrollado con asistencia de Replit Agent ChatGPT Business y Cloude </span>
+          <span>Numeris · Proyecto académico · Matemáticas Financieras · Segundo Corte 2026-2</span>
+          <span>Desarrollado con asistencia de Replit Agent, ChatGPT Business y Claude</span>
         </Section>
       </div>
     </div>
