@@ -159,22 +159,35 @@ const PERIODICIDADES = [
 ];
 
 const GLOSARIO = [
-  { t: "VP", d: "Valor Presente: dinero equivalente en el momento inicial." },
-  { t: "VF", d: "Valor Futuro: valor que tendrá o tendría una cantidad en un momento futuro." },
-  { t: "i", d: "Tasa de interés por periodo, usada en interés simple y compuesto." },
-  { t: "n", d: "Número de periodos de la tasa (simple y compuesto)." },
-  { t: "r", d: "Tasa usada en interés continuo." },
-  { t: "t", d: "Tiempo expresado siempre en años, usado en interés continuo." },
-  { t: "Capital", d: "Monto de dinero sobre el cual se calculan los intereses." },
-  { t: "Interés", d: "Costo o rendimiento del dinero en el tiempo." },
-  { t: "Periodo", d: "Intervalo de tiempo al que corresponde la tasa (mes, bimestre, trimestre...)." },
-  { t: "Flujo", d: "Movimiento de dinero (entrada o salida) en un momento determinado." },
-  { t: "Momento", d: "Instante en el tiempo en que ocurre un flujo, medido en periodos o años." },
-  { t: "Momento focal", d: "Instante elegido para comparar varios flujos que ocurren en momentos distintos." },
-  { t: "Ecuación de valor", d: "Igualdad que resulta de trasladar todos los flujos a un mismo momento focal." },
-  { t: "Coeficiente", d: "Relación proporcional entre el valor de un flujo y otro (ej. Flujo 2 = 1,4 × Flujo 1)." },
-  { t: "Capitalización", d: "Trasladar un valor hacia el futuro sumando los intereses generados." },
-  { t: "Descuento", d: "Trasladar un valor hacia el pasado, restando el efecto del interés." },
+  { t: "VP", d: "Valor Presente: cuánto vale hoy una cantidad de dinero que vas a recibir o pagar más adelante." },
+  { t: "VF", d: "Valor Futuro: cuánto valdrá un dinero de hoy cuando pase el tiempo, ya sumados los intereses." },
+  { t: "i", d: "Tasa de interés de un periodo. Dice cuánto crece o cuánto cuesta el dinero en cada periodo (cada mes, cada trimestre, etc.)." },
+  { t: "n", d: "Cantidad de periodos que dura la operación. En una anualidad es lo mismo que el número de cuotas." },
+  { t: "r", d: "Tasa que se usa en el interés continuo, donde el dinero crece sin parar en lugar de crecer a saltos." },
+  { t: "t", d: "Tiempo medido siempre en años. Se usa en el interés continuo." },
+  { t: "Capital", d: "Dinero con el que empiezas: lo que prestas, lo que invierte o lo que ahorras al comienzo." },
+  { t: "Interés", d: "Lo que cuesta usar dinero ajeno (si pides un préstamo) o lo que ganas por prestar el tuyo (si inviertes)." },
+  { t: "Periodo", d: "Cada intervalo de tiempo al que corresponde una tasa: un mes, dos meses, un trimestre, un año." },
+  { t: "Periodicidad", d: "Cada cuánto tiempo se repite un pago o se cobra una tasa. Por ejemplo, mensual o trimestral." },
+  { t: "Flujo", d: "Un movimiento de dinero que entra o sale en un momento concreto." },
+  { t: "Momento", d: "Lugar de la línea de tiempo donde ocurre un flujo. El momento 0 es hoy." },
+  { t: "Línea de tiempo", d: "Dibujo que ordena los pagos y cobros desde hoy (momento 0) hasta el final. Ayuda a ver cuándo cae cada flujo." },
+  { t: "Momento focal", d: "Fecha elegida para comparar varios flujos. Todos los valores se trasladan a esa fecha para poder sumarlos." },
+  { t: "Fecha focal", d: "Es lo mismo que el momento focal: el día al que se llevan todos los pagos para compararlos." },
+  { t: "Ecuación de valor", d: "Igualdad que se arma cuando todos los flujos se trasladan a la misma fecha focal. Sirve para despejar lo que no se sabe." },
+  { t: "Coeficiente", d: "Número que dice cuántas veces un flujo contiene a otro. Por ejemplo, si el flujo 2 es 1,4 × flujo 1, el coeficiente es 1,4." },
+  { t: "Capitalización", d: "Llevar un valor hacia el futuro sumándole los intereses que gana en ese tiempo." },
+  { t: "Descuento", d: "Traer un valor desde el futuro hacia hoy, quitándole los intereses. El valor resultante es menor." },
+  { t: "Tasa nominal", d: "Tasa de referencia que se expresa para el año completo, pero que se cobra por partes (cada mes, cada trimestre...). No muestra el crecimiento real." },
+  { t: "Tasa efectiva", d: "Tasa que muestra el crecimiento o el costo real del dinero en un periodo, contando los intereses que generan más intereses." },
+  { t: "Anualidad", d: "Serie de pagos iguales que se hacen cada cierto tiempo. Aunque diga \"anual\", los pagos pueden ser mensuales, trimestrales, etc." },
+  { t: "Anualidad vencida", d: "Anualidad en la que cada cuota se paga al final del periodo. La primera cuota cae en el momento 1, no en el 0." },
+  { t: "Cuota (A)", d: "Valor que se paga en cada periodo dentro de una anualidad. Todas las cuotas valen lo mismo." },
+  { t: "Pago periódico", d: "Pago que se repite cada cierto tiempo fijo, por ejemplo cada mes." },
+  { t: "Valor presente de una anualidad", d: "Lo que valen hoy todas las cuotas juntas. Es el valor del crédito el día que se otorga." },
+  { t: "Valor futuro de una anualidad", d: "Lo que valen todas las cuotas juntas al final del plazo, contando los intereses que ganaron." },
+  { t: "Pago extra", d: "Pago adicional que no hace parte de las cuotas iguales, como una prima, un abono o una cuota inicial. Se calcula aparte y se suma." },
+  { t: "Pago extraordinario", d: "Otro nombre para el pago extra: un pago que se sale de la serie de cuotas iguales." },
 ];
 
 const EJEMPLOS = {
@@ -574,7 +587,7 @@ function BloqueFormula({ children }) {
   );
 }
 
-function NivelCinco({ children }) {
+function NivelCinco({ children, titulo = "🧸 Nivel 5 años" }) {
   return (
     <div style={{
       background: "#FDF3E7", border: `1px solid ${C.gold}55`, borderRadius: 10,
@@ -584,7 +597,7 @@ function NivelCinco({ children }) {
         fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.1em", textTransform: "uppercase",
         color: C.goldDeep, fontWeight: 700, marginBottom: 8, display: "flex", alignItems: "center", gap: 6,
       }}>
-        🧸 Nivel 5 años
+        {titulo}
       </div>
       <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65, whiteSpace: "pre-line" }}>{children}</div>
     </div>
@@ -800,6 +813,615 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
     </div>
   );
 }
+
+/* ============================================================
+   ANUALIDADES VENCIDAS — módulo educativo
+   Clase interactiva: de la idea sencilla a la fórmula, el ejemplo
+   paso a paso y la interpretación. Se conecta con Conversión de
+   tasas (la tasa debe coincidir con la periodicidad de las cuotas).
+   ============================================================ */
+
+function Interpretacion({ children }) {
+  return (
+    <div style={{
+      marginTop: 12, padding: "12px 16px", borderRadius: 8, background: C.successBg,
+      fontSize: 13.5, color: C.navy, lineHeight: 1.6,
+    }}>
+      <strong>Interpretación: qué nos dice el resultado.</strong> {children}
+    </div>
+  );
+}
+
+function PasoLinea({ momento, pago, etiqueta }) {
+  return (
+    <div style={{
+      flex: "1 1 70px", minWidth: 70, textAlign: "center", padding: "10px 6px",
+      borderRight: `1px dashed ${C.line}`,
+    }}>
+      <div style={{ fontFamily: F_MONO, fontSize: 11, color: C.slate, marginBottom: 4 }}>{etiqueta}</div>
+      <div style={{ fontFamily: F_MONO, fontSize: 16, fontWeight: 700, color: C.navy }}>{momento}</div>
+      <div style={{ fontFamily: F_MONO, fontSize: 15, fontWeight: 700, color: pago ? C.gold : C.slate, marginTop: 6 }}>{pago || "·"}</div>
+    </div>
+  );
+}
+
+function AnualidadesVencidas() {
+  const factor20 = Math.pow(1.0095, -20);
+  const factor40 = Math.pow(1.0095, -40);
+  // Ejemplo de la moto (sección 9): todo calculado con las fórmulas, sin números escritos a mano
+  const mA = 400000, mi = 0.02, mn = 12, mP1 = 1000000, mm1 = 6, mP2 = 1500000, mm2 = 12;
+  const mFactorVP = (Math.pow(1 + mi, mn) - 1) / (mi * Math.pow(1 + mi, mn));
+  const mFactorVF = (Math.pow(1 + mi, mn) - 1) / mi;
+  const mVPcuotas = mA * mFactorVP;
+  const mVPe1 = mP1 / Math.pow(1 + mi, mm1);
+  const mVPe2 = mP2 / Math.pow(1 + mi, mm2);
+  const mVPtotal = mVPcuotas + mVPe1 + mVPe2;
+  const mVFcuotas = mA * mFactorVF;
+  const mVFe1 = mP1 * Math.pow(1 + mi, mn - mm1);
+  const mVFe2 = mP2 * Math.pow(1 + mi, mn - mm2);
+  const mVFtotal = mVFcuotas + mVFe1 + mVFe2;
+
+  return (
+    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
+
+      <NivelCinco titulo="🧸 Nivel 7 años">
+        {`Imagina que quieres una bicicleta que cuesta mucha plata y no tienes toda hoy.
+Tu mamá te dice: "Te la compro hoy y tú me la vas pagando: cada mes me das la misma cantidad de plata".
+
+Supongamos que cada mes le das 3 billetes. Ni uno más, ni uno menos. Todos los meses, igual. Esa fila de pagos iguales, uno detrás de otro, se llama ANUALIDAD.
+
+Ojo: aunque diga "anual", no significa que se pague una vez al año. Puede ser cada mes, cada dos meses, cada tres meses... Lo importante es que los pagos sean iguales y que pase el mismo tiempo entre uno y otro.
+
+¿Y qué quiere decir "vencida"? Es como en un restaurante: primero comes y al final pagas la cuenta. Aquí primero pasa el mes y al final del mes pagas. Por eso el primer pago no es hoy: es cuando termina el primer mes.
+
+Ahora viene lo más importante: el dinero cambia de valor con el tiempo. Si te dan a escoger entre un billete hoy o el mismo billete dentro de un año, escoges hoy, porque ese billete lo puedes guardar y ganar intereses. Un billete de hoy vale más que el mismo billete de dentro de un año.
+
+Por eso con la misma fila de pagos podemos hacer dos preguntas:
+— Valor presente (VP): ¿cuánto valen HOY todos los pagos juntos? Es lo que costó la bicicleta.
+— Valor futuro (VF): ¿cuánto valen AL FINAL todos los pagos juntos? Es lo que tendrías si, en vez de pagar, hubieras guardado cada pago en una alcancía que gana intereses.
+
+Es la misma fila de pagos vista desde dos días distintos: hoy o el último día.
+
+¿Y si un día tu abuela te da plata y tú pagas de una vez un valor más grande? Ese pago es diferente a los demás y no cabe en la fila de pagos iguales. Se llama PAGO EXTRA. Se calcula aparte y después se suma. Lo verás en la sección 9.`}
+      </NivelCinco>
+
+      <div style={{ padding: 14, background: C.paperDark, borderRadius: 8, fontSize: 13.5, color: C.slate, marginBottom: 14 }}>
+        <strong style={{ color: C.navy }}>Dos cosas para no olvidar:</strong> (1) las anualidades usan interés <strong>compuesto</strong>, como la bola de nieve del módulo 2: el interés también gana interés. (2) La tasa tiene que estar contada en el mismo "tamaño" que las cuotas. Para eso sirve el módulo 4 de conversión de tasas.
+      </div>
+
+      {/* SECCIÓN 1 */}
+      <Acordeon title="1 · De un solo pago a muchas cuotas" defaultOpen>
+        <p>Hasta ahora, en interés simple, compuesto y continuo, siempre hablábamos de <strong>un solo pago</strong>: un valor presente (hoy) y un valor futuro (después). Era como una sola galleta que viaja en el tiempo.</p>
+        <p>Con las anualidades todo cambia: ya no hay una galleta, hay <strong>una fila de galletas iguales</strong>. No miramos un solo movimiento de dinero, sino muchos pagos iguales, uno detrás de otro.</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
+          <TarjetaMini titulo="Antes: un solo pago" tono="azul">
+            Prestas $1.000.000 hoy y recibes un solo valor dentro de un año. Un solo pago de ida y uno de vuelta.
+          </TarjetaMini>
+          <TarjetaMini titulo="Ahora: una fila de pagos" tono="azul">
+            Pides un crédito hoy y lo pagas en 36 cuotas iguales. Son 36 pagos del mismo valor.
+          </TarjetaMini>
+        </div>
+        <p style={{ color: C.slate }}><strong>¿Por qué importa?</strong> Casi todo en la vida se paga en cuotas. Sin anualidades no podríamos calcular nada de eso.</p>
+        <div style={{ fontSize: 13, color: C.slate, margin: "10px 0 6px" }}>Ejemplos reales en Colombia</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="Crédito de carro">Cuotas mensuales iguales durante 36, 48 o 60 meses.</TarjetaMini>
+          <TarjetaMini titulo="Crédito de vivienda">Cuotas mensuales iguales durante muchos años.</TarjetaMini>
+          <TarjetaMini titulo="Aportes a un fondo">La misma plata que consignas cada mes para ahorrar.</TarjetaMini>
+          <TarjetaMini titulo="Arriendo mensual">El mismo canon cada mes mientras dure el contrato.</TarjetaMini>
+          <TarjetaMini titulo="Plataforma de streaming">La suscripción de cada mes, siempre por el mismo valor.</TarjetaMini>
+        </div>
+      </Acordeon>
+
+      {/* SECCIÓN 2 */}
+      <Acordeon title="2 · ¿Qué es una anualidad? Las 4 condiciones">
+        <p><strong>¿Qué es?</strong> Una anualidad es una fila de pagos iguales que se hacen cada cierto tiempo. En Matemáticas Financieras, "anualidad" es el nombre elegante para decir "cuotas iguales y constantes".</p>
+        <p>Para que una fila de pagos sea una anualidad, tiene que cumplir <strong>4 reglas al mismo tiempo</strong>. Es como una fila en el colegio: todos tienen que cumplir las reglas para estar en ella.</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
+          <TarjetaMini titulo="1. Todos los pagos iguales">Como tu mesada: siempre te dan las mismas monedas, nunca más ni menos.</TarjetaMini>
+          <TarjetaMini titulo="2. Pagos periódicos">Llegan cada cierto tiempo fijo, como el bus que pasa cada 10 minutos.</TarjetaMini>
+          <TarjetaMini titulo="3. Un pago por cada periodo">Si hay 24 meses, hay 24 cuotas. Ni una más, ni una menos.</TarjetaMini>
+          <TarjetaMini titulo="4. La misma tasa">El mismo interés vale para todos los pagos de la fila.</TarjetaMini>
+        </div>
+        <BloqueFormula>Anualidad = pagos iguales + periódicos + uno por periodo + misma tasa</BloqueFormula>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
+          <TarjetaMini titulo="Si una cuota cambia de valor" tono="alerta">
+            Esa cuota se sale de la fila. La fórmula de anualidades solo sirve cuando todas valen lo mismo.
+          </TarjetaMini>
+          <TarjetaMini titulo="Si aparece un pago extra" tono="alerta">
+            Es como una galleta grande que cae en la mesa fuera de la fila. No hace parte de la anualidad: se calcula aparte (lo veremos en la sección 9).
+          </TarjetaMini>
+        </div>
+        <p style={{ color: C.slate, marginTop: 12 }}><strong>Diferencia con lo que ya conoces:</strong> un pago único (como en el interés compuesto) es una sola galleta. Una anualidad es una fila de galletas iguales.</p>
+
+        <div style={{ fontSize: 13, color: C.slate, margin: "14px 0 8px" }}>¿Cuáles sí y cuáles no?</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ flex: "1 1 260px" }}>
+            <TarjetaMini titulo="SÍ es anualidad" tono="azul">
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                <li>Arriendo mensual fijo.</li>
+                <li>Cuota mensual fija de un crédito.</li>
+                <li>Aporte mensual fijo a un fondo.</li>
+                <li>Suscripción mensual fija.</li>
+              </ul>
+            </TarjetaMini>
+          </div>
+          <div style={{ flex: "1 1 260px" }}>
+            <TarjetaMini titulo="NO es anualidad" tono="alerta">
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                <li>Nómina variable según proyectos.</li>
+                <li>Pago extra en un crédito.</li>
+                <li>Abono adicional de diferente valor.</li>
+                <li>Cuotas que cambian cada mes.</li>
+              </ul>
+            </TarjetaMini>
+          </div>
+        </div>
+        <Interpretacion>
+          Para decidir, hazte una sola pregunta: ¿los pagos son iguales, regulares y con la misma tasa? Si sí, es anualidad. Si hay uno distinto, ese se saca de la fila.
+        </Interpretacion>
+      </Acordeon>
+
+      {/* SECCIÓN 3 */}
+      <Acordeon title="3 · ¿Qué significa vencida?">
+        <p><strong>¿Qué es?</strong> En una anualidad vencida, cada pago se hace <strong>al final</strong> del periodo. Primero pasa el tiempo y después pagas.</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
+          <TarjetaMini titulo="Como el restaurante" tono="azul">Primero comes todo el almuerzo y al final pagas la cuenta. Primero pasa el mes y al final pagas la cuota.</TarjetaMini>
+          <TarjetaMini titulo="Crédito tradicional" tono="azul">Recibes la plata hoy y pagas la primera cuota cuando termina el primer mes.</TarjetaMini>
+          <TarjetaMini titulo="Arriendo pagado al final del mes" tono="azul">Usas la casa todo el mes y cuando termina pagas el arriendo.</TarjetaMini>
+        </div>
+        <TarjetaMini titulo="Ojo: vencida NO es atrasada" tono="alerta">
+          Una cuota "vencida" puede estar perfectamente al día. Solo quiere decir que se paga al final del periodo, no al principio.
+        </TarjetaMini>
+        <p style={{ color: C.slate, marginTop: 12 }}><strong>Más adelante:</strong> la anualidad anticipada será lo contrario. Es como el cine: primero pagas la boleta y después ves la película. Primero se paga y después pasa el periodo.</p>
+        <Interpretacion>
+          En una anualidad vencida nunca hay una cuota en el momento 0 (hoy). La primera cuota aparece cuando termina el primer periodo.
+        </Interpretacion>
+      </Acordeon>
+
+      {/* SECCIÓN 4 */}
+      <Acordeon title="4 · La línea de tiempo de una anualidad vencida">
+        <p>Una línea de tiempo es como un dibujo del calendario. El <strong>0</strong> es hoy. Los números <strong>1, 2, 3... n</strong> son los finales de cada mes (o de cada periodo). Ahí caen las cuotas.</p>
+        <div style={{ border: `1px solid ${C.line}`, borderRadius: 8, background: C.paper, display: "flex", flexWrap: "wrap", margin: "12px 0", overflow: "hidden" }}>
+          <PasoLinea etiqueta="Momento" momento="0" pago="" />
+          <PasoLinea etiqueta="Momento" momento="1" pago="A" />
+          <PasoLinea etiqueta="Momento" momento="2" pago="A" />
+          <PasoLinea etiqueta="Momento" momento="3" pago="A" />
+          <PasoLinea etiqueta="Momento" momento="..." pago="..." />
+          <PasoLinea etiqueta="Momento" momento="n" pago="A" />
+        </div>
+        <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Las letras que vamos a usar</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="A">La cuota: lo que pagas cada vez. Siempre es el mismo valor.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa del periodo: el "pedacito" de interés de cada mes (o de cada periodo).</TarjetaMini>
+          <TarjetaMini titulo="n">Cuántos periodos hay, que es lo mismo que cuántas cuotas hay.</TarjetaMini>
+          <TarjetaMini titulo="VP">Valor presente: cuánto valen todas las cuotas hoy.</TarjetaMini>
+          <TarjetaMini titulo="VF">Valor futuro: cuánto valen todas las cuotas al final.</TarjetaMini>
+        </div>
+        <Interpretacion>
+          Todas las A son iguales porque todas las cuotas valen lo mismo. Lo único que cambia de una cuota a otra es el momento en que cae.
+        </Interpretacion>
+      </Acordeon>
+
+      {/* SECCIÓN 5 */}
+      <Acordeon title="5 · Valor presente: cuánto valen hoy varias cuotas futuras">
+        <p><strong>¿Qué es?</strong> El valor presente de una anualidad es <strong>cuánto valen hoy</strong> todas las cuotas que vas a pagar en el futuro.</p>
+        <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
+          Un billete que te dan dentro de un año vale un poquito menos que uno que te dan hoy, porque el dinero de hoy se puede poner a ganar interés. Entonces cada cuota del futuro se "encoge" un poquito cuando la traemos a hoy. Después sumamos todas las cuotas encogidas.
+        </TarjetaMini>
+        <p style={{ marginTop: 12 }}><strong>¿Para qué sirve?</strong></p>
+        <ul style={{ margin: "0 0 8px", paddingLeft: 20 }}>
+          <li>Para saber cuánto vale hoy un crédito (por ejemplo, 36 cuotas de un carro).</li>
+          <li>Para saber cuánto vale hoy una inversión con pagos constantes.</li>
+          <li>Para comparar pagos del futuro con plata de hoy.</li>
+        </ul>
+        <p style={{ color: C.slate }}><strong>Diferencia:</strong> en el interés compuesto traías UN valor futuro a hoy. Aquí traes una FILA de valores futuros y los sumas.</p>
+
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Primero la idea, como una suma</div>
+        <BloqueFormula>VP = A/(1+i)^1 + A/(1+i)^2 + A/(1+i)^3 + ... + A/(1+i)^n</BloqueFormula>
+        <p style={{ margin: "6px 0" }}>Cada cuota se trae a hoy y luego se suman todas.</p>
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Después, la fórmula "atajo"</div>
+        <BloqueFormula>VP = A × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ]</BloqueFormula>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "8px 0" }}>
+          <TarjetaMini titulo="VP">El valor de todas las cuotas hoy.</TarjetaMini>
+          <TarjetaMini titulo="A">La cuota.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa del periodo.</TarjetaMini>
+          <TarjetaMini titulo="n">El número de pagos.</TarjetaMini>
+        </div>
+        <p style={{ color: C.slate }}>Este atajo hace toda la suma en un solo paso. Con 3 cuotas ayuda, pero con 360 cuotas de una casa es salvavidas.</p>
+
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
+          <p>Vamos a pagar 3 cuotas de COP 1.000 con una tasa del 5 % efectivo por periodo. ¿Cuánto valen hoy esas cuotas?</p>
+          <Acordeon title="Ver procedimiento completo">
+            <FichaProcedimiento pasos={[
+              { label: "Datos", content: "A = 1.000 · i = 5 % = 0,05 · n = 3" },
+              { label: "Fórmula", content: "VP = A × [((1 + i)^n − 1) / (i × (1 + i)^n)]" },
+              { label: "Sustitución", content: "VP = 1.000 × [((1 + 0,05)^3 − 1) / (0,05 × (1 + 0,05)^3)]" },
+              { label: "Comprobación como suma", content: "1.000/1,05 + 1.000/1,05^2 + 1.000/1,05^3" },
+              { label: "Resultado", content: "VP = COP 2.723,25" },
+              { label: "Interpretación", content: "Esas tres cuotas futuras de COP 1.000 equivalen hoy a COP 2.723,25." },
+            ]} />
+          </Acordeon>
+          <Interpretacion>
+            Pagarás COP 3.000 en total, pero hoy esas cuotas valen COP 2.723,25, porque el dinero que se paga más adelante vale menos que el de hoy.
+          </Interpretacion>
+        </div>
+      </Acordeon>
+
+      {/* SECCIÓN 6 */}
+      <Acordeon title="6 · Valor futuro: cuánto tendré al final si pago o ahorro lo mismo cada vez">
+        <p><strong>¿Qué es?</strong> El valor futuro de una anualidad es <strong>cuánto valen todos los pagos al final</strong>, contando los intereses.</p>
+        <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
+          Es la alcancía mágica del módulo 4: cada vez que metes monedas iguales, esas monedas empiezan a hacer moneditas nuevas. Las primeras que metiste tuvieron más tiempo para crecer; las últimas, menos. Al final, juntamos todo.
+        </TarjetaMini>
+        <p style={{ marginTop: 12 }}><strong>Ejemplo de la vida real:</strong> si ahorras COP 100.000 cada mes durante un año, el valor futuro te dice cuánto tendrás al final, con todo y los intereses.</p>
+        <p style={{ color: C.slate }}><strong>Diferencia:</strong> el valor presente lleva las cuotas a HOY; el valor futuro las lleva al FINAL. Es la misma fila de cuotas mirada desde dos fechas distintas.</p>
+        <div style={{ fontSize: 13, color: C.slate, marginBottom: 4 }}>Fórmula</div>
+        <BloqueFormula>VF = A × [ ((1 + i)^n − 1) / i ]</BloqueFormula>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "8px 0" }}>
+          <TarjetaMini titulo="VF">El valor de todas las cuotas al final.</TarjetaMini>
+          <TarjetaMini titulo="A">La cuota.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa del periodo.</TarjetaMini>
+          <TarjetaMini titulo="n">El número de pagos.</TarjetaMini>
+        </div>
+
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
+          <p>Vamos a pagar 3 cuotas de COP 1.000 con una tasa del 5 % efectivo por periodo. ¿Cuánto valen al final esas cuotas?</p>
+          <Acordeon title="Ver procedimiento completo">
+            <FichaProcedimiento pasos={[
+              { label: "Datos", content: "A = 1.000 · i = 5 % = 0,05 · n = 3" },
+              { label: "Fórmula", content: "VF = A × [((1 + i)^n − 1) / i]" },
+              { label: "Sustitución", content: "VF = 1.000 × [((1 + 0,05)^3 − 1) / 0,05]" },
+              { label: "Resultado", content: "VF = COP 3.152,50" },
+              { label: "Interpretación", content: "Al final, esas tres cuotas de COP 1.000 acumulan COP 3.152,50." },
+            ]} />
+          </Acordeon>
+          <Interpretacion>
+            Pusiste COP 3.000 en total y al final tienes COP 3.152,50. Los COP 152,50 de más son los intereses que hicieron crecer tus cuotas.
+          </Interpretacion>
+        </div>
+      </Acordeon>
+
+      {/* SECCIÓN 7 */}
+      <Acordeon title="7 · ¿De cuánto es la cuota? Hallar A desde VP o VF">
+        <p>A veces no queremos saber cuánto valen las cuotas. Ya sabemos cuánto cuesta el crédito (o cuánto queremos ahorrar) y lo que queremos saber es: <strong>¿de cuánto debe ser cada cuota?</strong> Es la pregunta más común de la vida real.</p>
+        <p style={{ color: C.slate }}>Para eso usamos las mismas fórmulas de antes, pero "despejando" la A.</p>
+
+        <div style={{ fontWeight: 700, color: C.navy, margin: "14px 0 4px" }}>Caso 1 · Hallar A desde VP (pagar una deuda)</div>
+        <BloqueFormula>A = VP / [ ((1 + i)^n − 1) / (i × (1 + i)^n) ]</BloqueFormula>
+        <p style={{ color: C.slate }}>Se usa cuando ya sé cuánto vale el crédito hoy y quiero saber la cuota.</p>
+        <p>Un crédito de COP 30.000.000 se paga en 24 cuotas mensuales con una tasa del 30 % NAM. ¿De cuánto es cada cuota?</p>
+        <Acordeon title="Ver procedimiento completo">
+          <FichaProcedimiento pasos={[
+            { label: "Primero, la tasa", content: "30 % NAM = nominal anual, se cobra cada mes. Las cuotas son mensuales, así que necesitamos la tasa de cada mes." },
+            { label: "Tasa mensual (repartir la torta)", content: "i = 30 % / 12 = 2,5 % mensual" },
+            { label: "Datos", content: "VP = 30.000.000 · i = 2,5 % = 0,025 · n = 24" },
+            { label: "Fórmula", content: "A = VP / [((1 + i)^n − 1) / (i × (1 + i)^n)]" },
+            { label: "Sustitución", content: "A = 30.000.000 / [((1 + 0,025)^24 − 1) / (0,025 × (1 + 0,025)^24)]" },
+            { label: "Resultado", content: "A = COP 1.677.384,61" },
+            { label: "Interpretación", content: "Para pagar COP 30.000.000 en 24 cuotas mensuales con esa tasa, cada cuota debe ser de aproximadamente COP 1.677.384,61." },
+          ]} />
+        </Acordeon>
+        <Interpretacion>
+          En total pagarías unos COP 40,26 millones (24 × 1.677.384,61) por un crédito de COP 30 millones. Esa diferencia son los intereses.
+        </Interpretacion>
+
+        <div style={{ fontWeight: 700, color: C.navy, margin: "22px 0 4px" }}>Caso 2 · Hallar A desde VF (juntar una meta)</div>
+        <BloqueFormula>A = VF × [ i / ((1 + i)^n − 1) ]</BloqueFormula>
+        <p style={{ color: C.slate }}>Se usa cuando ya sé cuánta plata quiero tener al final y quiero saber cuánto debo pagar o ahorrar cada vez.</p>
+        <p>Queremos juntar COP 150.000.000 con 36 cuotas trimestrales y una tasa del 30 % NAM. ¿De cuánto es cada cuota?</p>
+        <Acordeon title="Ver procedimiento completo">
+          <FichaProcedimiento pasos={[
+            { label: "Paso 1 — Tasa mensual", content: "30 % NAM: se cobra cada mes. 30 % / 12 = 2,5 % mensual" },
+            { label: "Paso 2 — Tasa trimestral", content: "Las cuotas son cada 3 meses, así que cambiamos el tamaño de la tasa: i trimestral = (1 + 0,025)^3 − 1" },
+            { label: "Resultado de la conversión", content: "i ≈ 7,69 % efectiva trimestral" },
+            { label: "Datos", content: "VF = 150.000.000 · i ≈ 7,69 % · n = 36" },
+            { label: "Fórmula", content: "A = VF × [i / ((1 + i)^n − 1)]" },
+            { label: "Sustitución", content: "A = 150.000.000 × [0,0769 / ((1 + 0,0769)^36 − 1)]" },
+            { label: "Resultado", content: "A = COP 861.110,12" },
+            { label: "Interpretación", content: "Para llegar a COP 150.000.000 al final de 36 trimestres, cada cuota debe ser de aproximadamente COP 861.110,12." },
+          ]} />
+        </Acordeon>
+        <Interpretacion>
+          Con el 7,69 % redondeado el resultado se mueve un poco. Para obtener COP 861.110,12 se usa la tasa sin redondear (7,6890625 %). Conviene guardar todos los decimales de la tasa mientras haces las cuentas.
+        </Interpretacion>
+        <p style={{ color: C.slate, marginTop: 10 }}><strong>Diferencia entre los dos casos:</strong> desde VP la cuota paga una deuda que existe hoy; desde VF la cuota construye un ahorro que existirá en el futuro.</p>
+      </Acordeon>
+
+      {/* SECCIÓN 8 */}
+      <Acordeon title="8 · El error más común: la tasa y las cuotas no hablan el mismo idioma">
+        <div style={{ padding: 16, background: C.dangerBg, border: `1px solid ${C.danger}55`, borderRadius: 10, marginBottom: 14 }}>
+          <div style={{ fontFamily: F_MONO, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: C.danger, fontWeight: 700, marginBottom: 6 }}>
+            Advertencia
+          </div>
+          <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.6 }}>
+            La tasa tiene que estar en el mismo "tamaño" que las cuotas. Antes de usar cualquier fórmula, la tasa y las cuotas deben hablar el mismo idioma.
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="Cuotas mensuales">Tasa mensual.</TarjetaMini>
+          <TarjetaMini titulo="Cuotas bimestrales">Tasa bimestral.</TarjetaMini>
+          <TarjetaMini titulo="Cuotas trimestrales">Tasa trimestral.</TarjetaMini>
+        </div>
+        <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
+          Imagina que tu amigo solo habla inglés y tú solo hablas español. Para entenderse, alguien tiene que traducir. La conversión de tasas (módulo 4) es el traductor: cambia la tasa al "idioma" de tus cuotas.
+        </TarjetaMini>
+        <p style={{ marginTop: 12 }}><strong>Cómo se conecta con el módulo 4:</strong> primero repartes la tasa nominal para sacar la periódica, y luego cambias su tamaño con la fórmula de las efectivas. Al final, la tasa que entra a la fórmula de anualidades es siempre una tasa <strong>efectiva</strong> del tamaño de tus cuotas.</p>
+        <TarjetaMini titulo="Error común" tono="alerta">
+          Usar directamente una tasa nominal anual en la fórmula de anualidades. Por ejemplo, usar 25 % NAT como si fuera una tasa mensual.
+        </TarjetaMini>
+
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo del procedimiento correcto</div>
+          <p>Hallar el VP de una cuota mensual de $100 con una tasa del 25 % NAT (nominal anual, se cobra cada trimestre).</p>
+          <Acordeon title="Ver procedimiento completo">
+            <FichaProcedimiento pasos={[
+              { label: "Paso 1 — Repartir la nominal", content: "ET = 25 % / 4 = 6,25 % efectiva trimestral" },
+              { label: "Paso 2 — Cambiar de tamaño (trimestre a mes)", content: "EM = (1 + 0,0625)^(4/12) − 1" },
+              { label: "Resultado", content: `EM ≈ ${formatPercentCO(Math.pow(1.0625, 4 / 12) - 1, 2)} mensual` },
+              { label: "Uso en la fórmula", content: "VP = 100 × [((1 + 0,0204)^1 − 1) / (0,0204 × (1 + 0,0204)^1)]" },
+              { label: "Interpretación", content: "Si la anualidad es mensual, debo usar 2,04 % mensual, no 25 % anual." },
+            ]} />
+          </Acordeon>
+          <Interpretacion>
+            Con 2,04 % mensual, una cuota de $100 que se paga dentro de un mes vale hoy unos $98. Si hubieras usado 25 %, te habría dado $80: un error enorme que viene solo de no traducir la tasa.
+          </Interpretacion>
+        </div>
+      </Acordeon>
+
+      {/* SECCIÓN 9 */}
+      <Acordeon title="9 · Anualidades + pagos extra: la galleta grande fuera de la fila">
+
+        <NivelCinco titulo="🧸 Nivel 7 años">
+          {`Imagina una fila de galletas IGUALES sobre la mesa. Esa fila es la anualidad: todas las galletas son del mismo tamaño y están una detrás de otra.
+
+Un día llega una galleta GRANDE, diferente a las demás. No puedes meterla en la fila, porque la fila es solo de galletas iguales. Entonces la dejas aparte.
+
+Pero cuando quieres saber cuánto hay en total, tienes que contar la fila Y la galleta grande.
+
+Aquí está el truco: una galleta de hoy no vale lo mismo que una galleta de dentro de un año, porque el dinero cambia de valor con el tiempo. Por eso, antes de sumar, todos tienen que pararse en la MISMA línea, como cuando sacan una foto de grupo.
+
+Esa línea es un día que tú eliges. Se llama fecha focal:
+— Si quieres saber cuánto valen todos HOY, la foto es hoy.
+— Si quieres saber cuánto valen todos AL FINAL, la foto es el último día.
+
+Resumen para no olvidar:
+1. La fila de pagos iguales se calcula con la fórmula de anualidades.
+2. Cada pago extra se calcula aparte, moviéndolo hasta el día de la foto.
+3. Al final se suma todo.`}
+        </NivelCinco>
+
+        <div style={{ fontWeight: 700, color: C.navy, margin: "4px 0 6px" }}>La definición, con las palabras de la clase</div>
+        <TarjetaMini titulo="Anualidades + flujos adicionales" tono="azul">
+          En un crédito podemos pagar valores adicionales a las cuotas o pagos permanentes. Estos pagos no los podemos incluir dentro de las fórmulas de anualidades, pero sí debemos sumarlos. Para poder sumarlos debemos entender si lo que quiero encontrar es un valor futuro o un valor presente. En otras palabras, debemos definir una <strong>fecha focal</strong> a la que debemos llegar.
+        </TarjetaMini>
+
+        <p style={{ marginTop: 14 }}><strong>¿Qué es un pago extra?</strong> Es cualquier pago que NO es una de las cuotas iguales. Por ejemplo: una cuota inicial, una prima que usas para abonar al crédito, un abono extraordinario, un depósito adicional o un pago grande en un mes específico.</p>
+        <BloqueFormula>Cuotas iguales → fórmula de anualidades · Pagos distintos → se calculan aparte y se suman</BloqueFormula>
+
+        {/* PASO 0 */}
+        <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Paso 0 · Elegir la fecha focal</div>
+        <p>La fecha focal depende de lo que quieres encontrar. Solo hay dos casos:</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="Quiero un valor presente (VP)" tono="azul">La fecha focal es hoy (momento 0). Todo se trae a hoy.</TarjetaMini>
+          <TarjetaMini titulo="Quiero un valor futuro (VF)" tono="azul">La fecha focal es el final (momento n). Todo se lleva al final.</TarjetaMini>
+        </div>
+
+        {/* PASO 1 */}
+        <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Paso 1 · La fórmula completa</div>
+        <p>La idea es siempre la misma: <strong>fórmula de la anualidad + cada pago extra movido hasta la fecha focal.</strong></p>
+
+        <div style={{ fontSize: 12.5, color: C.slate, margin: "10px 0 4px" }}>Valor presente + pagos extra (la fecha focal es hoy)</div>
+        <BloqueFormula>VP total = A × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + P1 / (1 + i)^n1 + P2 / (1 + i)^n2 + ...</BloqueFormula>
+
+        <div style={{ fontSize: 12.5, color: C.slate, margin: "10px 0 4px" }}>Valor futuro + pagos extra (la fecha focal es el final)</div>
+        <BloqueFormula>VF total = A × [ ((1 + i)^n − 1) / i ] + P1 × (1 + i)^(n − n1) + P2 × (1 + i)^(n − n2) + ...</BloqueFormula>
+
+        <div style={{ fontSize: 12.5, color: C.slate, margin: "10px 0 4px" }}>Las dos fórmulas con el signo de suma (para cualquier cantidad de pagos extra)</div>
+        <BloqueFormula>VP total = A × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Σ Pk / (1 + i)^nk</BloqueFormula>
+        <BloqueFormula>VF total = A × [ ((1 + i)^n − 1) / i ] + Σ Pk × (1 + i)^(n − nk)</BloqueFormula>
+
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "10px 0" }}>
+          <TarjetaMini titulo="A">El valor de la cuota igual.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa efectiva del periodo, del mismo tamaño que las cuotas.</TarjetaMini>
+          <TarjetaMini titulo="n">El número total de cuotas (de periodos).</TarjetaMini>
+          <TarjetaMini titulo="P1, P2, ...">El valor de cada pago extra.</TarjetaMini>
+          <TarjetaMini titulo="n1, n2, ...">El periodo en que cae cada pago extra.</TarjetaMini>
+        </div>
+        <p style={{ color: C.slate }}>En los apuntes de clase estos pagos extra aparecen como <strong>Vf1</strong> (en la fórmula de VP) y <strong>Vp1</strong> (en la fórmula de VF). Son el mismo pago extra, el valor que se paga en el periodo n1.</p>
+
+        <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Cómo se mueve cada pago extra (la regla para no enredarse)</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="El pago está DESPUÉS de la fecha focal" tono="azul">
+            Hay que traerlo hacia atrás, así que se <strong>divide</strong> entre (1 + i) elevado al número de periodos que lo separan. Pasa en el VP: el pago extra está en el futuro y se trae a hoy.
+          </TarjetaMini>
+          <TarjetaMini titulo="El pago está ANTES de la fecha focal" tono="azul">
+            Hay que llevarlo hacia adelante, así que se <strong>multiplica</strong> por (1 + i) elevado al número de periodos que lo separan. Pasa en el VF: el pago extra se lleva hasta el final.
+          </TarjetaMini>
+        </div>
+        <p style={{ color: C.slate, marginTop: 10 }}>Un pago extra es un solo pago, no una fila. Por eso se mueve con las fórmulas del interés compuesto (módulo 2), no con la fórmula de anualidades.</p>
+
+        {/* PASO 2 */}
+        <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Paso 2 · Receta en 4 pasos</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="1. Elige la fecha focal">¿Quiero VP o VF? Hoy o el final.</TarjetaMini>
+          <TarjetaMini titulo="2. Calcula la anualidad">Usa la fórmula de VP o de VF solo con las cuotas iguales.</TarjetaMini>
+          <TarjetaMini titulo="3. Mueve cada pago extra">Divide o multiplica según esté después o antes de la fecha focal.</TarjetaMini>
+          <TarjetaMini titulo="4. Suma todo">Anualidad + todos los pagos extra ya movidos.</TarjetaMini>
+        </div>
+
+        {/* EJEMPLO */}
+        <div style={{ fontWeight: 700, color: C.navy, margin: "22px 0 4px" }}>Ejemplo: Camila compra una moto a crédito</div>
+        <p>Camila compra una moto hoy y la paga así:</p>
+        <ul style={{ margin: "0 0 8px", paddingLeft: 20 }}>
+          <li><strong>12 cuotas mensuales iguales de COP 400.000</strong>, pagadas al final de cada mes (anualidad vencida).</li>
+          <li><strong>Un pago extra de COP 1.000.000 en el mes 6</strong>, con la prima de mitad de año.</li>
+          <li><strong>Un pago extra de COP 1.500.000 en el mes 12</strong>, con la prima de diciembre.</li>
+          <li>La tasa es <strong>2 % efectiva mensual</strong> (ya está del mismo tamaño que las cuotas).</li>
+        </ul>
+        <p>Queremos saber dos cosas: (a) ¿cuánto vale todo hoy? y (b) ¿cuánto vale todo al final del año?</p>
+
+        <div style={{ fontSize: 13, color: C.slate, margin: "10px 0 6px" }}>Así se ve en la línea de tiempo</div>
+        <div style={{ border: `1px solid ${C.line}`, borderRadius: 8, background: C.paper, display: "flex", flexWrap: "wrap", margin: "0 0 12px", overflow: "hidden" }}>
+          <PasoLinea etiqueta="Momento" momento="0" pago="" />
+          <PasoLinea etiqueta="Momento" momento="1" pago="A" />
+          <PasoLinea etiqueta="Momento" momento="2" pago="A" />
+          <PasoLinea etiqueta="Momento" momento="..." pago="..." />
+          <PasoLinea etiqueta="Momento" momento="6" pago="A + P1" />
+          <PasoLinea etiqueta="Momento" momento="..." pago="..." />
+          <PasoLinea etiqueta="Momento" momento="12" pago="A + P2" />
+        </div>
+        <TarjetaMini titulo="Ojo con el mes 12" tono="alerta">
+          En el mes 12 caen dos pagos el mismo día: la cuota número 12 y el pago extra. Aun así no se mezclan. La cuota va dentro de la fórmula de la anualidad; el pago extra se calcula aparte.
+        </TarjetaMini>
+
+        <Acordeon title="(a) Ver procedimiento: valor presente total (la fecha focal es hoy)">
+          <FichaProcedimiento pasos={[
+            { label: "Paso 1 — Fecha focal", content: "Hoy (momento 0), porque queremos saber cuánto vale todo hoy." },
+            { label: "Datos", content: "A = 400.000 · i = 2 % = 0,02 · n = 12 · P1 = 1.000.000 en n1 = 6 · P2 = 1.500.000 en n2 = 12" },
+            { label: "Fórmula", content: "VP total = A × [((1 + i)^n − 1) / (i × (1 + i)^n)] + P1/(1 + i)^n1 + P2/(1 + i)^n2" },
+            { label: "Paso 2 — Las 12 cuotas (anualidad)", content: `VP cuotas = 400.000 × [((1,02)^12 − 1) / (0,02 × (1,02)^12)] = 400.000 × ${formatNumberCO(mFactorVP, 6, 6)} = COP ${formatNumberCO(mVPcuotas, 2, 2)}` },
+            { label: "Paso 3a — Pago extra del mes 6 (se divide)", content: `VP P1 = 1.000.000 / (1,02)^6 = COP ${formatNumberCO(mVPe1, 2, 2)}` },
+            { label: "Paso 3b — Pago extra del mes 12 (se divide)", content: `VP P2 = 1.500.000 / (1,02)^12 = COP ${formatNumberCO(mVPe2, 2, 2)}` },
+            { label: "Paso 4 — Sumar todo", content: `VP total = ${formatNumberCO(mVPcuotas, 2, 2)} + ${formatNumberCO(mVPe1, 2, 2)} + ${formatNumberCO(mVPe2, 2, 2)}` },
+            { label: "Resultado", content: `VP total ≈ COP ${formatNumberCO(mVPtotal, 2, 2)}` },
+            { label: "Interpretación", content: "Las 12 cuotas y los dos pagos extra, juntos, valen hoy ese valor. Es lo que costó la moto el día de la compra." },
+          ]} />
+        </Acordeon>
+
+        <Acordeon title="(b) Ver procedimiento: valor futuro total (la fecha focal es el final)">
+          <FichaProcedimiento pasos={[
+            { label: "Paso 1 — Fecha focal", content: "El final (momento 12), porque queremos saber cuánto vale todo al terminar." },
+            { label: "Datos", content: "A = 400.000 · i = 0,02 · n = 12 · P1 = 1.000.000 en n1 = 6 · P2 = 1.500.000 en n2 = 12" },
+            { label: "Fórmula", content: "VF total = A × [((1 + i)^n − 1) / i] + P1 × (1 + i)^(n − n1) + P2 × (1 + i)^(n − n2)" },
+            { label: "Paso 2 — Las 12 cuotas (anualidad)", content: `VF cuotas = 400.000 × [((1,02)^12 − 1) / 0,02] = 400.000 × ${formatNumberCO(mFactorVF, 6, 6)} = COP ${formatNumberCO(mVFcuotas, 2, 2)}` },
+            { label: "Paso 3a — Pago extra del mes 6 (se multiplica)", content: `VF P1 = 1.000.000 × (1,02)^(12 − 6) = COP ${formatNumberCO(mVFe1, 2, 2)}` },
+            { label: "Paso 3b — Pago extra del mes 12 (no se mueve)", content: `VF P2 = 1.500.000 × (1,02)^(12 − 12) = 1.500.000 × 1 = COP ${formatNumberCO(mVFe2, 2, 2)}` },
+            { label: "Paso 4 — Sumar todo", content: `VF total = ${formatNumberCO(mVFcuotas, 2, 2)} + ${formatNumberCO(mVFe1, 2, 2)} + ${formatNumberCO(mVFe2, 2, 2)}` },
+            { label: "Resultado", content: `VF total ≈ COP ${formatNumberCO(mVFtotal, 2, 2)}` },
+            { label: "Comprobación", content: `El VP llevado al final debe dar lo mismo: ${formatNumberCO(mVPtotal, 2, 2)} × (1,02)^12 = ${formatNumberCO(mVPtotal * Math.pow(1 + mi, mn), 2, 2)}` },
+          ]} />
+        </Acordeon>
+
+        <Interpretacion>
+          Camila paga en total COP {formatNumberCO(mA * mn + mP1 + mP2, 0, 0)} (12 × 400.000 + 1.000.000 + 1.500.000). Pero ese dinero se paga en momentos distintos: hoy todo vale COP {formatNumberCO(mVPtotal, 2, 2)}, y al final del año todo vale COP {formatNumberCO(mVFtotal, 2, 2)}. Es la misma operación mirada desde dos fechas. Por eso siempre hay que decir en qué fecha estamos mirando.
+        </Interpretacion>
+
+        {/* INCÓGNITAS */}
+        <div style={{ fontWeight: 700, color: C.navy, margin: "22px 0 4px" }}>Cuando lo que no sabemos es el pago extra o la cuota</div>
+        <p>Es el mismo plan de siempre: la incógnita se deja como una letra y se despeja. Estas son las tres más usadas:</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="Hallar un pago extra P (con VP)" tono="azul">
+            <div style={{ fontFamily: F_MONO, fontSize: 13 }}>P = (VP − VP de la anualidad) / (1/(1+i)^n1 + 1/(1+i)^n2 + ...)</div>
+          </TarjetaMini>
+          <TarjetaMini titulo="Hallar la cuota A (con VP y extras conocidos)" tono="azul">
+            <div style={{ fontFamily: F_MONO, fontSize: 13 }}>A = (VP − VP de los extras) / [((1+i)^n − 1) / (i × (1+i)^n)]</div>
+          </TarjetaMini>
+          <TarjetaMini titulo="Hallar la cuota A (con VF y extras conocidos)" tono="azul">
+            <div style={{ fontFamily: F_MONO, fontSize: 13 }}>A = (VF − VF de los extras) / [((1+i)^n − 1) / i]</div>
+          </TarjetaMini>
+        </div>
+        <p style={{ color: C.slate, marginTop: 10 }}>Con valor futuro es igual, pero se usa la fórmula de VF y los extras se multiplican en lugar de dividirse. En la sección 10 hay un ejemplo completo donde la incógnita es el pago extra.</p>
+
+        {/* ERRORES */}
+        <div style={{ fontWeight: 700, color: C.navy, margin: "22px 0 8px" }}>Errores comunes con los pagos extra</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <TarjetaMini titulo="1. Meter el pago extra dentro de la fórmula de anualidades" tono="alerta">
+            La fórmula solo sirve para cuotas iguales. El pago extra siempre va aparte, sumado al final.
+          </TarjetaMini>
+          <TarjetaMini titulo="2. Dividir cuando había que multiplicar (o al revés)" tono="alerta">
+            Pregúntate: ¿el pago está antes o después de la fecha focal? Después → se divide. Antes → se multiplica.
+          </TarjetaMini>
+          <TarjetaMini titulo="3. Usar mal el exponente" tono="alerta">
+            Con VP el exponente es el periodo del pago (n1). Con VF el exponente es lo que falta para llegar al final (n − n1).
+          </TarjetaMini>
+          <TarjetaMini titulo="4. Mezclar fechas focales" tono="alerta">
+            Todos los valores tienen que llegar a la misma fecha. No se puede sumar la anualidad llevada a hoy con un pago extra llevado al final.
+          </TarjetaMini>
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <TarjetaMini titulo="Otro ejemplo de la vida real: el carro" tono="azul">
+            Pagas 36 cuotas iguales de un carro y además haces un abono extra junto con la cuota 17. Las 36 cuotas forman la anualidad. El abono extra se calcula aparte, como pago suelto en el periodo 17, y se suma al total.
+          </TarjetaMini>
+        </div>
+      </Acordeon>
+
+      {/* SECCIÓN 10 */}
+      <Acordeon title="10 · Ejemplo completo: la casa con dos pagos extra">
+        <p>Una pareja compró una casa hoy por COP 720.000.000. Pagaron cuotas bimestrales de COP 8.927.479,48 durante 15 años. La tasa es 5,73 % NAC (nominal anual, se cobra cada cuatrimestre). Además hicieron 2 pagos extra, en los bimestres 20 y 40, ambos por el mismo valor. ¿De cuánto fue cada pago extra?</p>
+        <TarjetaMini titulo="Qué es qué" tono="azul">
+          La anualidad son las 90 cuotas iguales. Los pagos sueltos son los dos X. La fecha focal es hoy (momento 0), porque la casa se compró hoy por COP 720.000.000.
+        </TarjetaMini>
+        <FichaProcedimiento pasos={[
+          { label: "Paso 1 — ¿De qué tamaño son las cuotas?", content: "Son bimestrales (cada 2 meses). Necesitamos una tasa efectiva bimestral." },
+          { label: "Paso 2a — Repartir la nominal", content: "Un año tiene 3 cuatrimestres: 5,73 % / 3 = 1,91 % efectiva cuatrimestral" },
+          { label: "Paso 2b — Cambiar de tamaño", content: "EB = (1 + 0,0191)^(3/6) − 1 ≈ 0,95 % efectiva bimestral" },
+          { label: "Paso 3a — ¿Cuántas cuotas hay?", content: "15 años = 180 meses. Como cada cuota es cada 2 meses: n = 180 / 2 = 90 cuotas" },
+          { label: "Paso 3b — Traer las 90 cuotas a hoy", content: "VP = 8.927.479,48 × [((1 + 0,0095)^90 − 1) / (0,0095 × (1 + 0,0095)^90)]" },
+          { label: "Resultado del paso 3", content: "VP de la anualidad ≈ COP 538.465.173,45" },
+          { label: "Paso 4 — Armar la ecuación de valor", content: "720.000.000 = 538.465.173,45 + X/(1 + 0,0095)^20 + X/(1 + 0,0095)^40" },
+          { label: "Paso 5 — Calcular los factores de cada pago extra", content: `1/(1,0095)^20 ≈ ${formatNumberCO(factor20, 4, 4)} · 1/(1,0095)^40 ≈ ${formatNumberCO(factor40, 4, 4)}` },
+          { label: "Paso 6 — Agrupar los dos pagos extra", content: `720.000.000 = 538.465.173,45 + X × (${formatNumberCO(factor20, 4, 4)} + ${formatNumberCO(factor40, 4, 4)}) = 538.465.173,45 + X × ${formatNumberCO(factor20 + factor40, 4, 4)}` },
+          { label: "Paso 7 — Pasar lo conocido al otro lado", content: "720.000.000 − 538.465.173,45 = 181.534.826,55" },
+          { label: "Paso 8 — Despejar X", content: `X = 181.534.826,55 / ${formatNumberCO(factor20 + factor40, 4, 4)}` },
+          { label: "Resultado", content: "X ≈ COP 120.000.000 (cada pago extra)" },
+          { label: "Comprobación", content: `120.000.000 × ${formatNumberCO(factor20, 4, 4)} ≈ ${formatNumberCO(120000000 * factor20 / 1e6, 1, 1)} millones · 120.000.000 × ${formatNumberCO(factor40, 4, 4)} ≈ ${formatNumberCO(120000000 * factor40 / 1e6, 1, 1)} millones · cuotas 538,5 millones → total ≈ 720 millones` },
+        ]} />
+        <Interpretacion>
+          Las 90 cuotas aportan COP 538,5 millones al valor de la casa de hoy. Los COP 181,5 millones que faltan los cubren los dos pagos extra: cada uno es de COP 120.000.000 cuando se paga, pero traídos a hoy valen menos (unos 99,3 millones y 82,2 millones), porque llegan más adelante. En clase los factores se redondean a 0,83 y 0,69 (suman 1,51); aquí usamos más decimales y el resultado sigue dando 120 millones.
+        </Interpretacion>
+      </Acordeon>
+
+      {/* SECCIÓN 11 */}
+      <Acordeon title="11 · Ejemplo del carro">
+        <p>Hace 5 años compraste un carro. Debes pagar cuotas mensuales de COP 3.078.925,79 con una tasa del 0,71 % periódica mensual. ¿Cuánto costó el carro el día que lo compraron?</p>
+        <TarjetaMini titulo="Pista" tono="azul">
+          Queremos saber cuánto costó EL DÍA DE LA COMPRA, o sea hoy en la línea de tiempo. Eso es un valor presente.
+        </TarjetaMini>
+        <FichaProcedimiento pasos={[
+          { label: "Datos", content: "A = 3.078.925,79 · i = 0,71 % = 0,0071 · n = 5 años × 12 meses = 60 cuotas" },
+          { label: "Fórmula", content: "VP = A × [((1 + i)^n − 1) / (i × (1 + i)^n)]" },
+          { label: "Sustitución", content: "VP = 3.078.925,79 × [((1 + 0,0071)^60 − 1) / (0,0071 × (1 + 0,0071)^60)]" },
+          { label: "Resultado", content: "VP ≈ COP 150.000.000,06" },
+          { label: "Interpretación", content: "El carro costó aproximadamente COP 150.000.000 cuando lo compraron." },
+        ]} />
+        <Interpretacion>
+          Pagaste 60 cuotas de unos COP 3,08 millones (cerca de COP 184,7 millones en total) por un carro que valía COP 150 millones el día de la compra. La diferencia son los intereses del crédito.
+        </Interpretacion>
+      </Acordeon>
+
+      {/* SECCIÓN 12 */}
+      <Acordeon title="12 · Cierre y preguntas de repaso">
+        <div style={{ padding: 16, background: "#FDF3E7", border: `1px solid ${C.gold}55`, borderRadius: 10, marginBottom: 12 }}>
+          <div style={{ fontWeight: 700, color: C.navy, marginBottom: 8 }}>Antes de seguir, intenta responder sin mirar los apuntes:</div>
+          <ol style={{ margin: 0, paddingLeft: 20 }}>
+            <li>¿Qué se requiere para que un pago sea considerado una anualidad?</li>
+            <li>¿Un pago extra se puede considerar una cuota?</li>
+            <li>¿Las cuotas y la tasa de interés tienen que tener la misma periodicidad?</li>
+            <li>¿Qué diferencia hay entre valor presente y valor futuro?</li>
+            <li>¿Qué significa que una anualidad sea vencida?</li>
+            <li>¿Cómo se suma un pago extra a una anualidad y qué papel tiene la fecha focal?</li>
+          </ol>
+        </div>
+        <Acordeon title="Ver respuestas esperadas">
+          <ol style={{ margin: 0, paddingLeft: 20 }}>
+            <li style={{ marginBottom: 6 }}>Debe tener pagos iguales, periódicos, mismo número de pagos y periodos, y misma tasa.</li>
+            <li style={{ marginBottom: 6 }}>No. El pago extra se calcula aparte.</li>
+            <li style={{ marginBottom: 6 }}>Sí. La tasa debe coincidir con el periodo de las cuotas.</li>
+            <li style={{ marginBottom: 6 }}>El valor presente trae las cuotas a hoy; el valor futuro las lleva al final.</li>
+            <li style={{ marginBottom: 6 }}>Que la cuota se paga al final de cada periodo.</li>
+            <li>El pago extra se calcula aparte de la fórmula de anualidades: se mueve hasta la fecha focal (se divide si va para atrás, se multiplica si va para adelante) y se suma al valor de la anualidad. La fecha focal es hoy si quiero un VP y el final si quiero un VF.</li>
+          </ol>
+        </Acordeon>
+        <p style={{ color: C.slate }}>Próximamente: ¿y si pagas todo al inicio del periodo? Eso será la anualidad anticipada.</p>
+      </Acordeon>
+
+    </div>
+  );
+}
+
 function Aprender() {
   return (
     <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
@@ -897,6 +1519,10 @@ Por eso esta bola crece un poquito más rápido que la del interés compuesto no
 
       <Acordeon title="4 · Conversión de tasas">
         <ConversionTasas />
+      </Acordeon>
+
+      <Acordeon title="5 · Anualidades vencidas">
+        <AnualidadesVencidas />
       </Acordeon>
 
       <div style={{ marginTop: 18, padding: 16, background: C.paperDark, borderRadius: 8, fontSize: 13, color: C.slate }}>
