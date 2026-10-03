@@ -188,6 +188,14 @@ const GLOSARIO = [
   { t: "Valor futuro de una anualidad", d: "Lo que valen todas las cuotas juntas al final del plazo, contando los intereses que ganaron." },
   { t: "Pago extra", d: "Pago adicional que no hace parte de las cuotas iguales, como una prima, un abono o una cuota inicial. Se calcula aparte y se suma." },
   { t: "Pago extraordinario", d: "Otro nombre para el pago extra: un pago que se sale de la serie de cuotas iguales." },
+  { t: "Anualidad anticipada", d: "Serie de pagos iguales donde cada cuota se paga al inicio del periodo." },
+  { t: "Tasa anticipada", d: "Tasa en la que los intereses se cobran al inicio del periodo." },
+  { t: "Cuota anticipada", d: "Pago que se hace al comienzo del periodo." },
+  { t: "Valor presente de una anualidad anticipada", d: "Valor de hoy de varias cuotas que se pagan al inicio de cada periodo." },
+  { t: "Valor futuro de una anualidad anticipada", d: "Valor final de varias cuotas que se pagan al inicio de cada periodo." },
+  { t: "NAMA", d: "Nominal anual con capitalización mensual anticipada." },
+  { t: "NACA", d: "Nominal anual con capitalización cuatrimestral anticipada." },
+  { t: "NATA", d: "Nominal anual con capitalización trimestral anticipada." },
 ];
 
 const EJEMPLOS = {
@@ -653,22 +661,22 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
             <span><strong style={{ color: C.goldLight }}>M</strong> → capitalización Mensual (primer apellido)</span>
           </div>
           <div style={{ marginTop: 10, fontSize: 13, color: "#C9D2DF" }}>
-            En español fácil: "Durante todo el año esto vale 24%, pero se va cobrando poquito cada mes, 12 veces en total."
+            Dicho fácil: "En todo el año son 24 monedas por cada 100, pero las cobran poquito a poquito, una vez cada mes."
           </div>
         </div>
       </Acordeon>
 
       {/* SECCIÓN 2 */}
       <Acordeon title="2 · ¿Qué es una tasa nominal?">
-        <p><strong>¿Qué es?</strong> La tasa nominal es como el precio que ves pegado en la vitrina de una tienda: te da una idea, pero no es exactamente lo que vas a pagar al final. Es un número de referencia, no el número real.</p>
-        <p style={{ color: C.slate }}><strong>¿Cuándo se usa?</strong> Los bancos casi siempre te muestran primero la tasa nominal, porque el número se ve más chiquito y más bonito. Pero ojo: no es lo que de verdad te va a costar o a rendir el dinero.</p>
+        <p><strong>¿Qué es?</strong> La tasa nominal es como el precio que ves pegado en la vitrina de la tienda. Te dice más o menos cuánto es, pero no es lo que pagas de verdad. Es un número para mirar, no el número final.</p>
+        <p style={{ color: C.slate }}><strong>¿Cuándo se usa?</strong> Los bancos casi siempre te muestran este número primero, porque se ve chiquito y bonito. Pero ojo: no es lo que de verdad te va a costar el dinero.</p>
       </Acordeon>
 
       {/* SECCIÓN 3 */}
       <Acordeon title="3 · Pasar de nominal a periódica (repartir la tasa)">
-        <p>Si tienes la tasa nominal de todo el año y quieres saber cuánto le toca a cada mes (o a cada trimestre, etc.), simplemente la <strong>repartes</strong>. Es como repartir una torta entre los pedacitos del año.</p>
+        <p>Si tienes la tasa de todo el año y quieres saber cuánto le toca a cada mes, la <strong>repartes</strong>. Es como cortar una torta en pedacitos iguales para que a cada mes le toque uno.</p>
         <BloqueFormula>ip = NA / nc</BloqueFormula>
-        <p><strong>NA:</strong> la tasa de todo el año. <strong>nc:</strong> en cuántos pedacitos la vamos a repartir (12 si es mensual, 4 si es trimestral...). <strong>ip:</strong> lo que le toca a cada pedacito.</p>
+        <p><strong>NA:</strong> la torta entera (todo el año). <strong>nc:</strong> en cuántos pedacitos la cortas (12 si es por mes, 4 si es cada tres meses). <strong>ip:</strong> lo que le toca a cada pedacito.</p>
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
           <p>María pide un crédito y el banco le dice: "24% NAM". Eso quiere decir 24% en todo el año, pero cobrado cada mes. Como el crédito se cobra mes a mes, necesitamos saber cuánto es "el pedacito" de cada mes.</p>
@@ -686,7 +694,7 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
 
       {/* SECCIÓN 4 */}
       <Acordeon title="4 · Pasar de periódica a nominal (juntar los pedacitos)">
-        <p>Ahora es al revés: si ya tienes el pedacito de un mes y quieres saber cuánto sería en todo el año, en vez de repartir, <strong>multiplicas</strong>. Juntas todos los pedacitos.</p>
+        <p>Ahora es al revés: ya tienes el pedacito de un mes y quieres armar la torta entera del año. Entonces <strong>multiplicas</strong>: juntas todos los pedacitos.</p>
         <BloqueFormula>NA = ip × nc</BloqueFormula>
         <p><strong>ip:</strong> el pedacito (por ejemplo, de un mes). <strong>nc:</strong> cuántos pedacitos hay en el año. <strong>NA:</strong> la torta completa del año.</p>
         <div style={{ marginTop: 14 }}>
@@ -706,7 +714,7 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
 
       {/* SECCIÓN 5 */}
       <Acordeon title="5 · ¿Qué es una tasa efectiva?">
-        <p><strong>¿Qué es?</strong> La tasa efectiva es el número de VERDAD. Te dice exactamente cuánto creció o cuánto costó el dinero, contando todos los intereses que generaron más intereses. No es una idea aproximada, es lo real.</p>
+        <p><strong>¿Qué es?</strong> La tasa efectiva es el número de VERDAD. Te dice cuánto creció o cuánto costó el dinero de verdad, contando también las moneditas que nacieron de otras moneditas.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 10 }}>
           <TarjetaMini titulo="Nominal">Es el precio de la vitrina. Da una idea, pero no es el número final.</TarjetaMini>
           <TarjetaMini titulo="Efectiva">Es lo que pagas de verdad en la caja. El número real.</TarjetaMini>
@@ -715,9 +723,9 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
 
       {/* SECCIÓN 6 */}
       <Acordeon title="6 · Cambiar una tasa efectiva de tamaño (mes → año, etc.)">
-        <p>A veces tienes una tasa efectiva "de un tamaño" (por ejemplo, la de cada mes) y necesitas esa misma tasa pero "de otro tamaño" (por ejemplo, la de todo el año). Para eso usamos esta fórmula. Parece complicada, pero solo hace un cambio de tamaño sin cambiar lo que la tasa realmente vale.</p>
+        <p>A veces tienes la tasa de un tamaño (la de cada mes) y la necesitas de otro tamaño (la de todo el año). Es como pasar de contar en pasitos a contar en kilómetros: el camino es el mismo, solo cambia cómo lo cuentas. Esta fórmula hace ese cambio.</p>
         <BloqueFormula>(1 + iy)^(ny/nx) − 1 = ix</BloqueFormula>
-        <p><strong>iy:</strong> la tasa que ya tienes. <strong>ny:</strong> cada cuánto se cobra esa tasa que ya tienes, en un año. <strong>ix:</strong> la tasa nueva que quieres encontrar. <strong>nx:</strong> cada cuánto se cobra la tasa nueva, en un año.</p>
+        <p><strong>iy:</strong> la tasa que ya tienes. <strong>ny:</strong> cuántas veces cabe esa tasa en un año. <strong>ix:</strong> la tasa nueva que buscas. <strong>nx:</strong> cuántas veces cabe la tasa nueva en un año.</p>
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
           <p>Tienes 2% mensual y quieres saber cuánto es eso en un año completo (efectiva anual).</p>
@@ -727,7 +735,7 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
               { label: "Fórmula", content: "EA = (1 + iy)^(ny/nx) − 1" },
               { label: "Sustitución", content: "EA = (1 + 0,02)^12 − 1" },
               { label: "Resultado", content: `EA = ${formatPercentCO(Math.pow(1.02, 12) - 1, 2)}` },
-              { label: "Interpretación", content: "El 2 % de cada mes se ve chiquito, pero como se va sumando mes tras mes, al final del año el crecimiento real es mucho más grande." },
+              { label: "Interpretación", content: "El 2 % de cada mes se ve chiquito, pero cada mes se suma al anterior y las moneditas nuevas hacen más moneditas. Por eso, al final del año, crece más que 24 %." },
             ]} />
           </Acordeon>
         </div>
@@ -735,23 +743,23 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
 
       {/* SECCIÓN 7 */}
       <Acordeon title="7 · Capitalización (cuando el interés hace más interés)">
-        <p>Capitalizar es como una alcancía mágica: metes moneditas, y esas moneditas hacen que aparezcan moneditas nuevas. Después, esas moneditas nuevas también hacen aparecer más moneditas. Y así.</p>
+        <p>Capitalizar es como una alcancía mágica: metes moneditas y aparecen moneditas nuevas. Y esas moneditas nuevas también hacen aparecer más moneditas.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
           <TarjetaMini titulo="Mensual">La alcancía mágica hace moneditas nuevas 12 veces al año (una vez por mes).</TarjetaMini>
           <TarjetaMini titulo="Trimestral">La alcancía mágica hace moneditas nuevas 4 veces al año (cada tres meses).</TarjetaMini>
           <TarjetaMini titulo="Semestral">La alcancía mágica hace moneditas nuevas 2 veces al año (cada seis meses).</TarjetaMini>
         </div>
-        <p style={{ color: C.slate }}>Mientras más seguido aparezcan moneditas nuevas, más rápido crece la alcancía, porque hay más oportunidades de que el dinero haga más dinero.</p>
+        <p style={{ color: C.slate }}>Mientras más seguido aparezcan moneditas nuevas, más rápido crece la alcancía.</p>
       </Acordeon>
 
       {/* SECCIÓN 8 */}
       <Acordeon title="8 · Tasa vencida y tasa anticipada (¿cuándo se paga?)">
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <TarjetaMini titulo="Vencida">
-            Pagas el interés AL FINAL. Es como comer en un restaurante: primero comes, y al final pagas la cuenta.
+            Pagas el interés AL FINAL. Como en el restaurante: primero comes y después pagas.
           </TarjetaMini>
           <TarjetaMini titulo="Anticipada">
-            Pagas el interés AL PRINCIPIO. Es como el cine: primero pagas la boleta, y después ves la película.
+            Pagas el interés AL PRINCIPIO. Como en el cine: primero pagas la boleta y después ves la película.
           </TarjetaMini>
         </div>
       </Acordeon>
@@ -777,10 +785,10 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
               Te dan $10.000.000 completos. Al final devuelves $10.500.000. El interés real fue 5 %.
             </TarjetaMini>
             <TarjetaMini titulo="Anticipada">
-              Te descuentan el interés de una vez: solo te dan $9.500.000. Pero igual devuelves $10.000.000. Como te dieron menos plata al principio, el interés real termina siendo más alto: 5,26 %.
+              Te cobran el interés de una vez, así que solo te dan $9.500.000. Pero igual devuelves $10.000.000. Como te dieron menos plata, el interés real es un poquito más grande: 5,26 %.
             </TarjetaMini>
           </div>
-          <p style={{ color: C.slate }}>La tasa "cambia" simplemente porque cambia el momento en que se cobra el interés: antes o después.</p>
+          <p style={{ color: C.slate }}>La tasa "cambia" solo porque cambia el momento en que te cobran: antes o después.</p>
         </div>
       </Acordeon>
 
@@ -799,13 +807,13 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
       <Acordeon title="11 · Errores comunes (para no caer en la trampa)">
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <TarjetaMini titulo="1. Dividir una tasa trimestral entre 3" tono="alerta">
-            Es un error muy común. "Trimestral" no se divide entre 3: se divide entre 4, porque en un año caben 4 trimestres (4 × 3 meses = 12 meses).
+            "Trimestral" no se divide entre 3: se divide entre 4, porque en un año caben 4 trimestres (4 × 3 meses = 12 meses).
           </TarjetaMini>
           <TarjetaMini titulo="2. Pensar que si el número es igual, la tasa es igual" tono="alerta">
             24% NAM y 24% NAT NO son lo mismo, aunque el número "24%" se vea igual. Todo depende de cada cuánto se cobra.
           </TarjetaMini>
           <TarjetaMini titulo="3. Saltarse pasos al convertir anticipada a vencida" tono="alerta">
-            No puedes pasar de una tasa nominal anticipada a una nominal vencida de un solo brinco. Primero tienes que pasar por la tasa periódica o efectiva, paso a paso.
+            No puedes saltar de un solo brinco de anticipada a vencida. Hay que ir paso a pasito, pasando por el pedacito de cada periodo.
           </TarjetaMini>
         </div>
       </Acordeon>
@@ -914,8 +922,8 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
 
       {/* SECCIÓN 2 */}
       <Acordeon title="2 · ¿Qué es una anualidad? Las 4 condiciones">
-        <p><strong>¿Qué es?</strong> Una anualidad es una fila de pagos iguales que se hacen cada cierto tiempo. En Matemáticas Financieras, "anualidad" es el nombre elegante para decir "cuotas iguales y constantes".</p>
-        <p>Para que una fila de pagos sea una anualidad, tiene que cumplir <strong>4 reglas al mismo tiempo</strong>. Es como una fila en el colegio: todos tienen que cumplir las reglas para estar en ella.</p>
+        <p><strong>¿Qué es?</strong> Una anualidad es una fila de pagos iguales que se hacen cada cierto tiempo. "Anualidad" es solo el nombre bonito de "cuotas iguales".</p>
+        <p>Para que sea una anualidad, la fila tiene que cumplir <strong>4 reglas a la vez</strong>, como las reglas de un juego.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
           <TarjetaMini titulo="1. Todos los pagos iguales">Como tu mesada: siempre te dan las mismas monedas, nunca más ni menos.</TarjetaMini>
           <TarjetaMini titulo="2. Pagos periódicos">Llegan cada cierto tiempo fijo, como el bus que pasa cada 10 minutos.</TarjetaMini>
@@ -963,16 +971,16 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
 
       {/* SECCIÓN 3 */}
       <Acordeon title="3 · ¿Qué significa vencida?">
-        <p><strong>¿Qué es?</strong> En una anualidad vencida, cada pago se hace <strong>al final</strong> del periodo. Primero pasa el tiempo y después pagas.</p>
+        <p><strong>¿Qué es?</strong> En una anualidad vencida pagas <strong>al final</strong> de cada periodo. Primero pasa el tiempo y después pagas.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
-          <TarjetaMini titulo="Como el restaurante" tono="azul">Primero comes todo el almuerzo y al final pagas la cuenta. Primero pasa el mes y al final pagas la cuota.</TarjetaMini>
+          <TarjetaMini titulo="Como el restaurante" tono="azul">Primero comes el almuerzo y al final pagas. Primero pasa el mes y al final pagas la cuota.</TarjetaMini>
           <TarjetaMini titulo="Crédito tradicional" tono="azul">Recibes la plata hoy y pagas la primera cuota cuando termina el primer mes.</TarjetaMini>
           <TarjetaMini titulo="Arriendo pagado al final del mes" tono="azul">Usas la casa todo el mes y cuando termina pagas el arriendo.</TarjetaMini>
         </div>
         <TarjetaMini titulo="Ojo: vencida NO es atrasada" tono="alerta">
-          Una cuota "vencida" puede estar perfectamente al día. Solo quiere decir que se paga al final del periodo, no al principio.
+          "Vencida" no quiere decir que te atrasaste. Solo quiere decir que pagas al final.
         </TarjetaMini>
-        <p style={{ color: C.slate, marginTop: 12 }}><strong>Más adelante:</strong> la anualidad anticipada será lo contrario. Es como el cine: primero pagas la boleta y después ves la película. Primero se paga y después pasa el periodo.</p>
+        <p style={{ color: C.slate, marginTop: 12 }}><strong>Más adelante:</strong> la anualidad anticipada es lo contrario. Es como el cine: primero pagas la boleta y después ves la película.</p>
         <Interpretacion>
           En una anualidad vencida nunca hay una cuota en el momento 0 (hoy). La primera cuota aparece cuando termina el primer periodo.
         </Interpretacion>
@@ -980,7 +988,7 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
 
       {/* SECCIÓN 4 */}
       <Acordeon title="4 · La línea de tiempo de una anualidad vencida">
-        <p>Una línea de tiempo es como un dibujo del calendario. El <strong>0</strong> es hoy. Los números <strong>1, 2, 3... n</strong> son los finales de cada mes (o de cada periodo). Ahí caen las cuotas.</p>
+        <p>Una línea de tiempo es un dibujito del calendario. El <strong>0</strong> es hoy. Los números <strong>1, 2, 3... n</strong> son los finales de cada mes. Ahí caen los pagos.</p>
         <div style={{ border: `1px solid ${C.line}`, borderRadius: 8, background: C.paper, display: "flex", flexWrap: "wrap", margin: "12px 0", overflow: "hidden" }}>
           <PasoLinea etiqueta="Momento" momento="0" pago="" />
           <PasoLinea etiqueta="Momento" momento="1" pago="A" />
@@ -1006,7 +1014,7 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
       <Acordeon title="5 · Valor presente: cuánto valen hoy varias cuotas futuras">
         <p><strong>¿Qué es?</strong> El valor presente de una anualidad es <strong>cuánto valen hoy</strong> todas las cuotas que vas a pagar en el futuro.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
-          Un billete que te dan dentro de un año vale un poquito menos que uno que te dan hoy, porque el dinero de hoy se puede poner a ganar interés. Entonces cada cuota del futuro se "encoge" un poquito cuando la traemos a hoy. Después sumamos todas las cuotas encogidas.
+          Un billete que te dan mañana vale un poquito menos que uno que te dan hoy, porque el de hoy lo puedes guardar y hacerlo crecer. Entonces cada pago del futuro se "encoge" un poquito cuando lo traemos a hoy. Después sumamos todos los pagos encogidos.
         </TarjetaMini>
         <p style={{ marginTop: 12 }}><strong>¿Para qué sirve?</strong></p>
         <ul style={{ margin: "0 0 8px", paddingLeft: 20 }}>
@@ -1027,7 +1035,7 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
           <TarjetaMini titulo="i">La tasa del periodo.</TarjetaMini>
           <TarjetaMini titulo="n">El número de pagos.</TarjetaMini>
         </div>
-        <p style={{ color: C.slate }}>Este atajo hace toda la suma en un solo paso. Con 3 cuotas ayuda, pero con 360 cuotas de una casa es salvavidas.</p>
+        <p style={{ color: C.slate }}>Este atajo hace toda la suma de una sola vez. Con 3 pagos ayuda, y con 360 pagos de una casa ayuda muchísimo.</p>
 
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
@@ -1052,7 +1060,7 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
       <Acordeon title="6 · Valor futuro: cuánto tendré al final si pago o ahorro lo mismo cada vez">
         <p><strong>¿Qué es?</strong> El valor futuro de una anualidad es <strong>cuánto valen todos los pagos al final</strong>, contando los intereses.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
-          Es la alcancía mágica del módulo 4: cada vez que metes monedas iguales, esas monedas empiezan a hacer moneditas nuevas. Las primeras que metiste tuvieron más tiempo para crecer; las últimas, menos. Al final, juntamos todo.
+          Es la alcancía mágica: cada vez que metes las mismas monedas, ellas hacen moneditas nuevas. Las primeras tuvieron más tiempo para crecer y las últimas menos. Al final contamos todo lo que hay en la alcancía.
         </TarjetaMini>
         <p style={{ marginTop: 12 }}><strong>Ejemplo de la vida real:</strong> si ahorras COP 100.000 cada mes durante un año, el valor futuro te dice cuánto tendrás al final, con todo y los intereses.</p>
         <p style={{ color: C.slate }}><strong>Diferencia:</strong> el valor presente lleva las cuotas a HOY; el valor futuro las lleva al FINAL. Es la misma fila de cuotas mirada desde dos fechas distintas.</p>
@@ -1085,7 +1093,7 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
 
       {/* SECCIÓN 7 */}
       <Acordeon title="7 · ¿De cuánto es la cuota? Hallar A desde VP o VF">
-        <p>A veces no queremos saber cuánto valen las cuotas. Ya sabemos cuánto cuesta el crédito (o cuánto queremos ahorrar) y lo que queremos saber es: <strong>¿de cuánto debe ser cada cuota?</strong> Es la pregunta más común de la vida real.</p>
+        <p>A veces ya sabemos cuánto cuesta lo que compramos (o cuánto queremos ahorrar) y lo que falta saber es: <strong>¿de cuánto es cada cuota?</strong></p>
         <p style={{ color: C.slate }}>Para eso usamos las mismas fórmulas de antes, pero "despejando" la A.</p>
 
         <div style={{ fontWeight: 700, color: C.navy, margin: "14px 0 4px" }}>Caso 1 · Hallar A desde VP (pagar una deuda)</div>
@@ -1136,7 +1144,7 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
             Advertencia
           </div>
           <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.6 }}>
-            La tasa tiene que estar en el mismo "tamaño" que las cuotas. Antes de usar cualquier fórmula, la tasa y las cuotas deben hablar el mismo idioma.
+            La tasa y las cuotas tienen que ser del mismo "tamaño". Si las cuotas son por mes, la tasa tiene que ser por mes.
           </div>
         </div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -1145,9 +1153,9 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
           <TarjetaMini titulo="Cuotas trimestrales">Tasa trimestral.</TarjetaMini>
         </div>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
-          Imagina que tu amigo solo habla inglés y tú solo hablas español. Para entenderse, alguien tiene que traducir. La conversión de tasas (módulo 4) es el traductor: cambia la tasa al "idioma" de tus cuotas.
+          Si tu amigo habla inglés y tú español, necesitan un traductor. Convertir tasas es ese traductor: cambia la tasa al "idioma" de tus cuotas.
         </TarjetaMini>
-        <p style={{ marginTop: 12 }}><strong>Cómo se conecta con el módulo 4:</strong> primero repartes la tasa nominal para sacar la periódica, y luego cambias su tamaño con la fórmula de las efectivas. Al final, la tasa que entra a la fórmula de anualidades es siempre una tasa <strong>efectiva</strong> del tamaño de tus cuotas.</p>
+        <p style={{ marginTop: 12 }}><strong>Cómo se conecta con el módulo 4:</strong> primero cortas la torta (repartes la tasa), y luego cambias su tamaño. Al final, la tasa que usas en la fórmula es siempre una tasa <strong>efectiva</strong> del mismo tamaño que tus cuotas.</p>
         <TarjetaMini titulo="Error común" tono="alerta">
           Usar directamente una tasa nominal anual en la fórmula de anualidades. Por ejemplo, usar 25 % NAT como si fuera una tasa mensual.
         </TarjetaMini>
@@ -1197,7 +1205,7 @@ Resumen para no olvidar:
           En un crédito podemos pagar valores adicionales a las cuotas o pagos permanentes. Estos pagos no los podemos incluir dentro de las fórmulas de anualidades, pero sí debemos sumarlos. Para poder sumarlos debemos entender si lo que quiero encontrar es un valor futuro o un valor presente. En otras palabras, debemos definir una <strong>fecha focal</strong> a la que debemos llegar.
         </TarjetaMini>
 
-        <p style={{ marginTop: 14 }}><strong>¿Qué es un pago extra?</strong> Es cualquier pago que NO es una de las cuotas iguales. Por ejemplo: una cuota inicial, una prima que usas para abonar al crédito, un abono extraordinario, un depósito adicional o un pago grande en un mes específico.</p>
+        <p style={{ marginTop: 14 }}><strong>¿Qué es un pago extra?</strong> Es cualquier pago que NO es una de las cuotas iguales. Por ejemplo: un abono grande que haces un mes para pagar más rápido.</p>
         <BloqueFormula>Cuotas iguales → fórmula de anualidades · Pagos distintos → se calculan aparte y se suman</BloqueFormula>
 
         {/* PASO 0 */}
@@ -1422,6 +1430,623 @@ Resumen para no olvidar:
   );
 }
 
+/* ============================================================
+   ANUALIDADES ANTICIPADAS — módulo educativo
+   Clase interactiva: se conecta con Interés compuesto (módulo 2),
+   Conversión de tasas (módulo 4) y Anualidades vencidas (módulo 5).
+   Todas las cifras de los ejemplos se calculan con las fórmulas.
+   ============================================================ */
+
+// Formato con puntos de miles y coma decimal (siempre, incluso en números de 4 cifras)
+function formatMilesCO(valor, decimales = 2) {
+  if (!Number.isFinite(valor)) return "—";
+  const negativo = valor < 0;
+  const partes = Math.abs(valor).toFixed(decimales).split(".");
+  const miles = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${negativo ? "-" : ""}${miles}${partes[1] ? "," + partes[1] : ""}`;
+}
+function formatPctMilesCO(valor, decimales = 2) {
+  if (!Number.isFinite(valor)) return "—";
+  return `${formatMilesCO(valor * 100, decimales)} %`;
+}
+
+function AnualidadesAnticipadas() {
+  // Factores de anualidad vencida (se usan en todo el módulo)
+  const fVP = (i, n) => (Math.pow(1 + i, n) - 1) / (i * Math.pow(1 + i, n));
+  const fVF = (i, n) => (Math.pow(1 + i, n) - 1) / i;
+
+  // Ejemplo de clase: 3 cuotas de 1.000 al 5 % (secciones 5, 6 y 7)
+  const eA = 1000, ei = 0.05, en = 3;
+  const eVPv = eA * fVP(ei, en);
+  const eVPa = eA * (1 + ei) * fVP(ei, en);
+  const eVFv = eA * fVF(ei, en);
+  const eVFa = eA * fVF(ei, en) * (1 + ei);
+  const eVFaAlt = eA * ((Math.pow(1 + ei, en + 1) - (1 + ei)) / ei);
+  const eVPsuma = eA + eA / (1 + ei) + eA / Math.pow(1 + ei, 2);
+  const eVFsuma = eA * Math.pow(1 + ei, 3) + eA * Math.pow(1 + ei, 2) + eA * (1 + ei);
+
+  // Sección 8 — caso 1: A desde VP (30 % NAMA, 24 cuotas mensuales, VP = 30.000.000)
+  const c1VP = 30000000, c1n = 24;
+  const c1ia = 0.30 / 12;
+  const c1i = c1ia / (1 - c1ia);
+  const c1A = c1VP / ((1 + c1i) * fVP(c1i, c1n));
+  const c1Total = c1A * c1n;
+
+  // Sección 8 — caso 2: A desde VF (30 % NAMA, 36 cuotas trimestrales, VF = 150.000.000)
+  const c2VF = 150000000, c2n = 36;
+  const c2ET = Math.pow(1 + c1i, 3) - 1;
+  const c2A = c2VF * (c2ET / (Math.pow(1 + c2ET, c2n) - 1)) / (1 + c2ET);
+  const c2Total = c2A * c2n;
+
+  // Sección 9 — error común: 25 % NATA
+  const x1ETA = 0.25 / 4;
+  const x2ET = x1ETA / (1 - x1ETA);
+  const x3EM = Math.pow(1 + x2ET, 4 / 12) - 1;
+  const xN = 12;
+  const xVPcorrecto = 100 * (1 + x3EM) * fVP(x3EM, xN);
+  const xVPerror = 100 * (1 + 0.25) * fVP(0.25, xN);
+
+  // Sección 11 — la casa (5,73 % NACA, cuotas bimestrales anticipadas de 8.906.829,51)
+  const hA = 8906829.51, hVPcasa = 720000000, hN = 90;
+  const h1ia = 0.0573 / 3;                      // 1,91 % efectiva cuatrimestral anticipada
+  const h2iv = 0.0195;                          // 1,95 % (valor redondeado, como en clase)
+  const h3EB = Math.pow(1 + h2iv, 3 / 6) - 1;   // efectiva bimestral vencida
+  const hVPanual = hA * (1 + h3EB) * fVP(h3EB, hN);
+  const hF20 = Math.pow(1 + h3EB, -20);
+  const hF40 = Math.pow(1 + h3EB, -40);
+  const hFsuma = hF20 + hF40;
+  const hResto = hVPcasa - hVPanual;
+  const hX = hResto / hFsuma;
+  // Alternativa sin redondear la tasa cuatrimestral vencida (para la nota de decimales)
+  const h2ivExacta = h1ia / (1 - h1ia);
+  const h3EBexacta = Math.pow(1 + h2ivExacta, 3 / 6) - 1;
+  const hVPexacto = hA * (1 + h3EBexacta) * fVP(h3EBexacta, hN);
+  const hXexacto = (hVPcasa - hVPexacto) / (Math.pow(1 + h3EBexacta, -20) + Math.pow(1 + h3EBexacta, -40));
+
+  // Sección 12 — el carro
+  const kA = 3078925.79, ki = 0.0071, kn = 60;
+  const kVPv = kA * fVP(ki, kn);
+  const kVPa = kA * (1 + ki) * fVP(ki, kn);
+  const kDif = kVPa - kVPv;
+
+  const diagramaStyle = {
+    fontFamily: F_MONO, fontSize: 13, background: C.paper, padding: "12px 16px", borderRadius: 8,
+    margin: "8px 0", color: C.navy, whiteSpace: "pre", overflowX: "auto", lineHeight: 1.7,
+  };
+
+  return (
+    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
+
+      <NivelCinco titulo="🧸 Nivel 5 años">
+        {`Imagina que tu papá te lleva a la tienda de la esquina y te dice: "Hoy te compro una paleta cada semana. Pero ojo: primero pagas, y solo después te la comes".
+
+Ese es el truco: la plata sale PRIMERO y la paleta llega DESPUÉS.
+
+En una anualidad vencida pasaba al revés: primero pasaba el tiempo y al final pagabas, como en el restaurante, que primero comes y después pagas la cuenta.
+
+En una anualidad anticipada es como el cine: primero pagas la boleta y después ves la película.
+
+Y no, no es que te hayas puesto a pagar antes "por equivocación". Es que así se acordó desde el comienzo, como una regla del juego.
+
+Lo demás se queda igual: sigue siendo una fila de pagos IGUALES, uno cada cierto tiempo, y siempre con el mismo interés. Lo único que se mueve es el momento del pago: ahora cae al comienzo de cada periodo.
+
+Y otra vez, aunque diga "anualidad", los pagos no tienen que ser una vez al año. Pueden ser cada semana, cada mes, cada dos meses, cada tres meses...
+
+Ejemplos de la vida real: el arriendo que pagas el día 1 y luego vives el mes, la matrícula que pagas antes de empezar clases, el seguro que pagas antes de quedar cubierto, el gimnasio que pagas antes de usarlo.
+
+Un secreto para que lo recuerdes: como cada pago se hace un periodo ANTES, cada pago tiene un periodito más para ganar intereses o para valer más. Por eso una anualidad anticipada siempre vale un poquito más que una vencida.`}
+      </NivelCinco>
+
+      <div style={{ padding: 14, background: C.paperDark, borderRadius: 8, fontSize: 13.5, color: C.slate, marginBottom: 14 }}>
+        <strong style={{ color: C.navy }}>Esta clase se apoya en tres módulos que ya viste:</strong> el módulo 2 (interés compuesto), el módulo 4 (conversión de tasas) y el módulo 5 (anualidades vencidas). Si algo no te suena, vuelve un momento a ellos: aquí los vamos a usar todo el tiempo.
+      </div>
+
+      {/* SECCIÓN 1 */}
+      <Acordeon title="1 · ¿Qué cambia frente a una anualidad vencida?" defaultOpen>
+        <p><strong>¿Qué es lo que NO cambia?</strong> Las 4 condiciones para que algo sea anualidad siguen siendo exactamente las mismas que ya conoces:</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
+          <TarjetaMini titulo="1. Pagos iguales">Todas las cuotas valen lo mismo.</TarjetaMini>
+          <TarjetaMini titulo="2. Pagos periódicos">Se pagan cada cierto tiempo fijo.</TarjetaMini>
+          <TarjetaMini titulo="3. Un pago por periodo">Si hay 12 periodos, hay 12 cuotas.</TarjetaMini>
+          <TarjetaMini titulo="4. La misma tasa">El mismo interés para todos los pagos.</TarjetaMini>
+        </div>
+        <p><strong>¿Qué es lo único que cambia?</strong> El momento del pago dentro de cada periodo.</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
+          <TarjetaMini titulo="Anualidad vencida" tono="azul">Pagas al FINAL. Primero pasa el tiempo y después pagas (como el restaurante).</TarjetaMini>
+          <TarjetaMini titulo="Anualidad anticipada" tono="azul">Pagas al INICIO. Primero pagas y después pasa el tiempo (como el cine).</TarjetaMini>
+        </div>
+
+        <div style={{ fontSize: 13, color: C.slate, margin: "14px 0 4px" }}>Las dos líneas de tiempo, una encima de la otra</div>
+        <div style={{ fontSize: 12.5, color: C.slate, margin: "6px 0 2px" }}>Anualidad vencida: la primera cuota cae en el momento 1</div>
+        <div style={diagramaStyle}>{"0 ---- 1 ---- 2 ---- 3 ---- n\n      A      A      A      A"}</div>
+        <div style={{ fontSize: 12.5, color: C.slate, margin: "6px 0 2px" }}>Anualidad anticipada: la primera cuota cae en el momento 0 (hoy)</div>
+        <div style={diagramaStyle}>{"0 ---- 1 ---- 2 ---- 3 ---- n\nA      A      A      A"}</div>
+
+        <div style={{ fontSize: 13, color: C.slate, margin: "14px 0 4px" }}>Lo mismo, pero con n cuotas</div>
+        <div style={{ fontSize: 12.5, color: C.slate, margin: "6px 0 2px" }}>Vencida: cuotas en los momentos 1, 2, 3, ... , n</div>
+        <div style={{ border: `1px solid ${C.line}`, borderRadius: 8, background: C.paper, display: "flex", flexWrap: "wrap", margin: "4px 0 12px", overflow: "hidden" }}>
+          <PasoLinea etiqueta="Momento" momento="0" pago="" />
+          <PasoLinea etiqueta="Momento" momento="1" pago="A" />
+          <PasoLinea etiqueta="Momento" momento="2" pago="A" />
+          <PasoLinea etiqueta="Momento" momento="3" pago="A" />
+          <PasoLinea etiqueta="Momento" momento="..." pago="..." />
+          <PasoLinea etiqueta="Momento" momento="n" pago="A" />
+        </div>
+        <div style={{ fontSize: 12.5, color: C.slate, margin: "6px 0 2px" }}>Anticipada: cuotas en los momentos 0, 1, 2, ... , n − 1</div>
+        <div style={{ border: `1px solid ${C.line}`, borderRadius: 8, background: C.paper, display: "flex", flexWrap: "wrap", margin: "4px 0 12px", overflow: "hidden" }}>
+          <PasoLinea etiqueta="Momento" momento="0" pago="A" />
+          <PasoLinea etiqueta="Momento" momento="1" pago="A" />
+          <PasoLinea etiqueta="Momento" momento="2" pago="A" />
+          <PasoLinea etiqueta="Momento" momento="..." pago="..." />
+          <PasoLinea etiqueta="Momento" momento="n − 1" pago="A" />
+          <PasoLinea etiqueta="Momento" momento="n" pago="" />
+        </div>
+        <TarjetaMini titulo="Ojo con la última cuota" tono="alerta">
+          Si hay n cuotas y la primera cae en el momento 0, la última cae en el momento n − 1. En el momento n ya no hay cuota: ahí termina el último periodo.
+        </TarjetaMini>
+
+        <TarjetaMini titulo="La frase para recordar" tono="azul">
+          Vencida: primero pasa el tiempo y después pagas. Anticipada: primero pagas y después pasa el tiempo.
+        </TarjetaMini>
+
+        <div style={{ fontSize: 13, color: C.slate, margin: "14px 0 8px" }}>Ejemplos reales de pagos anticipados en Colombia</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="Arriendo">Lo pagas el día 1 del mes y después vives en la casa todo el mes.</TarjetaMini>
+          <TarjetaMini titulo="Seguro">Pagas la póliza antes de que empiece la cobertura.</TarjetaMini>
+          <TarjetaMini titulo="Matrícula">Pagas antes de iniciar el semestre y después empiezan las clases.</TarjetaMini>
+          <TarjetaMini titulo="Leasing">Muchos contratos de leasing piden la cuota al inicio de cada periodo.</TarjetaMini>
+          <TarjetaMini titulo="Gimnasio">Pagas la mensualidad y después vas todo el mes.</TarjetaMini>
+        </div>
+        <Interpretacion>
+          Fíjate que es la misma fila de cuotas iguales. Lo único que se corrió fue la fecha: cada cuota se movió un periodo hacia el comienzo. Esa pequeña diferencia es la que cambia todos los resultados.
+        </Interpretacion>
+      </Acordeon>
+
+      {/* SECCIÓN 2 */}
+      <Acordeon title={"2 · ¿Qué significa \"anticipada\"?"}>
+        <p><strong>¿Qué es?</strong> Una anualidad anticipada es una fila de pagos iguales que haces <strong>al comienzo</strong> de cada periodo.</p>
+        <p><strong>¿Cómo funciona?</strong> Al comienzo se pacta cuándo se paga. Si dice "se paga al empezar el mes", pagas ese día y después viene el mes.</p>
+        <TarjetaMini titulo={"\"Anticipada\" NO significa error"} tono="alerta">
+          No quiere decir que pagaste antes por equivocación. Quiere decir que así se acordó desde el principio, como una regla del juego.
+        </TarjetaMini>
+        <div style={{ fontSize: 13, color: C.slate, margin: "14px 0 8px" }}>Cuatro situaciones del día a día</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="Arriendo" tono="azul">Pagas el arriendo el día 1 y luego vives el mes.</TarjetaMini>
+          <TarjetaMini titulo="Matrícula" tono="azul">Pagas la matrícula antes de empezar clases.</TarjetaMini>
+          <TarjetaMini titulo="Póliza" tono="azul">Pagas la póliza antes de recibir la cobertura.</TarjetaMini>
+          <TarjetaMini titulo="Gimnasio" tono="azul">Pagas el gimnasio antes de usarlo durante el mes.</TarjetaMini>
+        </div>
+        <p style={{ marginTop: 12 }}><strong>¿Por qué importa?</strong> Porque pagar antes o después cambia cuánto vale la plata. Un billete de hoy no vale lo mismo que uno de dentro de un mes.</p>
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 8px" }}>Diferencia con la anualidad vencida</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="Anualidad vencida">Primero uso o pasa el periodo, luego pago.</TarjetaMini>
+          <TarjetaMini titulo="Anualidad anticipada">Primero pago, luego uso o pasa el periodo.</TarjetaMini>
+        </div>
+        <Interpretacion>
+          Para saber cuál es, pregúntate: ¿pago cuando termina el mes o cuando empieza? Si es cuando empieza, es anticipada.
+        </Interpretacion>
+      </Acordeon>
+
+      {/* SECCIÓN 3 */}
+      <Acordeon title="3 · No es lo mismo tasa anticipada que anualidad anticipada">
+        <p>Estas dos palabras se parecen mucho y casi todos las confunden. Pero son cosas distintas.</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
+          <TarjetaMini titulo="Tarjeta 1 · Tasa anticipada" tono="azul">
+            Habla del <strong>interés</strong>. Dice cuándo te cobran el interés: al comienzo.
+          </TarjetaMini>
+          <TarjetaMini titulo="Tarjeta 2 · Anualidad anticipada" tono="azul">
+            Habla de la <strong>cuota</strong>. Dice cuándo pagas la cuota: al comienzo.
+          </TarjetaMini>
+        </div>
+        <TarjetaMini titulo="Para entenderlo fácil" tono="neutral">
+          Una cosa es CUÁNDO te cobran el interés. Otra cosa es CUÁNDO pagas la cuota. Se parecen, pero no son lo mismo, como un perro y un gato: los dos tienen cuatro patas, pero son distintos.
+        </TarjetaMini>
+        <div style={{ marginTop: 12, padding: 16, background: C.dangerBg, border: `1px solid ${C.danger}55`, borderRadius: 10 }}>
+          <div style={{ fontFamily: F_MONO, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: C.danger, fontWeight: 700, marginBottom: 6 }}>
+            Advertencia
+          </div>
+          <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.6 }}>
+            No confundas la <strong>tasa anticipada</strong> con la <strong>anualidad anticipada</strong>. No son lo mismo. Y no se puede resolver una anualidad anticipada metiendo, sin más, una tasa anticipada dentro de la fórmula de las anualidades vencidas.
+          </div>
+        </div>
+        <p style={{ marginTop: 14 }}><strong>¿Entonces qué tasa se usa?</strong> Para calcular anualidades anticipadas se usan tasas <strong>efectivas vencidas</strong> que coincidan con el periodo de pago de las cuotas. Si la tasa viene anticipada, primero se pasa a vencida con la fórmula del módulo 4:</p>
+        <BloqueFormula>{"iv = ia / (1 − ia)"}</BloqueFormula>
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 8px" }}>Las cuatro combinaciones que pueden aparecer</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="Tasa vencida + cuota vencida">Ya la conoces: es el módulo 5.</TarjetaMini>
+          <TarjetaMini titulo="Tasa vencida + cuota anticipada">Es la fórmula de este módulo.</TarjetaMini>
+          <TarjetaMini titulo="Tasa anticipada + cuota vencida">Primero la tasa pasa a vencida; luego se usa la fórmula de vencidas.</TarjetaMini>
+          <TarjetaMini titulo="Tasa anticipada + cuota anticipada">Primero la tasa pasa a vencida; luego se usa la fórmula de este módulo.</TarjetaMini>
+        </div>
+        <Interpretacion>
+          Cada pregunta se resuelve por separado. Primero miras la tasa y la dejas como efectiva vencida del tamaño de las cuotas. Después miras la cuota y decides si usas la fórmula de vencida o la de anticipada.
+        </Interpretacion>
+      </Acordeon>
+
+      {/* SECCIÓN 4 */}
+      <Acordeon title="4 · Conexión con interés compuesto y conversión de tasas">
+        <TarjetaMini titulo="Dicho claramente" tono="azul">
+          Las anualidades se calculan con <strong>interés compuesto</strong>. Todas: las vencidas y las anticipadas. No se usa interés simple.
+        </TarjetaMini>
+        <p style={{ marginTop: 12 }}><strong>¿Por qué?</strong> Cada cuota cae en un momento distinto del tiempo. Para llevar una cuota hasta hoy o hasta el final, usamos factores de interés compuesto: la cuota se divide o se multiplica por (1 + i) elevado a los periodos que la separan de la fecha elegida.</p>
+
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Lo que aprendiste en el módulo 2</div>
+        <BloqueFormula>{"VF = VP × (1 + i)^n"}</BloqueFormula>
+        <p style={{ color: C.slate }}>Con una anualidad usamos la misma lógica, pero no con un solo pago: la aplicamos a muchas cuotas iguales y las sumamos. Las fórmulas de anualidades son simplemente ese resultado, ya resumido.</p>
+
+        <div style={{ fontWeight: 700, color: C.navy, margin: "16px 0 6px" }}>Conexión con la conversión de tasas (módulo 4)</div>
+        <p>Antes de usar cualquier fórmula de anualidad, la tasa debe estar en el mismo periodo que las cuotas:</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="Cuotas mensuales">La tasa debe ser mensual.</TarjetaMini>
+          <TarjetaMini titulo="Cuotas bimestrales">La tasa debe ser bimestral.</TarjetaMini>
+          <TarjetaMini titulo="Cuotas trimestrales">La tasa debe ser trimestral.</TarjetaMini>
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <TarjetaMini titulo="Advertencia" tono="alerta">
+            Si la tasa viene nominal o anticipada, primero se debe convertir a una tasa efectiva vencida del periodo correcto. Solo después entra a la fórmula.
+          </TarjetaMini>
+        </div>
+        <div style={{ fontSize: 13, color: C.slate, margin: "14px 0 6px" }}>El camino completo de la tasa</div>
+        <FichaProcedimiento pasos={[
+          { label: "Paso 1 — Repartir la nominal", content: "ip = NA / nc  (nominal a periódica)" },
+          { label: "Paso 2 — Si es anticipada, pasarla a vencida", content: "iv = ia / (1 − ia)" },
+          { label: "Paso 3 — Cambiar de tamaño hasta el periodo de las cuotas", content: "(1 + iy)^(ny/nx) − 1 = ix" },
+          { label: "Paso 4 — Usar la tasa en la fórmula", content: "Ahora sí: efectiva vencida del mismo tamaño que las cuotas." },
+        ]} />
+        <Interpretacion>
+          La fórmula de anualidades solo entiende un tipo de tasa: efectiva vencida, del mismo tamaño que las cuotas. Todo lo demás se traduce primero con el módulo 4.
+        </Interpretacion>
+      </Acordeon>
+
+      {/* SECCIÓN 5 */}
+      <Acordeon title="5 · ¿Por qué el resultado cambia frente a una anualidad vencida?">
+        <p><strong>¿Qué pasa?</strong> Con los mismos datos, la anticipada da un resultado distinto al de la vencida. Hay una sola razón: cada pago se hace un periodo ANTES.</p>
+        <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
+          Como cada pago se hace un periodo antes, cada pago tiene un periodito más para crecer. Es como si cada galleta de la fila se hubiera corrido un puestico hacia adelante.
+        </TarjetaMini>
+        <div style={{ fontWeight: 700, color: C.navy, margin: "16px 0 6px" }}>La relación clave</div>
+        <BloqueFormula>{"Valor de anualidad anticipada = valor de anualidad vencida × (1 + i)"}</BloqueFormula>
+        <BloqueFormula>{"VP anticipada = VP vencida × (1 + i)"}</BloqueFormula>
+        <BloqueFormula>{"VF anticipada = VF vencida × (1 + i)"}</BloqueFormula>
+        <p>La anticipada está un periodo adelantada. Por eso se multiplica por (1 + i).</p>
+        <div style={{ fontWeight: 700, color: C.navy, margin: "16px 0 6px" }}>¿En qué dirección cambia?</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="Valor presente" tono="azul">Si la tasa es positiva, el VP de la anticipada es MAYOR que el VP de la vencida con los mismos datos.</TarjetaMini>
+          <TarjetaMini titulo="Valor futuro" tono="azul">Si la tasa es positiva, el VF de la anticipada es MAYOR que el VF de la vencida con los mismos datos.</TarjetaMini>
+        </div>
+        <p style={{ color: C.slate, marginTop: 12 }}><strong>Diferencia con lo que ya conoces:</strong> en la vencida no se multiplica por nada extra. En la anticipada aparece un (1 + i) más. Si recuerdas ese (1 + i), ya sabes pasar de una a la otra.</p>
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico (con los números que usaremos en las secciones 6 y 7)</div>
+          <p>3 cuotas de COP 1.000 con una tasa del 5 % efectivo por periodo. Vamos a ver las dos versiones lado a lado.</p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "10px 0" }}>
+            <TarjetaMini titulo="Vencida">VP = COP {formatMilesCO(eVPv)} · VF = COP {formatMilesCO(eVFv)}</TarjetaMini>
+            <TarjetaMini titulo="Anticipada">VP = COP {formatMilesCO(eVPa)} · VF = COP {formatMilesCO(eVFa)}</TarjetaMini>
+          </div>
+          <Acordeon title="Ver procedimiento completo">
+            <FichaProcedimiento pasos={[
+              { label: "Datos", content: "A = 1.000 · i = 5 % = 0,05 · n = 3" },
+              { label: "Relación", content: "Anticipada = vencida × (1 + i) = vencida × 1,05" },
+              { label: "Valor presente", content: `${formatMilesCO(eVPv)} × 1,05 = COP ${formatMilesCO(eVPa)}` },
+              { label: "Valor futuro", content: `${formatMilesCO(eVFv)} × 1,05 = COP ${formatMilesCO(eVFa)}` },
+              { label: "Interpretación", content: "Las dos versiones suben exactamente 5 %: justo el (1 + i) de un periodo." },
+            ]} />
+          </Acordeon>
+          <Interpretacion>
+            Las cuotas anticipadas valen {formatPctMilesCO(eVPa / eVPv - 1, 0)} más que las vencidas, tanto hoy como al final. Ese 5 % no es casualidad: es la tasa de un periodo, porque cada cuota se adelantó un periodo.
+          </Interpretacion>
+        </div>
+      </Acordeon>
+
+      {/* SECCIÓN 6 */}
+      <Acordeon title="6 · Valor presente: cuánto valen hoy cuotas que se pagan al inicio">
+        <p><strong>¿Qué es?</strong> El valor presente de una anualidad anticipada te dice <strong>cuánto valen hoy</strong> todos los pagos que haces al comienzo de cada periodo.</p>
+        <p><strong>¿Cómo funciona?</strong> Empezamos con lo que ya sabes: el valor presente de la vencida. Como en la anticipada todo pasa un periodo antes, lo multiplicamos por (1 + i).</p>
+        <p style={{ color: C.slate }}><strong>¿Por qué importa?</strong> Con este valor sabes cuánto costó de verdad un crédito con cuotas anticipadas, o cuánto vale hoy un contrato de arriendo o de leasing.</p>
+
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Primero, la relación con la vencida</div>
+        <BloqueFormula>{"VP anticipada = VP vencida × (1 + i)"}</BloqueFormula>
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Después, la fórmula completa</div>
+        <BloqueFormula>{"VP = A × (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ]"}</BloqueFormula>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "8px 0" }}>
+          <TarjetaMini titulo="VP">El valor de todas las cuotas hoy.</TarjetaMini>
+          <TarjetaMini titulo="A">La cuota o anualidad.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa efectiva vencida del periodo.</TarjetaMini>
+          <TarjetaMini titulo="n">El número de pagos.</TarjetaMini>
+        </div>
+        <p style={{ color: C.slate }}>La parte entre corchetes es la fórmula de anualidad vencida, la misma del módulo 5. El factor (1 + i) aparece porque la anualidad anticipada está un periodo antes.</p>
+        <p style={{ color: C.slate }}><strong>Diferencia con la vencida:</strong> la única diferencia en la fórmula es ese (1 + i) que multiplica.</p>
+
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
+          <p>Vamos a pagar 3 anualidades anticipadas de COP 1.000 a una tasa del 5 % efectivo periódico. ¿Cuál es el valor presente de las anualidades?</p>
+          <Acordeon title="Ver procedimiento completo">
+            <FichaProcedimiento pasos={[
+              { label: "Datos", content: "A = 1.000 · i = 5 % = 0,05 · n = 3" },
+              { label: "Fórmula", content: "VP = A × (1 + i) × [((1 + i)^n − 1) / (i × (1 + i)^n)]" },
+              { label: "Sustitución", content: "VP = 1.000 × (1 + 0,05) × [((1 + 0,05)^3 − 1) / (0,05 × (1 + 0,05)^3)]" },
+              { label: "Resultado", content: `VP = COP ${formatMilesCO(eVPa)}` },
+              { label: "Comparación con vencida", content: `VP vencida = COP ${formatMilesCO(eVPv)}` },
+              { label: "Relación", content: `VP anticipada = ${formatMilesCO(eVPv)} × (1 + 5 %) = COP ${formatMilesCO(eVPv * (1 + ei))}` },
+              { label: "Comprobación como suma", content: `1.000 + 1.000/1,05 + 1.000/1,05^2 = COP ${formatMilesCO(eVPsuma)}  (la primera cuota no se descuenta: ya está en el momento 0)` },
+              { label: "Interpretación", content: "Las cuotas anticipadas valen más hoy que las vencidas porque se pagan un periodo antes." },
+            ]} />
+          </Acordeon>
+          <Interpretacion>
+            Pagarás COP 3.000 en total, pero hoy esas cuotas valen COP {formatMilesCO(eVPa)}. Con cuotas vencidas valían COP {formatMilesCO(eVPv)}. La diferencia de COP {formatMilesCO(eVPa - eVPv)} existe porque la primera cuota se paga hoy mismo y todas las demás se pagan un periodo antes.
+          </Interpretacion>
+        </div>
+      </Acordeon>
+
+      {/* SECCIÓN 7 */}
+      <Acordeon title="7 · Valor futuro: cuánto valen al final cuotas pagadas al inicio">
+        <p><strong>¿Qué es?</strong> El valor futuro de una anualidad anticipada te dice <strong>cuánto tienes al final</strong> si pagaste o ahorraste lo mismo al comienzo de cada periodo.</p>
+        <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
+          Es la alcancía mágica otra vez. Si metes las monedas al comienzo de cada mes, cada moneda alcanza a trabajar un mes más. Por eso al final hay más moneditas.
+        </TarjetaMini>
+        <p style={{ color: C.slate, marginTop: 12 }}><strong>¿Por qué importa?</strong> Sirve para saber cuánto vas a tener si ahorras al comienzo de cada periodo, por ejemplo en un fondo de pensiones voluntarias o un CDT con aportes mensuales.</p>
+
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Primero, la relación con la vencida</div>
+        <BloqueFormula>{"VF anticipada = VF vencida × (1 + i)"}</BloqueFormula>
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Después, la fórmula clara</div>
+        <BloqueFormula>{"VF = A × [ ((1 + i)^n − 1) / i ] × (1 + i)"}</BloqueFormula>
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Y la forma equivalente</div>
+        <BloqueFormula>{"VF = A × [ ((1 + i)^(n+1) − (1 + i)) / i ]"}</BloqueFormula>
+        <p style={{ color: C.slate }}>Las dos fórmulas significan exactamente lo mismo: dan el mismo resultado. Usa la que te resulte más cómoda.</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "8px 0" }}>
+          <TarjetaMini titulo="VF">El valor de todas las cuotas al final.</TarjetaMini>
+          <TarjetaMini titulo="A">La cuota o anualidad.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa efectiva vencida del periodo.</TarjetaMini>
+          <TarjetaMini titulo="n">El número de pagos.</TarjetaMini>
+        </div>
+        <p style={{ color: C.slate }}><strong>Diferencia con la vencida:</strong> otra vez, es el mismo VF de la vencida multiplicado por (1 + i). El "final" de la anticipada es el momento n, un periodo después de la última cuota.</p>
+
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
+          <p>Vamos a pagar 3 anualidades anticipadas de COP 1.000 a una tasa del 5 % efectivo periódico. ¿Cuál es el valor futuro de las anualidades?</p>
+          <Acordeon title="Ver procedimiento completo">
+            <FichaProcedimiento pasos={[
+              { label: "Datos", content: "A = 1.000 · i = 5 % = 0,05 · n = 3" },
+              { label: "Fórmula", content: "VF = A × [((1 + i)^n − 1) / i] × (1 + i)" },
+              { label: "Sustitución", content: "VF = 1.000 × [((1 + 0,05)^3 − 1) / 0,05] × (1 + 0,05)" },
+              { label: "Resultado", content: `VF = COP ${formatMilesCO(eVFa)}` },
+              { label: "Comparación con vencida", content: `VF vencida = COP ${formatMilesCO(eVFv)}` },
+              { label: "Relación", content: `VF anticipada = ${formatMilesCO(eVFv)} × (1 + 5 %) = COP ${formatMilesCO(eVFv * (1 + ei))}` },
+              { label: "Con la fórmula equivalente", content: `VF = 1.000 × [((1,05)^4 − 1,05) / 0,05] = COP ${formatMilesCO(eVFaAlt)}` },
+              { label: "Comprobación como suma", content: `1.000 × 1,05^3 + 1.000 × 1,05^2 + 1.000 × 1,05 = COP ${formatMilesCO(eVFsuma)}` },
+              { label: "Interpretación", content: "El valor futuro es mayor porque cada pago tuvo un periodo más para crecer." },
+            ]} />
+          </Acordeon>
+          <Interpretacion>
+            Pusiste COP 3.000 en total y al final tienes COP {formatMilesCO(eVFa)}. Con cuotas vencidas habrías tenido COP {formatMilesCO(eVFv)}. Cada cuota tuvo un periodo más para crecer, y por eso ganaste COP {formatMilesCO(eVFa - eVFv)} adicionales.
+          </Interpretacion>
+        </div>
+      </Acordeon>
+
+      {/* SECCIÓN 8 */}
+      <Acordeon title="8 · Cómo hallar la cuota A desde VP o VF">
+        <p>A veces ya sabemos cuánto cuesta lo que compramos o cuánta plata queremos juntar, y la pregunta es: <strong>¿de cuánto es cada cuota anticipada?</strong></p>
+        <p style={{ color: C.slate }}>Para eso usamos las mismas fórmulas de antes, "despejando" la A.</p>
+
+        <div style={{ fontWeight: 700, color: C.navy, margin: "14px 0 4px" }}>Caso 1 · Hallar A desde VP</div>
+        <BloqueFormula>{"A = VP / { (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] }"}</BloqueFormula>
+        <p style={{ color: C.slate }}>Se usa cuando conozco el valor presente del crédito o de la obligación y quiero hallar la cuota anticipada.</p>
+        <p>Halle el valor de la anualidad anticipada de un crédito con 24 cuotas mensuales, valor presente de COP 30.000.000 y tasa de interés del 30 % NAMA.</p>
+        <TarjetaMini titulo={"¿Qué significa \"30 % NAMA\"?"} tono="azul">
+          Nominal Anual con capitalización Mensual Anticipada. Es una tasa nominal (se reparte), que se cobra cada mes (primer apellido) y al comienzo del mes (segundo apellido: anticipada).
+        </TarjetaMini>
+        <Acordeon title="Ver procedimiento completo">
+          <FichaProcedimiento pasos={[
+            { label: "Paso 1 — Nominal anticipada a periódica anticipada", content: `30 % / 12 = ${formatPctMilesCO(c1ia, 1)} EMA (efectiva mensual anticipada)` },
+            { label: "Paso 2 — Mensual anticipada a mensual vencida", content: "i = ia / (1 − ia)" },
+            { label: "Sustitución", content: `i = 2,5 % / (1 − 2,5 %) = ${formatPctMilesCO(c1i, 4)} EM  (en clase se redondea a 2,56 %)` },
+            { label: "Datos", content: `VP = 30.000.000 · i = ${formatPctMilesCO(c1i, 4)} = ${formatMilesCO(c1i, 6)} · n = 24` },
+            { label: "Fórmula", content: "A = VP / { (1 + i) × [((1 + i)^n − 1) / (i × (1 + i)^n)] }" },
+            { label: "Factor de anualidad vencida", content: `((1 + i)^24 − 1) / (i × (1 + i)^24) = ${formatMilesCO(fVP(c1i, c1n), 6)}` },
+            { label: "Denominador completo", content: `(1 + i) × ${formatMilesCO(fVP(c1i, c1n), 6)} = ${formatMilesCO((1 + c1i) * fVP(c1i, c1n), 6)}` },
+            { label: "Resultado", content: `A = 30.000.000 / ${formatMilesCO((1 + c1i) * fVP(c1i, c1n), 6)} = COP ${formatMilesCO(c1A)}` },
+            { label: "Interpretación", content: `Para pagar anticipadamente un crédito de COP 30.000.000 en 24 cuotas mensuales con esa tasa, cada cuota debe ser aproximadamente COP ${formatMilesCO(c1A)}.` },
+          ]} />
+        </Acordeon>
+        <Interpretacion>
+          En total pagarías unos COP {formatMilesCO(c1Total / 1e6, 2)} millones (24 × {formatMilesCO(c1A)}) por un crédito de COP 30 millones. La diferencia son los intereses. Además, cada cuota sale un poco menor que en una vencida con la misma tasa, porque la primera se paga hoy y baja la deuda desde el comienzo.
+        </Interpretacion>
+
+        <div style={{ fontWeight: 700, color: C.navy, margin: "22px 0 4px" }}>Caso 2 · Hallar A desde VF</div>
+        <BloqueFormula>{"A = VF × [ i / ((1 + i)^n − 1) ] / (1 + i)"}</BloqueFormula>
+        <p style={{ color: C.slate }}>Se usa cuando conozco el valor futuro que quiero alcanzar y quiero saber cuánto debe ser cada cuota anticipada.</p>
+        <p>Halle el valor de la anualidad anticipada de 36 cuotas trimestrales, con valor futuro de COP 150.000.000 y tasa del 30 % NAMA.</p>
+        <Acordeon title="Ver procedimiento completo">
+          <FichaProcedimiento pasos={[
+            { label: "Paso 1 — Nominal anticipada a periódica anticipada", content: `30 % / 12 = ${formatPctMilesCO(c1ia, 1)} EMA` },
+            { label: "Paso 2 — Mensual anticipada a mensual vencida", content: `2,5 % / (1 − 2,5 %) = ${formatPctMilesCO(c1i, 4)} EM  (en clase 2,56 %)` },
+            { label: "Paso 3 — Como las cuotas son trimestrales, cambiar a trimestral", content: "ET = (1 + i mensual)^3 − 1" },
+            { label: "Resultado de la conversión", content: `ET = (1 + ${formatMilesCO(c1i, 6)})^3 − 1 = ${formatPctMilesCO(c2ET, 4)} efectiva trimestral vencida  (en clase se redondea a 7,89 %)` },
+            { label: "Datos", content: `VF = 150.000.000 · i = ${formatPctMilesCO(c2ET, 4)} = ${formatMilesCO(c2ET, 6)} · n = 36` },
+            { label: "Fórmula", content: "A = VF × [i / ((1 + i)^n − 1)] / (1 + i)" },
+            { label: "Factor", content: `i / ((1 + i)^36 − 1) = ${formatMilesCO(c2ET / (Math.pow(1 + c2ET, c2n) - 1), 6)}` },
+            { label: "Dividir entre (1 + i)", content: `A = 150.000.000 × ${formatMilesCO(c2ET / (Math.pow(1 + c2ET, c2n) - 1), 6)} / ${formatMilesCO(1 + c2ET, 6)}` },
+            { label: "Resultado", content: `A = COP ${formatMilesCO(c2A)}` },
+            { label: "Interpretación", content: `Para llegar a COP 150.000.000 al final de 36 trimestres con cuotas anticipadas, cada cuota debe ser aproximadamente COP ${formatMilesCO(c2A)}.` },
+          ]} />
+        </Acordeon>
+        <Interpretacion>
+          Aportarías en total unos COP {formatMilesCO(c2Total / 1e6, 2)} millones y llegarías a COP 150 millones: el resto lo ponen los intereses. Guarda todos los decimales de la tasa mientras haces las cuentas; si usas la tasa redondeada a 7,89 %, el resultado se mueve un poco.
+        </Interpretacion>
+        <p style={{ color: C.slate, marginTop: 10 }}><strong>Diferencia entre los dos casos:</strong> desde VP la cuota paga una deuda que existe hoy; desde VF la cuota construye un ahorro que existirá en el futuro.</p>
+      </Acordeon>
+
+      {/* SECCIÓN 9 */}
+      <Acordeon title="9 · Error común: usar una tasa nominal o anticipada directamente">
+        <div style={{ padding: 16, background: C.dangerBg, border: `1px solid ${C.danger}55`, borderRadius: 10, marginBottom: 14 }}>
+          <div style={{ fontFamily: F_MONO, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: C.danger, fontWeight: 700, marginBottom: 6 }}>
+            Advertencia
+          </div>
+          <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.6 }}>
+            En anualidades anticipadas NO basta con meter una tasa nominal o una tasa anticipada directamente en la fórmula. Las tasas que se deben usar son tasas efectivas vencidas que hagan "match" con el periodo de pago de las cuotas.
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="Si la tasa viene nominal">Se convierte (se reparte y se cambia de tamaño).</TarjetaMini>
+          <TarjetaMini titulo="Si viene anticipada">Se pasa a vencida.</TarjetaMini>
+          <TarjetaMini titulo="Cuotas mensuales">La tasa final debe ser mensual vencida.</TarjetaMini>
+          <TarjetaMini titulo="Cuotas trimestrales">La tasa final debe ser trimestral vencida.</TarjetaMini>
+        </div>
+        <p style={{ marginTop: 12 }}><strong>¿Cómo se ve el error?</strong></p>
+        <TarjetaMini titulo="Ejemplo de error" tono="alerta">
+          Hallar el VP de una anualidad de $100 mensual con una tasa del 25 % NATA, y usar el 25 % directamente como si fuera una tasa mensual. Incorrecto.
+        </TarjetaMini>
+        <div style={{ fontSize: 13, color: C.slate, margin: "14px 0 6px" }}>El procedimiento correcto (25 % NATA es nominal anual, con capitalización trimestral anticipada)</div>
+        <Acordeon title="Ver procedimiento completo">
+          <FichaProcedimiento pasos={[
+            { label: "Paso 1 — Repartir la nominal anticipada", content: `ETA = 25 % / 4 = ${formatPctMilesCO(x1ETA, 2)} efectiva trimestral anticipada` },
+            { label: "Paso 2 — Trimestral anticipada a trimestral vencida", content: `ET = ia / (1 − ia) = 6,25 % / (1 − 6,25 %) = ${formatPctMilesCO(x2ET, 2)} efectiva trimestral vencida` },
+            { label: "Paso 3 — Trimestral vencida a mensual vencida", content: "EM = (1 + 0,0667)^(4/12) − 1" },
+            { label: "Resultado", content: `EM ≈ ${formatPctMilesCO(x3EM, 2)} efectiva mensual vencida` },
+            { label: "Interpretación", content: `Si la anualidad es mensual, debo usar ${formatPctMilesCO(x3EM, 2)} mensual vencida, no 25 % nominal anticipada.` },
+          ]} />
+        </Acordeon>
+        <div style={{ fontSize: 13, color: C.slate, margin: "14px 0 6px" }}>¿Y cuánto cambia el resultado? Probemos con 12 cuotas mensuales anticipadas de $100</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "8px 0" }}>
+          <TarjetaMini titulo="Correcto" tono="azul">Con i = {formatPctMilesCO(x3EM, 2)} mensual: VP = ${formatMilesCO(xVPcorrecto)}</TarjetaMini>
+          <TarjetaMini titulo="Incorrecto" tono="alerta">Con i = 25 % usado como mensual: VP = ${formatMilesCO(xVPerror)}</TarjetaMini>
+        </div>
+        <Interpretacion>
+          Si la anualidad es mensual, se usa {formatPctMilesCO(x3EM, 2)} mensual vencida, no 25 % nominal anticipada. Fíjate qué diferencia: con la tasa mal usada el VP sale en ${formatMilesCO(xVPerror, 0)} y con la correcta en ${formatMilesCO(xVPcorrecto, 0)}. Todo el error viene de no traducir la tasa.
+        </Interpretacion>
+      </Acordeon>
+
+      {/* SECCIÓN 10 */}
+      <Acordeon title="10 · Pagos adicionales extraordinarios en anualidades anticipadas">
+        <p><strong>¿Qué es?</strong> Igual que en las anualidades vencidas, en las anticipadas también puede haber pagos adicionales: dinero que se paga fuera de la fila de cuotas iguales.</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
+          <TarjetaMini titulo="Cuota inicial">Un pago grande al comienzo.</TarjetaMini>
+          <TarjetaMini titulo="Abono extraordinario">Plata extra que pones al crédito.</TarjetaMini>
+          <TarjetaMini titulo="Pago en una fecha específica">Por ejemplo la prima de junio o de diciembre.</TarjetaMini>
+          <TarjetaMini titulo="Dos pagos iguales">El mismo valor en dos fechas distintas.</TarjetaMini>
+        </div>
+        <TarjetaMini titulo="Regla sencilla" tono="azul">
+          Las cuotas iguales van en la fórmula de anualidad anticipada. Los pagos diferentes van por fuera, como flujos adicionales. No se pueden meter dentro de la fórmula porque no hacen parte de la fila de cuotas iguales.
+        </TarjetaMini>
+
+        <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>La estructura</div>
+        <BloqueFormula>{"VP total = VP de la anualidad anticipada + VP de pagos extra"}</BloqueFormula>
+        <BloqueFormula>{"VF total = VF de la anualidad anticipada + VF de pagos extra"}</BloqueFormula>
+        <div style={{ fontSize: 12.5, color: C.slate, margin: "10px 0 4px" }}>Con el signo de suma, para cualquier cantidad de pagos extra</div>
+        <BloqueFormula>{"VP total = A × (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Σ Pk / (1 + i)^nk"}</BloqueFormula>
+        <BloqueFormula>{"VF total = A × [ ((1 + i)^n − 1) / i ] × (1 + i) + Σ Pk × (1 + i)^(n − nk)"}</BloqueFormula>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "10px 0" }}>
+          <TarjetaMini titulo="A">La cuota anticipada igual.</TarjetaMini>
+          <TarjetaMini titulo="i">Tasa efectiva vencida del mismo tamaño que las cuotas.</TarjetaMini>
+          <TarjetaMini titulo="n">Número total de cuotas.</TarjetaMini>
+          <TarjetaMini titulo="Pk">El valor de cada pago extra.</TarjetaMini>
+          <TarjetaMini titulo="nk">El periodo en que cae cada pago extra.</TarjetaMini>
+        </div>
+
+        <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>La fecha focal: todos en la misma foto</div>
+        <p>Para sumar pagos que caen en momentos distintos, todos deben llevarse al mismo momento. Ese momento es la fecha focal.</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="Si quiero valor presente" tono="azul">Traigo todo a hoy (momento 0). Los pagos extra se dividen entre (1 + i)^nk.</TarjetaMini>
+          <TarjetaMini titulo="Si quiero valor futuro" tono="azul">Llevo todo al final (momento n). Los pagos extra se multiplican por (1 + i)^(n − nk).</TarjetaMini>
+        </div>
+        <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Receta en 4 pasos</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <TarjetaMini titulo="1. Elige la fecha focal">¿Quiero VP o VF? Hoy o el final.</TarjetaMini>
+          <TarjetaMini titulo="2. Calcula la anualidad anticipada">Usa la fórmula de este módulo solo con las cuotas iguales.</TarjetaMini>
+          <TarjetaMini titulo="3. Mueve cada pago extra">Divide o multiplica según esté después o antes de la fecha focal.</TarjetaMini>
+          <TarjetaMini titulo="4. Suma todo">Anualidad anticipada + pagos extra ya movidos.</TarjetaMini>
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <TarjetaMini titulo="Error común" tono="alerta">
+            Meter el pago extra dentro de la fórmula de anualidades, o sumar la anualidad llevada a hoy con un pago extra llevado al final. Todo debe llegar a la misma fecha.
+          </TarjetaMini>
+        </div>
+        <Interpretacion>
+          Una anualidad anticipada con pagos extra es un rompecabezas de dos partes: la fila de cuotas iguales (con su (1 + i) extra) y las piezas sueltas. Cada parte se calcula con su propia fórmula, y solo al final se suman en la misma fecha.
+        </Interpretacion>
+      </Acordeon>
+
+      {/* SECCIÓN 11 */}
+      <Acordeon title="11 · Ejemplo completo con pagos adicionales: la casa">
+        <p>Una pareja compró una casa hoy por COP 720.000.000. Pagaron cuotas bimestrales anticipadas de COP 8.906.829,51 durante 15 años. La tasa es 5,73 % NACA, es decir, nominal anual capitalizable cuatrimestral anticipada. Además, hicieron 2 pagos adicionales en los bimestres 20 y 40, ambos por el mismo valor. ¿Cuál fue el valor de esos desembolsos?</p>
+        <TarjetaMini titulo="Qué es qué" tono="azul">
+          La anualidad son las 90 cuotas anticipadas iguales. Los pagos sueltos son los dos X. La fecha focal es hoy (momento 0), porque la casa se compró hoy por COP 720.000.000.
+        </TarjetaMini>
+        <FichaProcedimiento pasos={[
+          { label: "Paso 1 — Identificar la periodicidad de las cuotas", content: "Las cuotas son bimestrales anticipadas. Necesitamos una tasa efectiva bimestral vencida para usar en la fórmula." },
+          { label: "Paso 2 — Repartir la nominal anticipada", content: `5,73 % NACA: un año tiene 3 cuatrimestres. 5,73 % / 3 = ${formatPctMilesCO(h1ia, 2)} efectiva cuatrimestral anticipada` },
+          { label: "Paso 3 — Anticipada a vencida", content: `${formatPctMilesCO(h1ia, 2)} / (1 − ${formatPctMilesCO(h1ia, 2)}) ≈ ${formatPctMilesCO(h2iv, 2)} efectiva cuatrimestral vencida` },
+          { label: "Paso 4 — Cuatrimestral a bimestral", content: `EB = (1 + 0,0195)^(3/6) − 1 = ${formatPctMilesCO(h3EB, 4)} ≈ 0,97 % efectiva bimestral vencida` },
+          { label: "Paso 5 — ¿Cuántas cuotas hay?", content: "15 años = 180 meses. Como las cuotas son bimestrales: n = 180 / 2 = 90 cuotas" },
+          { label: "Paso 6 — Valor presente de las cuotas anticipadas", content: `VP anualidad = 8.906.829,51 × (1 + ${formatMilesCO(h3EB, 6)}) × [((1 + ${formatMilesCO(h3EB, 6)})^90 − 1) / (${formatMilesCO(h3EB, 6)} × (1 + ${formatMilesCO(h3EB, 6)})^90)]` },
+          { label: "Resultado del paso 6", content: `VP anualidad ≈ COP ${formatMilesCO(hVPanual)}` },
+          { label: "Paso 7 — Ecuación de valor", content: `720.000.000 = ${formatMilesCO(hVPanual)} + X/(1 + ${formatMilesCO(h3EB, 6)})^20 + X/(1 + ${formatMilesCO(h3EB, 6)})^40` },
+          { label: "Paso 7b — Factores de cada pago extra", content: `1/(1 + i)^20 ≈ ${formatMilesCO(hF20, 4)} · 1/(1 + i)^40 ≈ ${formatMilesCO(hF40, 4)}` },
+          { label: "Paso 8 — Agrupar los pagos extra", content: `720.000.000 = ${formatMilesCO(hVPanual)} + X × (${formatMilesCO(hF20, 4)} + ${formatMilesCO(hF40, 4)}) = ${formatMilesCO(hVPanual)} + X × ${formatMilesCO(hFsuma, 4)}` },
+          { label: "Paso 9 — Pasar lo conocido al otro lado", content: `720.000.000 − ${formatMilesCO(hVPanual)} = ${formatMilesCO(hResto)}` },
+          { label: "Paso 9b — Despejar X", content: `X = ${formatMilesCO(hResto)} / ${formatMilesCO(hFsuma, 4)}` },
+          { label: "Resultado", content: `X ≈ COP ${formatMilesCO(hX)} (cada pago adicional)` },
+        ]} />
+        <Interpretacion>
+          Cada pago adicional fue de aproximadamente COP {formatMilesCO(hX)}. Las 90 cuotas aportan COP {formatMilesCO(hVPanual / 1e6, 1)} millones al valor de la casa de hoy, y los COP {formatMilesCO(hResto / 1e6, 1)} millones que faltan los cubren los dos pagos extra, que traídos a hoy valen menos que cuando se pagaron. En clase los factores se redondean a 0,82 y 0,68 (suman unos 1,50); aquí usamos más decimales ({formatMilesCO(hFsuma, 4)}). Este ejemplo usa la tasa cuatrimestral redondeada a 1,95 %; si se conservan todos sus decimales, X sale cerca de COP {formatMilesCO(hXexacto, 2)}. Por eso conviene guardar todos los decimales de las tasas.
+        </Interpretacion>
+      </Acordeon>
+
+      {/* SECCIÓN 12 */}
+      <Acordeon title="12 · Ejemplo del carro">
+        <p>Hace 5 años compraste un carro. Por este carro debes pagar cuotas mensuales anticipadas de COP 3.078.925,79 a una tasa del 0,71 % periódica mensual. ¿Cuánto costó el carro cuando lo compraron? ¿Cuánto cambió frente a anualidades vencidas?</p>
+        <TarjetaMini titulo="Pista" tono="azul">
+          Queremos saber cuánto costó el día de la compra, o sea hoy en la línea de tiempo. Eso es un valor presente.
+        </TarjetaMini>
+        <FichaProcedimiento pasos={[
+          { label: "Datos", content: "A = 3.078.925,79 · i = 0,71 % = 0,0071 · n = 5 años × 12 meses = 60 cuotas" },
+          { label: "Fórmula", content: "VP = A × (1 + i) × [((1 + i)^n − 1) / (i × (1 + i)^n)]" },
+          { label: "Sustitución", content: "VP = 3.078.925,79 × (1 + 0,0071) × [((1 + 0,0071)^60 − 1) / (0,0071 × (1 + 0,0071)^60)]" },
+          { label: "Resultado", content: `VP ≈ COP ${formatMilesCO(kVPa)}` },
+          { label: "Comparación", content: `En anualidades vencidas el resultado era aproximadamente COP ${formatMilesCO(kVPv)}.` },
+          { label: "Diferencia", content: `${formatMilesCO(kVPa)} − ${formatMilesCO(kVPv)} = COP ${formatMilesCO(kDif, 0)}` },
+          { label: "Interpretación", content: "El valor presente de la anualidad anticipada es mayor porque cada cuota ocurre un periodo antes." },
+        ]} />
+        <Interpretacion>
+          Con cuotas anticipadas el carro costó unos COP {formatMilesCO(kVPa / 1e6, 3)} millones el día de la compra; con cuotas vencidas habría costado COP {formatMilesCO(kVPv / 1e6, 3)} millones. La diferencia es de unos COP {formatMilesCO(kDif, 0)}, exactamente el 0,71 % de la cifra anterior: el (1 + i) de un periodo.
+        </Interpretacion>
+      </Acordeon>
+
+      {/* SECCIÓN 13 */}
+      <Acordeon title="13 · Cierre y preguntas de repaso">
+        <div style={{ padding: 16, background: "#FDF3E7", border: `1px solid ${C.gold}55`, borderRadius: 10, marginBottom: 12 }}>
+          <div style={{ fontWeight: 700, color: C.navy, marginBottom: 8 }}>Antes de terminar, intenta responder sin mirar los apuntes:</div>
+          <ol style={{ margin: 0, paddingLeft: 20 }}>
+            <li>¿Qué significa que una anualidad sea anticipada?</li>
+            <li>¿Una tasa anticipada y una anualidad anticipada son lo mismo?</li>
+            <li>¿Qué tipo de tasa debe usarse para calcular anualidades anticipadas?</li>
+            <li>¿Por qué cambia el resultado frente a una anualidad vencida?</li>
+            <li>¿El valor presente de una anticipada es mayor o menor que el de una vencida con los mismos datos?</li>
+            <li>¿El valor futuro de una anticipada es mayor o menor que el de una vencida con los mismos datos?</li>
+            <li>¿Puede haber flujos adicionales en una anualidad anticipada?</li>
+            <li>¿Las anualidades se calculan con interés simple o compuesto?</li>
+          </ol>
+        </div>
+        <Acordeon title="Ver respuestas esperadas">
+          <ol style={{ margin: 0, paddingLeft: 20 }}>
+            <li style={{ marginBottom: 6 }}>Que la cuota se paga al inicio de cada periodo.</li>
+            <li style={{ marginBottom: 6 }}>No. La tasa anticipada habla del interés; la anualidad anticipada habla del momento de pago de la cuota.</li>
+            <li style={{ marginBottom: 6 }}>Una tasa efectiva vencida que coincida con el periodo de pago de las cuotas.</li>
+            <li style={{ marginBottom: 6 }}>Porque cada cuota ocurre un periodo antes.</li>
+            <li style={{ marginBottom: 6 }}>Mayor, si la tasa es positiva.</li>
+            <li style={{ marginBottom: 6 }}>Mayor, si la tasa es positiva.</li>
+            <li style={{ marginBottom: 6 }}>Sí, pero se calculan aparte como flujos adicionales.</li>
+            <li>Se calculan con interés compuesto.</li>
+          </ol>
+        </Acordeon>
+        <Interpretacion>
+          Si recuerdas una sola cosa: la anticipada es la vencida corrida un periodo hacia el comienzo, y por eso su valor es el de la vencida multiplicado por (1 + i).
+        </Interpretacion>
+      </Acordeon>
+
+    </div>
+  );
+}
+
 function Aprender() {
   return (
     <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
@@ -1523,6 +2148,10 @@ Por eso esta bola crece un poquito más rápido que la del interés compuesto no
 
       <Acordeon title="5 · Anualidades vencidas">
         <AnualidadesVencidas />
+      </Acordeon>
+
+      <Acordeon title="6 · Anualidades anticipadas">
+        <AnualidadesAnticipadas />
       </Acordeon>
 
       <div style={{ marginTop: 18, padding: 16, background: C.paperDark, borderRadius: 8, fontSize: 13, color: C.slate }}>
