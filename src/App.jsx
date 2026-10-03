@@ -459,9 +459,9 @@ function Inicio({ ir }) {
         <h2 style={{ fontFamily: F_DISPLAY, fontSize: 24, color: C.navy, marginBottom: 22 }}>¿Qué puedes hacer aquí?</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px,1fr))", gap: 16 }}>
           {[
-            { t: "Aprender", d: "Entender los tres tipos de interés: simple, compuesto y continuo, con explicaciones sencillas y matemáticas.", i: BookOpen },
-            { t: "Simular", d: "Calcular créditos e inversiones, con incógnitas de valor, tasa, tiempo, flujo y momento.", i: Calculator },
-            { t: "Comparar", d: "Observar cómo cambia un resultado según el régimen de interés utilizado.", i: BarChart3 },
+            { t: "Aprender", d: "Entiende los conceptos de matemáticas financieras con explicaciones sencillas y ejemplos prácticos. Aprende sobre interés simple, compuesto y continuo, conversión de tasas, tasas nominales y efectivas, tasas anticipadas y vencidas, y anualidades vencidas y anticipadas.", i: BookOpen },
+            { t: "Simular", d: "Explora créditos, ahorros e inversiones mediante simulaciones interactivas. Convierte tasas, calcula cuotas y valores, y analiza pagos periódicos y extraordinarios en diferentes situaciones financieras", i: Calculator },
+            { t: "Comparar", d: "Compara tasas, formas de pago y diferentes escenarios financieros para entender cómo cambian los resultados y reconocer qué opciones pueden ser equivalentes.", i: BarChart3 },
           ].map((it) => (
             <Tarjeta key={it.t}>
               <it.i size={20} color={C.gold} />
