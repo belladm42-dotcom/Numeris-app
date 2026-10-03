@@ -146,6 +146,212 @@ function validateSolution(value) {
 }
 
 /* ============================================================
+   CONVERSIÓN DE TASAS — MOTOR CENTRALIZADO
+   Se reutiliza en: interés compuesto, calculadora de tasas y anualidades.
+   Funciones puras (no dependen de React). NO se usa en interés simple
+   ni en interés continuo.
+   Convención del curso: año = 365 días = 52 semanas = 12 meses.
+   ============================================================ */
+// Convención ajustable: si el profesor usa otra para "quincenal", cambiar solo esta constante.
+const QUINCENAS_ANIO = 24;
+
+const PERIODOS_TASA = [
+  { value: "diario", label: "Diario", frecuencia: 365 },
+  { value: "semanal", label: "Semanal", frecuencia: 52 },
+  { value: "quincenal", label: "Quincenal", frecuencia: QUINCENAS_ANIO },
+  { value: "mensual", label: "Mensual", frecuencia: 12 },
+  { value: "bimestral", label: "Bimestral", frecuencia: 6 },
+  { value: "trimestral", label: "Trimestral", frecuencia: 4 },
+  { value: "cuatrimestral", label: "Cuatrimestral", frecuencia: 3 },
+  { value: "quintumestral", label: "Quintumestral", frecuencia: 12 / 5 },
+  { value: "semestral", label: "Semestral", frecuencia: 2 },
+  { value: "anual", label: "Anual", frecuencia: 1 },
+  { value: "personalizado_meses", label: "Personalizado en meses", frecuencia: null },
+];
+const OPC_PERIODOS_TASA = PERIODOS_TASA.map((p) => ({ value: p.value, label: p.label }));
+const OPC_PERIODOS_CUOTAS = PERIODOS_TASA
+  .filter((p) => !["diario", "semanal", "quincenal"].includes(p.value))
+  .map((p) => ({ value: p.value, label: p.label }));
+const OPC_TIPO_TASA = [{ value: "nominal", label: "Nominal" }, { value: "efectiva", label: "Efectiva / periódica" }];
+const OPC_MODALIDAD = [{ value: "vencida", label: "Vencida" }, { value: "anticipada", label: "Anticipada" }];
+
+function parseNumCO(v) {
+  if (v === "" || v === null || v === undefined) return NaN;
+  let txt = String(v).trim();
+  if (txt.includes(",")) txt = txt.replace(/\./g, "").replace(",", ".");
+  else if (/^-?\d{1,3}(\.\d{3})+$/.test(txt)) txt = txt.replace(/\./g, "");
+  return parseFloat(txt);
+}
+
+function obtenerFrecuenciaAnual(periodo, mesesPersonalizados) {
+  const p = PERIODOS_TASA.find((x) => x.value === periodo);
+  if (!p) throw new Error("Periodo no reconocido.");
+  if (p.value === "personalizado_meses") {
+    const m = Number(mesesPersonalizados);
+    if (!Number.isFinite(m) || m <= 0) throw new Error("El periodo personalizado en meses debe ser un número mayor que 0.");
+    return 12 / m;
+  }
+  return p.frecuencia;
+}
+
+function nombrePeriodoTasa(periodo, meses) {
+  const p = PERIODOS_TASA.find((x) => x.value === periodo);
+  if (!p) return "";
+  return periodo === "personalizado_meses" ? `cada ${formatNumberCO(Number(meses), 0, 4)} meses` : p.label.toLowerCase();
+}
+
+function descripcionTasa({ tasaPct, tipo, modalidad, periodo, meses }) {
+  const per = nombrePeriodoTasa(periodo, meses);
+  const val = `${formatNumberCO(tasaPct, 0, 6)} %`;
+  return tipo === "nominal"
+    ? `${val} nominal anual, capitalización ${per}, ${modalidad}`
+    : `${val} efectiva/periódica ${per}, ${modalidad}`;
+}
+
+function normalizarTasaEntradaAEffectiveAnnual({ tasaPct, tipo, modalidad, periodo, mesesPersonalizados }) {
+  const t = Number(tasaPct);
+  if (!Number.isFinite(t)) throw new Error("La tasa ingresada debe ser numérica.");
+  const f = obtenerFrecuenciaAnual(periodo, mesesPersonalizados);
+  if (!(f > 0)) throw new Error("La frecuencia anual debe ser positiva.");
+  const pct = (x) => formatPercentCO(x, 4);
+  const fTxt = formatNumberCO(f, 0, 4);
+  const r = t / 100;
+  const pasos = [{ label: "Tasa ingresada", content: descripcionTasa({ tasaPct: t, tipo, modalidad, periodo, meses: mesesPersonalizados }) }];
+  let ip = r;
+  if (tipo === "nominal") {
+    ip = r / f;
+    pasos.push({ label: "Nominal → periódica (repartir)", content: `ip = NA / nc = ${pct(r)} / ${fTxt} = ${pct(ip)}` });
+  } else {
+    pasos.push({ label: "Efectiva / periódica", content: `ip = ${pct(ip)} (ya es la tasa del periodo)` });
+  }
+  let iv = ip;
+  if (modalidad === "anticipada") {
+    if (ip >= 1) throw new Error("La tasa anticipada no puede ser igual o mayor a 100 %.");
+    iv = ip / (1 - ip);
+    pasos.push({ label: "Anticipada → vencida", content: `iv = ia / (1 − ia) = ${pct(ip)} / (1 − ${pct(ip)}) = ${pct(iv)}` });
+  } else {
+    pasos.push({ label: "Vencida", content: `Se conserva la tasa periódica vencida: iv = ${pct(iv)}` });
+  }
+  if (!(1 + iv > 0)) throw new Error("La tasa ingresada no es válida (1 + i debe ser positivo).");
+  const EA = Math.pow(1 + iv, f) - 1;
+  pasos.push({ label: "Periódica vencida → efectiva anual", content: `EA = (1 + iv)^${fTxt} − 1 = ${pct(EA)}` });
+  return { ipPeriodica: ip, ivPeriodica: iv, EA, frecuencia: f, pasos };
+}
+
+function convertirTasa(p) {
+  const mesesEnt = p.mesesEntradaPersonalizados ?? p.periodoEntradaPersonalizadoMeses;
+  const mesesSal = p.mesesSalidaPersonalizados ?? p.periodoSalidaPersonalizadoMeses;
+  const pct = (x) => formatPercentCO(x, 4);
+  const ent = normalizarTasaEntradaAEffectiveAnnual({
+    tasaPct: p.tasaPct, tipo: p.tipoEntrada, modalidad: p.modalidadEntrada, periodo: p.periodoEntrada, mesesPersonalizados: mesesEnt,
+  });
+  const fS = obtenerFrecuenciaAnual(p.periodoSalida, mesesSal);
+  if (!(fS > 0)) throw new Error("La frecuencia anual debe ser positiva.");
+  const fSTxt = formatNumberCO(fS, 0, 4);
+  const pasos = [...ent.pasos];
+  const ivS = Math.pow(1 + ent.EA, 1 / fS) - 1;
+  pasos.push({ label: "Efectiva anual → periódica vencida de salida", content: `iv salida = (1 + EA)^(1/${fSTxt}) − 1 = ${pct(ivS)}` });
+  let periodicaS = ivS;
+  if (p.modalidadSalida === "anticipada") {
+    periodicaS = ivS / (1 + ivS);
+    pasos.push({ label: "Vencida → anticipada", content: `ia = iv / (1 + iv) = ${pct(ivS)} / (1 + ${pct(ivS)}) = ${pct(periodicaS)}` });
+  }
+  let resultado = periodicaS;
+  if (p.tipoSalida === "nominal") {
+    resultado = periodicaS * fS;
+    pasos.push({ label: "Periódica → nominal (juntar)", content: `NA = ip × nc = ${pct(periodicaS)} × ${fSTxt} = ${pct(resultado)}` });
+  } else {
+    pasos.push({ label: "Tasa efectiva / periódica de salida", content: `Resultado = ${pct(resultado)}` });
+  }
+  pasos.push({ label: "Resultado", content: descripcionTasa({ tasaPct: resultado * 100, tipo: p.tipoSalida, modalidad: p.modalidadSalida, periodo: p.periodoSalida, meses: mesesSal }) });
+  return {
+    resultadoDecimal: resultado, resultadoPorcentaje: resultado * 100, pasosProcedimiento: pasos, pasos,
+    tasaEfectivaAnualIntermedia: ent.EA, tasaPeriodicaVencidaEntrada: ent.ivPeriodica, tasaPeriodicaVencidaSalida: ivS,
+    frecuenciaEntrada: ent.frecuencia, frecuenciaSalida: fS,
+  };
+}
+
+// Devuelve SIEMPRE la tasa efectiva vencida del periodo de la operación.
+function convertirTasaAPeriodoOperacion(p) {
+  const conv = convertirTasa({
+    tasaPct: p.tasaPct, tipoEntrada: p.tipoEntrada, modalidadEntrada: p.modalidadEntrada,
+    periodoEntrada: p.periodoEntrada, mesesEntradaPersonalizados: p.mesesEntradaPersonalizados,
+    tipoSalida: "efectiva", modalidadSalida: "vencida",
+    periodoSalida: p.periodoOperacion, mesesSalidaPersonalizados: p.mesesOperacionPersonalizados,
+  });
+  const atajo = Math.pow(1 + conv.tasaPeriodicaVencidaEntrada, conv.frecuenciaEntrada / conv.frecuenciaSalida) - 1;
+  const pasos = [...conv.pasos];
+  pasos.splice(pasos.length - 1, 0, {
+    label: "Atajo equivalente (mismo resultado)",
+    content: `(1 + iv)^(${formatNumberCO(conv.frecuenciaEntrada, 0, 4)}/${formatNumberCO(conv.frecuenciaSalida, 0, 4)}) − 1 = ${formatPercentCO(atajo, 4)}`,
+  });
+  return { ...conv, pasos, pasosProcedimiento: pasos, iEfectivaVencida: conv.resultadoDecimal };
+}
+
+/* ============================================================
+   ANUALIDADES — funciones puras. i = efectiva vencida del periodo de las cuotas.
+   ============================================================ */
+function factorVPAnualidad({ modalidadAnualidad, i, n }) {
+  const base = Math.abs(i) < 1e-12 ? n : (1 - Math.pow(1 + i, -n)) / i;
+  return modalidadAnualidad === "anticipada" ? base * (1 + i) : base;
+}
+function factorVFAnualidad({ modalidadAnualidad, i, n }) {
+  const base = Math.abs(i) < 1e-12 ? n : (Math.pow(1 + i, n) - 1) / i;
+  return modalidadAnualidad === "anticipada" ? base * (1 + i) : base;
+}
+
+// Convención: las cuotas son "salidas". Un pago adicional de salida suma; uno de entrada resta.
+function calcularAnualidad({ modalidadAnualidad, tipoCalculo, A, VP, VF, n, i, pagosExtra = [], baseObjetivo = "VP" }) {
+  if (!Number.isFinite(n) || n <= 0) throw new Error("El número de cuotas n debe ser mayor que 0.");
+  if (!Number.isFinite(i) || i <= -1) throw new Error("La tasa efectiva vencida del periodo no es válida.");
+  const need = (v, nombre) => { if (!Number.isFinite(v)) throw new Error(`Ingresa un valor numérico para ${nombre}.`); };
+  const fVPa = factorVPAnualidad({ modalidadAnualidad, i, n });
+  const fVFa = factorVFAnualidad({ modalidadAnualidad, i, n });
+  const conExtras = ["VP_extras", "VF_extras", "extra_desconocido", "A_extras_VP", "A_extras_VF"].includes(tipoCalculo);
+  const extras = conExtras ? pagosExtra : [];
+  const base = ["VP", "A_desde_VP", "VP_extras", "A_extras_VP"].includes(tipoCalculo) ? "VP"
+    : tipoCalculo === "extra_desconocido" ? baseObjetivo : "VF";
+  const fa = base === "VP" ? fVPa : fVFa;
+  const signo = (e) => (e.direccion === "entrada" ? -1 : 1);
+  const factorK = (k) => (base === "VP" ? Math.pow(1 + i, -k) : Math.pow(1 + i, n - k));
+  extras.forEach((e, idx) => {
+    if (!Number.isFinite(e.momento) || e.momento < 0 || e.momento > n) throw new Error(`El momento del pago adicional ${idx + 1} debe estar entre 0 y ${n}.`);
+    if (!e.desconocido) need(e.monto, `el monto del pago adicional ${idx + 1}`);
+  });
+  const nDesc = extras.filter((e) => e.desconocido).length;
+  if (tipoCalculo === "extra_desconocido" && nDesc !== 1) throw new Error("Marca exactamente un pago adicional como desconocido.");
+  if (tipoCalculo !== "extra_desconocido" && nDesc > 0) throw new Error("Hay un pago marcado como desconocido: elige 'Pago adicional desconocido' en qué deseas calcular, o desmarca el pago.");
+  if (conExtras && extras.length === 0) throw new Error("Agrega al menos un pago adicional.");
+  const trasl = extras.filter((e) => !e.desconocido).map((e) => ({
+    monto: e.monto, momento: e.momento, direccion: e.direccion, signo: signo(e), factor: factorK(e.momento), valor: signo(e) * e.monto * factorK(e.momento),
+  }));
+  const sumaExtras = trasl.reduce((s, e) => s + e.valor, 0);
+  let valor, etiqueta, Ausada = A, residual = 0, coef = null, objetivo = null;
+  switch (tipoCalculo) {
+    case "VP": need(A, "la cuota A"); valor = A * fVPa; etiqueta = "Valor presente (VP)"; break;
+    case "VF": need(A, "la cuota A"); valor = A * fVFa; etiqueta = "Valor futuro (VF)"; break;
+    case "A_desde_VP": need(VP, "VP"); valor = VP / fVPa; Ausada = valor; etiqueta = "Cuota (A) desde VP"; break;
+    case "A_desde_VF": need(VF, "VF"); valor = VF / fVFa; Ausada = valor; etiqueta = "Cuota (A) desde VF"; break;
+    case "VP_extras": need(A, "la cuota A"); valor = A * fVPa + sumaExtras; etiqueta = "VP total con pagos adicionales"; break;
+    case "VF_extras": need(A, "la cuota A"); valor = A * fVFa + sumaExtras; etiqueta = "VF total con pagos adicionales"; break;
+    case "extra_desconocido": {
+      need(A, "la cuota A");
+      objetivo = base === "VP" ? VP : VF; need(objetivo, base === "VP" ? "VP objetivo" : "VF objetivo");
+      const u = extras.find((e) => e.desconocido);
+      coef = signo(u) * factorK(u.momento);
+      if (coef === 0 || !Number.isFinite(coef)) throw new Error("No se puede despejar el pago desconocido con ese momento.");
+      valor = (objetivo - A * fa - sumaExtras) / coef; etiqueta = "Pago adicional desconocido (X)";
+      residual = A * fa + sumaExtras + coef * valor - objetivo; break;
+    }
+    case "A_extras_VP": need(VP, "VP"); objetivo = VP; valor = (VP - sumaExtras) / fVPa; Ausada = valor; etiqueta = "Cuota (A) con pagos adicionales desde VP"; residual = valor * fVPa + sumaExtras - VP; break;
+    case "A_extras_VF": need(VF, "VF"); objetivo = VF; valor = (VF - sumaExtras) / fVFa; Ausada = valor; etiqueta = "Cuota (A) con pagos adicionales desde VF"; residual = valor * fVFa + sumaExtras - VF; break;
+    default: throw new Error("Tipo de cálculo no reconocido.");
+  }
+  if (!Number.isFinite(valor)) throw new Error("Con estos datos no hay una solución válida.");
+  return { valor, etiqueta, base, fa, fVPa, fVFa, trasl, sumaExtras, coef, objetivo, residual, A: Ausada };
+}
+
+/* ============================================================
    DATOS ESTÁTICOS
    ============================================================ */
 const PERIODICIDADES = [
@@ -196,6 +402,11 @@ const GLOSARIO = [
   { t: "NAMA", d: "Nominal anual con capitalización mensual anticipada." },
   { t: "NACA", d: "Nominal anual con capitalización cuatrimestral anticipada." },
   { t: "NATA", d: "Nominal anual con capitalización trimestral anticipada." },
+  { t: "Tasa efectiva vencida", d: "Tasa real del periodo que se usa en las fórmulas financieras." },
+  { t: "Conversión automática de tasas", d: "Proceso por el cual la herramienta transforma una tasa ingresada a la tasa efectiva vencida que necesita el cálculo." },
+  { t: "Periodo de la operación", d: "Unidad de tiempo en la que se hacen los cálculos, por ejemplo mensual, trimestral o semestral." },
+  { t: "Periodo de las cuotas", d: "Cada cuánto se paga una cuota en una anualidad." },
+  { t: "Pago adicional desconocido", d: "Pago extra cuyo valor no se conoce y que se despeja usando una ecuación de valor." },
 ];
 
 const EJEMPLOS = {
@@ -2179,6 +2390,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
   const [anios, setAnios] = useState("1");
   const [meses, setMeses] = useState("0");
   const [masDecimales, setMasDecimales] = useState(false);
+  const [tasaDef, setTasaDef] = useState({ tipo: "efectiva", modalidad: "vencida", periodo: "mensual", meses: "5" });
   const [resultado, setResultado] = useState(null);
   const [error, setError] = useState("");
 
@@ -2217,12 +2429,13 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
     setOperacion(ej.operacion); setVP(ej.VP); setTasaPct(ej.tasa); setAnios(ej.anios); setMeses(ej.meses);
     setIncognita(ej.incognita); setVF(ej.VF || ""); setI(""); setUsarI(false);
     if (regimen !== "continuo") setPeriodicidad(ej.periodicidad);
+    if (regimen === "compuesto") setTasaDef({ tipo: "efectiva", modalidad: "vencida", periodo: ej.periodicidad === "personalizada" ? "personalizado_meses" : ej.periodicidad, meses: ej.nPersonalizado || "5" });
   }
 
   function calcular() {
     setError(""); setResultado(null);
     let vp = parseNum(VP), vf = parseNum(VF), interesDato = parseNum(I);
-    const tasa = parseNum(tasaPct) / 100;
+    let tasa = parseNum(tasaPct) / 100;
     const a = parseNum(anios) || 0, m = parseNum(meses) || 0;
 
     if (a < 0 || m < 0) { setError("El tiempo no puede ser negativo."); return; }
@@ -2238,6 +2451,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
     const pasos = [];
     let valorFinal, etiquetaFinal;
     let vpFinal = vp, vfFinal = vf;
+    let convResumen = null;
 
     pasos.push({
       label: "1. Datos del ejercicio",
@@ -2348,6 +2562,21 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
           label: "3. Conversión del tiempo a n",
           content: `${a} años y ${m} meses = ${a * 12 + m} meses. Como la tasa es ${etiquetaPer} (1 período = ${mesesPorPeriodo} ${mesesPorPeriodo === 1 ? "mes" : "meses"}), n = ${a * 12 + m}/${mesesPorPeriodo} = ${formatNumberCO(n, 2, 6)} períodos.`,
         });
+        if (regimen === "compuesto" && incognita !== "i") {
+          // Interés compuesto: conversión automática a efectiva vencida del periodo de la operación.
+          const tasaIngresada = parseNum(tasaPct);
+          if (!Number.isFinite(tasaIngresada)) throw new Error("La tasa ingresada debe ser numérica.");
+          const conv = convertirTasaAPeriodoOperacion({
+            tasaPct: tasaIngresada, tipoEntrada: tasaDef.tipo, modalidadEntrada: tasaDef.modalidad, periodoEntrada: tasaDef.periodo,
+            mesesEntradaPersonalizados: parseNum(tasaDef.meses), periodoOperacion: "personalizado_meses", mesesOperacionPersonalizados: mesesPorPeriodo,
+          });
+          tasa = conv.iEfectivaVencida;
+          const entradaTxt = descripcionTasa({ tasaPct: tasaIngresada, tipo: tasaDef.tipo, modalidad: tasaDef.modalidad, periodo: tasaDef.periodo, meses: tasaDef.meses });
+          pasos.push({ label: "Conversión automática de la tasa (solo interés compuesto)", content: `Tasa ingresada: ${entradaTxt}. Se convierte a efectiva ${etiquetaPer} vencida, el periodo de la operación.` });
+          conv.pasos.slice(1, -1).forEach((p) => pasos.push({ label: `Conversión — ${p.label}`, content: p.content }));
+          pasos.push({ label: "Tasa efectiva vencida final usada", content: `i = ${formatPercentCO(tasa, 4)} efectiva ${etiquetaPer} vencida. Esta es la tasa que entra en la fórmula de interés compuesto.` });
+          convResumen = { entrada: entradaTxt, final: formatPercentCO(tasa, 4), periodo: etiquetaPer };
+        }
         pasos.push({
           label: "4. Régimen y periodicidad",
           content: regimen === "simple"
@@ -2485,7 +2714,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
 
     const res = {
       etiquetaFinal, valorFinal, esTiempo, esTasa, equivalenciaTemporal, pasos, residual, verifOk, incognita, regimen, operacion,
-      interesCalculado, vpFinal, vfFinal, mesesPorPeriodo,
+      interesCalculado, vpFinal, vfFinal, mesesPorPeriodo, convResumen,
     };
     setResultado(res);
     onGuardarHistorial({ tipo: "basico", regimen, operacion, incognita, resultado: valorFinal, resultadoTipo: esTasa ? "tasa" : esTiempo ? "tiempo" : "moneda", fecha: new Date().toISOString(), moneda });
@@ -2525,13 +2754,19 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
         {(incognita === "I" ? false : usarI) && <Campo label={`Interés / ganancia neta (I) — ${moneda}`} help="En los ejercicios básicos usamos I = VF − VP."><Entrada value={I} onChange={(e) => setI(e.target.value)} placeholder="200.000" /></Campo>}
 
         {mostrarTasaTiempo && (regimen === "continuo" ? incognita !== "r" : incognita !== "i") && (
-          <Campo label={regimen === "continuo" ? "Tasa continua (r) % anual" : "Tasa de interés (i) % por período"}>
+          <Campo label={regimen === "continuo" ? "Tasa continua (r) % anual" : regimen === "compuesto" ? "Valor de la tasa (%)" : "Tasa de interés (i) % por período"}>
             <Entrada value={tasaPct} onChange={(e) => setTasaPct(e.target.value)} placeholder="2,00" />
           </Campo>
         )}
 
+        {mostrarTasaTiempo && regimen === "compuesto" && incognita !== "i" && (
+          <div style={{ padding: 12, border: `1px solid ${C.line}`, borderRadius: 8, marginBottom: 14, background: C.paper }}>
+            <div style={{ fontSize: 12, color: C.slate, marginBottom: 8 }}>En interés compuesto puedes ingresar cualquier tasa: la herramienta la convierte sola a efectiva vencida del periodo de la operación.</div>
+            <EditorTasa valor={tasaDef} onChange={setTasaDef} conValor={false} />
+          </div>
+        )}
         {mostrarTasaTiempo && regimen !== "continuo" && (
-          <Campo label={regimen === "compuesto" ? "Período de capitalización" : "Período de la tasa"} help={regimen === "compuesto" ? "En compuesto los intereses se agregan al capital en cada período." : "En simple la tasa tiene periodicidad, pero los intereses no se capitalizan."}>
+          <Campo label={regimen === "compuesto" ? "Período de la operación (en el que se mide n)" : "Período de la tasa"} help={regimen === "compuesto" ? "La tasa se convierte automáticamente a efectiva vencida de este período." : "En simple la tasa tiene periodicidad, pero los intereses no se capitalizan."}>
             <Selector value={periodicidad} onChange={(e) => setPeriodicidad(e.target.value)} options={PERIODICIDADES.map((p) => ({ value: p.value, label: p.label }))} />
             {periodicidad === "personalizada" && <div style={{ marginTop: 8 }}><span style={{ fontSize: 12.5, color: C.slate }}>¿Cada cuántos meses se aplica la tasa?</span><Entrada value={nPersonalizado} onChange={(e) => setNPersonalizado(e.target.value)} placeholder="5" style={{ marginTop: 4 }} /></div>}
             <div style={{ marginTop: 7, fontSize: 12, color: C.slate }}>
@@ -2577,6 +2812,12 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
                 ? `Desde la perspectiva del cliente, VP es el capital recibido y VF es el valor equivalente a pagar. I muestra cuánto corresponde a intereses.`
                 : `VP es el capital invertido, VF es el valor alcanzado y I muestra únicamente la ganancia generada por intereses.`}
             </div>
+            {resultado.convResumen && (
+              <div style={{ marginTop: 10, padding: 13, background: C.paperDark, borderRadius: 8, fontSize: 13, color: C.navy, lineHeight: 1.6 }}>
+                <strong>Tasa ingresada:</strong> {resultado.convResumen.entrada}.<br />
+                <strong>Tasa efectiva vencida final ({resultado.convResumen.periodo}):</strong> {resultado.convResumen.final}. Es la que entra en la fórmula de interés compuesto.
+              </div>
+            )}
             <Verificacion ok={resultado.verifOk} residual={resultado.residual} />
             <Acordeon title="Ver procedimiento completo — con variables de clase">
               <FichaProcedimiento pasos={[...resultado.pasos, { label: "Resultado sin redondear", content: String(resultado.valorFinal) }, { label: "Resultado presentado", content: resultado.esTiempo ? formatNumberCO(resultado.valorFinal, 2, masDecimales ? 10 : 4) : resultado.esTasa ? formatPercentCO(resultado.valorFinal, masDecimales ? 10 : 4) : formatCurrencyCO(resultado.valorFinal, moneda, masDecimales ? 10 : 2) }]} />
@@ -3105,6 +3346,275 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
 }
 
 /* ============================================================
+   SIMULAR — CALCULADORA DE TASAS Y SIMULADOR DE ANUALIDADES
+   Reutilizan el mismo motor de conversión (convertirTasa).
+   ============================================================ */
+function EditorTasa({ titulo, valor, onChange, conValor = true, opcionesPeriodo = OPC_PERIODOS_TASA, etiquetaValor = "Valor de la tasa (%)" }) {
+  const set = (k) => (e) => onChange({ ...valor, [k]: e.target.value });
+  return (
+    <div>
+      {titulo && <Etiqueta>{titulo}</Etiqueta>}
+      {conValor && <Campo label={etiquetaValor}><Entrada value={valor.tasa} onChange={set("tasa")} placeholder="24" /></Campo>}
+      <Campo label="Tipo de tasa"><Selector value={valor.tipo} onChange={set("tipo")} options={OPC_TIPO_TASA} /></Campo>
+      <Campo label="Modalidad"><Selector value={valor.modalidad} onChange={set("modalidad")} options={OPC_MODALIDAD} /></Campo>
+      <Campo label={valor.tipo === "nominal" ? "Período de capitalización" : "Período de la tasa"}>
+        <Selector value={valor.periodo} onChange={set("periodo")} options={opcionesPeriodo} />
+        {valor.periodo === "personalizado_meses" && (
+          <div style={{ marginTop: 8 }}>
+            <span style={{ fontSize: 12.5, color: C.slate }}>¿Cada cuántos meses?</span>
+            <Entrada value={valor.meses} onChange={set("meses")} placeholder="5" />
+          </div>
+        )}
+      </Campo>
+    </div>
+  );
+}
+
+function CalculadoraTasas() {
+  const [ent, setEnt] = useState({ tasa: "30", tipo: "nominal", modalidad: "anticipada", periodo: "mensual", meses: "5" });
+  const [sal, setSal] = useState({ tipo: "efectiva", modalidad: "vencida", periodo: "mensual", meses: "5" });
+  const [res, setRes] = useState(null);
+  const [error, setError] = useState("");
+
+  function calcular() {
+    setError(""); setRes(null);
+    const t = parseNumCO(ent.tasa);
+    if (!Number.isFinite(t)) { setError("La tasa ingresada debe ser numérica y no puede estar vacía."); return; }
+    try {
+      const r = convertirTasa({
+        tasaPct: t, tipoEntrada: ent.tipo, modalidadEntrada: ent.modalidad, periodoEntrada: ent.periodo, mesesEntradaPersonalizados: parseNumCO(ent.meses),
+        tipoSalida: sal.tipo, modalidadSalida: sal.modalidad, periodoSalida: sal.periodo, mesesSalidaPersonalizados: parseNumCO(sal.meses),
+      });
+      setRes({ ...r, entrada: descripcionTasa({ tasaPct: t, tipo: ent.tipo, modalidad: ent.modalidad, periodo: ent.periodo, meses: ent.meses }),
+        salida: descripcionTasa({ tasaPct: r.resultadoPorcentaje, tipo: sal.tipo, modalidad: sal.modalidad, periodo: sal.periodo, meses: sal.meses }) });
+    } catch (e) { setError(e.message || "No fue posible convertir la tasa."); }
+  }
+  function ejemplo() {
+    setEnt({ tasa: "30", tipo: "nominal", modalidad: "anticipada", periodo: "mensual", meses: "5" });
+    setSal({ tipo: "efectiva", modalidad: "vencida", periodo: "mensual", meses: "5" });
+  }
+
+  return (
+    <div>
+      <Tarjeta>
+        <div style={{ fontSize: 13.5, color: C.slate, marginBottom: 16 }}>
+          Convierte cualquier tasa en cualquier otra: nominal o efectiva, vencida o anticipada, con cualquier periodo. Año = 365 días = 52 semanas; quincenal = {QUINCENAS_ANIO} veces al año.
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 26 }}>
+          <EditorTasa titulo="A · Tasa que tiene" valor={ent} onChange={setEnt} />
+          <EditorTasa titulo="B · Tasa que quiere obtener" valor={sal} onChange={setSal} conValor={false} />
+        </div>
+        <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+          <Boton variant="gold" onClick={calcular}>Convertir</Boton>
+          <Boton variant="outline" onClick={ejemplo}>Cargar ejemplo (30 % NAMA → EM vencida)</Boton>
+        </div>
+        {error && <div style={{ marginTop: 12, fontSize: 13, color: C.danger }}>{error}</div>}
+      </Tarjeta>
+      {res && (
+        <Tarjeta style={{ marginTop: 18 }}>
+          <Etiqueta>Tasa obtenida</Etiqueta>
+          <div style={{ fontFamily: F_MONO, fontSize: 30, color: C.navy, fontWeight: 700, marginBottom: 6 }}>{formatPercentCO(res.resultadoDecimal, 4)}</div>
+          <div style={{ fontSize: 13.5, color: C.ink }}><strong>Tasa que tenía:</strong> {res.entrada}</div>
+          <div style={{ fontSize: 13.5, color: C.ink, marginBottom: 6 }}><strong>Tasa obtenida:</strong> {res.salida}</div>
+          <div style={{ fontSize: 13.5, color: C.slate }}>Efectiva anual intermedia: {formatPercentCO(res.tasaEfectivaAnualIntermedia, 4)}. Es la misma tasa contada de otra forma: el dinero no cambia.</div>
+          <Acordeon title="Ver procedimiento completo" defaultOpen><FichaProcedimiento pasos={res.pasosProcedimiento} /></Acordeon>
+        </Tarjeta>
+      )}
+    </div>
+  );
+}
+
+const OPC_CALCULO_ANUALIDAD = [
+  { value: "VP", label: "Valor presente (VP)" },
+  { value: "VF", label: "Valor futuro (VF)" },
+  { value: "A_desde_VP", label: "Cuota desde VP" },
+  { value: "A_desde_VF", label: "Cuota desde VF" },
+  { value: "VP_extras", label: "VP con pagos adicionales" },
+  { value: "VF_extras", label: "VF con pagos adicionales" },
+  { value: "extra_desconocido", label: "Pago adicional desconocido" },
+  { value: "A_extras_VP", label: "Cuota con pagos adicionales desde VP" },
+  { value: "A_extras_VF", label: "Cuota con pagos adicionales desde VF" },
+];
+
+function formulasAnualidad(mod, tipo) {
+  const ant = mod === "anticipada";
+  const fvp = ant ? "(1 + i) × [((1 + i)^n − 1) / (i × (1 + i)^n)]" : "[((1 + i)^n − 1) / (i × (1 + i)^n)]";
+  const fvf = ant ? "[((1 + i)^n − 1) / i] × (1 + i)" : "[((1 + i)^n − 1) / i]";
+  const map = {
+    VP: `VP = A × ${fvp}`,
+    VF: `VF = A × ${fvf}`,
+    A_desde_VP: `A = VP / { ${fvp} }`,
+    A_desde_VF: ant ? "A = VF × [i / ((1 + i)^n − 1)] / (1 + i)" : "A = VF × [i / ((1 + i)^n − 1)]",
+    VP_extras: `VP total = A × ${fvp} + Σ ± Pk / (1 + i)^k`,
+    VF_extras: `VF total = A × ${fvf} + Σ ± Pk × (1 + i)^(n − k)`,
+    extra_desconocido: "X = (objetivo − anualidad − Σ pagos conocidos) / (± factor del pago desconocido)",
+    A_extras_VP: `A = (VP − Σ ± Pk / (1 + i)^k) / { ${fvp} }`,
+    A_extras_VF: `A = (VF − Σ ± Pk × (1 + i)^(n − k)) / { ${fvf} }`,
+  };
+  return map[tipo];
+}
+
+function SimuladorAnualidades({ moneda }) {
+  const [modalidad, setModalidad] = useState("vencida");
+  const [tipoCalculo, setTipoCalculo] = useState("A_desde_VP");
+  const [baseObj, setBaseObj] = useState("VP");
+  const [A, setA] = useState("");
+  const [VP, setVP] = useState("30000000");
+  const [VF, setVF] = useState("");
+  const [nTxt, setNTxt] = useState("24");
+  const [periodoCuotas, setPeriodoCuotas] = useState("mensual");
+  const [mesesCuotas, setMesesCuotas] = useState("5");
+  const [tasaIn, setTasaIn] = useState({ tasa: "30", tipo: "nominal", modalidad: "vencida", periodo: "mensual", meses: "5" });
+  const [extras, setExtras] = useState([]);
+  const [res, setRes] = useState(null);
+  const [error, setError] = useState("");
+
+  const usaExtras = ["VP_extras", "VF_extras", "extra_desconocido", "A_extras_VP", "A_extras_VF"].includes(tipoCalculo);
+  const muestraA = ["VP", "VF", "VP_extras", "VF_extras", "extra_desconocido"].includes(tipoCalculo);
+  const muestraVP = ["A_desde_VP", "A_extras_VP"].includes(tipoCalculo) || (tipoCalculo === "extra_desconocido" && baseObj === "VP");
+  const muestraVF = ["A_desde_VF", "A_extras_VF"].includes(tipoCalculo) || (tipoCalculo === "extra_desconocido" && baseObj === "VF");
+
+  const nuevoExtra = () => ({ id: `${Date.now()}-${Math.random()}`, monto: "", momento: "6", direccion: "salida", desconocido: false });
+  const setExtra = (id, patch) => setExtras((xs) => xs.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+
+  function calcular() {
+    setError(""); setRes(null);
+    try {
+      const n = parseNumCO(nTxt);
+      if (!Number.isInteger(n) || n <= 0) throw new Error("El número de cuotas n debe ser un entero mayor que 0.");
+      const t = parseNumCO(tasaIn.tasa);
+      if (!Number.isFinite(t)) throw new Error("La tasa ingresada debe ser numérica y no puede estar vacía.");
+      const conv = convertirTasaAPeriodoOperacion({
+        tasaPct: t, tipoEntrada: tasaIn.tipo, modalidadEntrada: tasaIn.modalidad, periodoEntrada: tasaIn.periodo, mesesEntradaPersonalizados: parseNumCO(tasaIn.meses),
+        periodoOperacion: periodoCuotas, mesesOperacionPersonalizados: parseNumCO(mesesCuotas),
+      });
+      const i = conv.iEfectivaVencida;
+      const pagosExtra = extras.map((e) => ({ monto: e.desconocido ? NaN : parseNumCO(e.monto), momento: parseNumCO(e.momento), direccion: e.direccion, desconocido: e.desconocido }));
+      const a = parseNumCO(A), vp = parseNumCO(VP), vf = parseNumCO(VF);
+      const r = calcularAnualidad({ modalidadAnualidad: modalidad, tipoCalculo, A: a, VP: vp, VF: vf, n, i, pagosExtra, baseObjetivo: baseObj });
+
+      const m = (x) => formatCurrencyCO(x, moneda);
+      const f6 = (x) => formatNumberCO(x, 6, 6);
+      const perTxt = nombrePeriodoTasa(periodoCuotas, mesesCuotas);
+      const etiquetaRes = tipoCalculo === "extra_desconocido" ? "X" : r.etiqueta;
+      const sust = {
+        VP: `VP = ${m(a)} × ${f6(r.fVPa)} = ${m(r.valor)}`,
+        VF: `VF = ${m(a)} × ${f6(r.fVFa)} = ${m(r.valor)}`,
+        A_desde_VP: `A = ${m(vp)} / ${f6(r.fVPa)} = ${m(r.valor)}`,
+        A_desde_VF: `A = ${m(vf)} / ${f6(r.fVFa)} = ${m(r.valor)}`,
+        VP_extras: `VP total = ${m(a)} × ${f6(r.fVPa)} + (${m(r.sumaExtras)}) = ${m(r.valor)}`,
+        VF_extras: `VF total = ${m(a)} × ${f6(r.fVFa)} + (${m(r.sumaExtras)}) = ${m(r.valor)}`,
+        extra_desconocido: `X = (${m(r.objetivo)} − ${m(a)} × ${f6(r.fa)} − (${m(r.sumaExtras)})) / ${f6(r.coef)} = ${m(r.valor)}`,
+        A_extras_VP: `A = (${m(vp)} − (${m(r.sumaExtras)})) / ${f6(r.fVPa)} = ${m(r.valor)}`,
+        A_extras_VF: `A = (${m(vf)} − (${m(r.sumaExtras)})) / ${f6(r.fVFa)} = ${m(r.valor)}`,
+      }[tipoCalculo];
+      const interp = {
+        VP: `Hoy, las ${n} cuotas ${modalidad === "anticipada" ? "anticipadas" : "vencidas"} de ${m(a)} valen ${m(r.valor)}.`,
+        VF: `Al final, las ${n} cuotas de ${m(a)} acumulan ${m(r.valor)}.`,
+        A_desde_VP: `Para pagar ${m(vp)} en ${n} cuotas, cada cuota debe ser de ${m(r.valor)}. En total se pagan ${m(r.valor * n)}.`,
+        A_desde_VF: `Para juntar ${m(vf)} con ${n} cuotas, cada cuota debe ser de ${m(r.valor)}.`,
+        VP_extras: `Cuotas más pagos adicionales, todo traído a hoy, valen ${m(r.valor)}.`,
+        VF_extras: `Cuotas más pagos adicionales, todo llevado al final, valen ${m(r.valor)}.`,
+        extra_desconocido: `Para que la ecuación de valor cuadre en ${r.base === "VP" ? "hoy" : "el final"}, el pago adicional desconocido debe ser de ${m(r.valor)} (en su propio momento).`,
+        A_extras_VP: `Con los pagos adicionales ya incluidos, la cuota debe ser de ${m(r.valor)}.`,
+        A_extras_VF: `Con los pagos adicionales ya incluidos, la cuota debe ser de ${m(r.valor)}.`,
+      }[tipoCalculo];
+
+      const pasos = [
+        { label: "1. Tipo de anualidad", content: modalidad === "anticipada" ? "Anticipada (cuota al inicio del periodo)" : "Vencida (cuota al final del periodo)" },
+        { label: "2. Qué se calcula", content: r.etiqueta },
+        { label: "3. Tasa ingresada", content: descripcionTasa({ tasaPct: t, tipo: tasaIn.tipo, modalidad: tasaIn.modalidad, periodo: tasaIn.periodo, meses: tasaIn.meses }) },
+        ...conv.pasos.slice(1).map((p, k) => ({ label: `4.${k + 1} Conversión — ${p.label}`, content: p.content })),
+        { label: "5. Tasa efectiva vencida final usada (i)", content: `i = ${formatPercentCO(i, 4)} efectiva ${perTxt} vencida (periodo de las cuotas)` },
+        { label: "Datos", content: `n = ${n} cuotas (${perTxt})${Number.isFinite(a) && muestraA ? ` · A = ${m(a)}` : ""}${muestraVP ? ` · VP = ${m(vp)}` : ""}${muestraVF ? ` · VF = ${m(vf)}` : ""}` },
+        { label: "6. Fórmula usada", content: formulasAnualidad(modalidad, tipoCalculo) },
+        { label: "7. Sustitución", content: sust },
+        { label: "8. Resultado", content: `${etiquetaRes} = ${m(r.valor)}` },
+      ];
+      r.trasl.forEach((e, k) => pasos.push({
+        label: `10.${k + 1} Pago adicional ${k + 1} (${e.direccion})`,
+        content: r.base === "VP"
+          ? `${e.signo < 0 ? "−" : "+"} ${m(e.monto)} / (1 + i)^${e.momento} = ${m(e.valor)} (traído a hoy)`
+          : `${e.signo < 0 ? "−" : "+"} ${m(e.monto)} × (1 + i)^(${n} − ${e.momento}) = ${m(e.valor)} (llevado al final)`,
+      }));
+      pasos.push({ label: "9. Interpretación", content: interp });
+      setRes({ r, pasos, interp, i, etiquetaRes });
+    } catch (e) { setError(e.message || "No fue posible calcular."); }
+  }
+
+  const ok = res ? Math.abs(res.r.residual) < Math.max(1, Math.abs(res.r.valor)) * 1e-6 : true;
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "minmax(300px,1fr) minmax(340px,1.3fr)", gap: 26, alignItems: "start" }}>
+      <Tarjeta>
+        <Etiqueta>Configuración</Etiqueta>
+        <div style={{ padding: 12, background: C.paperDark, borderRadius: 8, fontSize: 12.5, color: C.slate, marginBottom: 14, lineHeight: 1.5 }}>
+          Las anualidades se calculan con interés compuesto porque cada cuota está ubicada en un momento distinto del tiempo y se traslada usando factores como (1+i)^n. La tasa que entra a las fórmulas siempre es la efectiva vencida del periodo de las cuotas; la herramienta la convierte sola.
+        </div>
+        <Campo label="Tipo de anualidad"><Selector value={modalidad} onChange={(e) => setModalidad(e.target.value)} options={[{ value: "vencida", label: "Vencida" }, { value: "anticipada", label: "Anticipada" }]} /></Campo>
+        <Campo label="¿Qué desea calcular?"><Selector value={tipoCalculo} onChange={(e) => setTipoCalculo(e.target.value)} options={OPC_CALCULO_ANUALIDAD} /></Campo>
+        {tipoCalculo === "extra_desconocido" && (
+          <Campo label="Fecha focal de la ecuación" help="Elige si conoces el VP (hoy) o el VF (final).">
+            <Selector value={baseObj} onChange={(e) => setBaseObj(e.target.value)} options={[{ value: "VP", label: "Conozco el VP (fecha focal hoy)" }, { value: "VF", label: "Conozco el VF (fecha focal final)" }]} />
+          </Campo>
+        )}
+        {muestraA && <Campo label={`Cuota (A) — ${moneda}`}><Entrada value={A} onChange={(e) => setA(e.target.value)} placeholder="1.000.000" /></Campo>}
+        {muestraVP && <Campo label={`Valor presente (VP) — ${moneda}`}><Entrada value={VP} onChange={(e) => setVP(e.target.value)} placeholder="30.000.000" /></Campo>}
+        {muestraVF && <Campo label={`Valor futuro (VF) — ${moneda}`}><Entrada value={VF} onChange={(e) => setVF(e.target.value)} placeholder="150.000.000" /></Campo>}
+        <Campo label="Número de cuotas (n)"><Entrada value={nTxt} onChange={(e) => setNTxt(e.target.value)} placeholder="24" /></Campo>
+        <Campo label="Periodo de las cuotas">
+          <Selector value={periodoCuotas} onChange={(e) => setPeriodoCuotas(e.target.value)} options={OPC_PERIODOS_CUOTAS} />
+          {periodoCuotas === "personalizado_meses" && (
+            <div style={{ marginTop: 8 }}><span style={{ fontSize: 12.5, color: C.slate }}>¿Cada cuántos meses se paga una cuota?</span><Entrada value={mesesCuotas} onChange={(e) => setMesesCuotas(e.target.value)} placeholder="5" /></div>
+          )}
+        </Campo>
+        <EditorTasa titulo="Tasa ingresada" valor={tasaIn} onChange={setTasaIn} />
+
+        {usaExtras && (
+          <div style={{ marginTop: 6 }}>
+            <Etiqueta>Pagos adicionales</Etiqueta>
+            <div style={{ fontSize: 12, color: C.slate, marginBottom: 8 }}>
+              El momento se mide en periodos de las cuotas (0 = hoy). Las cuotas se toman como salidas: un pago adicional de salida suma y uno de entrada resta.
+            </div>
+            {extras.map((e, k) => (
+              <div key={e.id} style={{ border: `1px solid ${C.line}`, borderRadius: 8, padding: 12, marginBottom: 10, background: C.paper }}>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: C.navy, marginBottom: 6 }}>Pago adicional {k + 1}</div>
+                {!e.desconocido && <Campo label={`Monto — ${moneda}`}><Entrada value={e.monto} onChange={(ev) => setExtra(e.id, { monto: ev.target.value })} placeholder="5.000.000" /></Campo>}
+                <Campo label="Momento (en periodos de las cuotas)"><Entrada value={e.momento} onChange={(ev) => setExtra(e.id, { momento: ev.target.value })} placeholder="6" /></Campo>
+                <Campo label="Dirección"><Selector value={e.direccion} onChange={(ev) => setExtra(e.id, { direccion: ev.target.value })} options={[{ value: "salida", label: "Salida" }, { value: "entrada", label: "Entrada" }]} /></Campo>
+                <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: C.ink, marginBottom: 8 }}>
+                  <input type="checkbox" checked={e.desconocido} onChange={(ev) => setExtra(e.id, { desconocido: ev.target.checked })} /> Valor desconocido
+                </label>
+                <Boton small variant="danger" onClick={() => setExtras((xs) => xs.filter((x) => x.id !== e.id))}><Trash2 size={13} /> Quitar</Boton>
+              </div>
+            ))}
+            <Boton small variant="outline" onClick={() => setExtras((xs) => [...xs, nuevoExtra()])}><Plus size={13} /> Agregar pago adicional</Boton>
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: 8, marginTop: 14 }}><Boton variant="gold" onClick={calcular}>Calcular</Boton></div>
+        {error && <div style={{ marginTop: 12, fontSize: 13, color: C.danger }}>{error}</div>}
+      </Tarjeta>
+
+      <div>
+        {!res && !error && <Tarjeta style={{ color: C.slate, fontSize: 14, textAlign: "center", padding: 40 }}>Completa los datos y presiona <strong>Calcular</strong>. Verás la conversión de la tasa, la fórmula, la sustitución y la interpretación.</Tarjeta>}
+        {res && (
+          <Tarjeta>
+            <div style={{ fontSize: 13, color: C.slate, marginBottom: 4 }}>Anualidad {modalidad} · interés compuesto</div>
+            <Etiqueta>{res.r.etiqueta}</Etiqueta>
+            <div style={{ fontFamily: F_MONO, fontSize: 30, color: C.navy, fontWeight: 700, marginBottom: 6 }}>{formatCurrencyCO(res.r.valor, moneda)}</div>
+            <div style={{ fontSize: 13.5, color: C.ink, marginBottom: 8 }}>Tasa efectiva vencida usada: <strong>{formatPercentCO(res.i, 4)}</strong> por periodo de cuota.</div>
+            <div style={{ marginTop: 8, padding: 13, background: C.successBg, borderRadius: 8, color: C.navy, fontSize: 13.5 }}><strong>Interpretación:</strong> {res.interp}</div>
+            <Verificacion ok={ok} residual={res.r.residual} />
+            <Acordeon title="Ver procedimiento completo" defaultOpen><FichaProcedimiento pasos={res.pasos} /></Acordeon>
+          </Tarjeta>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
    SIMULAR — CONTENEDOR + HISTORIAL
    (Un único sistema de historial, persistido en localStorage,
    compartido entre el modo básico y el modo avanzado.)
@@ -3137,8 +3647,10 @@ function Simular({ moneda }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
         <h1 style={{ fontFamily: F_DISPLAY, fontSize: 30, color: C.navy, margin: 0 }}>Simulador</h1>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Boton small variant={modo === "basico" ? "gold" : "outline"} onClick={() => setModo("basico")}>Modo básico</Boton>
-          <Boton small variant={modo === "avanzado" ? "gold" : "outline"} onClick={() => setModo("avanzado")}>Modo avanzado (varios flujos)</Boton>
+          <Boton small variant={modo === "basico" ? "gold" : "outline"} onClick={() => setModo("basico")}>Interés básico</Boton>
+          <Boton small variant={modo === "avanzado" ? "gold" : "outline"} onClick={() => setModo("avanzado")}>Flujos múltiples</Boton>
+          <Boton small variant={modo === "tasas" ? "gold" : "outline"} onClick={() => setModo("tasas")}>Calculadora de tasas</Boton>
+          <Boton small variant={modo === "anualidades" ? "gold" : "outline"} onClick={() => setModo("anualidades")}>Anualidades</Boton>
           <Boton small variant="ghost" onClick={() => setMostrarHistorial((v) => !v)}>{mostrarHistorial ? "Ocultar historial" : "Ver historial"}</Boton>
         </div>
       </div>
@@ -3163,7 +3675,10 @@ function Simular({ moneda }) {
         </Tarjeta>
       )}
 
-      {modo === "basico" ? <SimularBasico moneda={moneda} onGuardarHistorial={guardar} /> : <SimularAvanzado moneda={moneda} onGuardarHistorial={guardar} />}
+      {modo === "basico" && <SimularBasico moneda={moneda} onGuardarHistorial={guardar} />}
+      {modo === "avanzado" && <SimularAvanzado moneda={moneda} onGuardarHistorial={guardar} />}
+      {modo === "tasas" && <CalculadoraTasas />}
+      {modo === "anualidades" && <SimuladorAnualidades moneda={moneda} />}
     </Section>
   );
 }
