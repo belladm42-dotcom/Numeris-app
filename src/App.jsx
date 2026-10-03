@@ -1426,7 +1426,7 @@ function Aprender() {
   return (
     <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
       <Etiqueta>Educación financiera</Etiqueta>
-      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 32, color: C.navy, margin: "0 0 26px" }}>Los tres regímenes de interés</h1>
+      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 32, color: C.navy, margin: "0 0 26px" }}>Conceptos financieros fundamentales </h1>
 
       <Acordeon title="1 · Interés simple" defaultOpen>
         <BloqueInteres
