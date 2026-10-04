@@ -3956,7 +3956,7 @@ Como mejora adicional, sugirió que el procedimiento mostrara la equivalencia. P
     trazabilidad: Esta interacción se refleja en Simulación, específicamente en el campo de tiempo del simulador básico. El campo de meses ahora puede aceptar valores como 12, 24 o 36 meses.
 También se refleja en el procedimiento paso a paso, porque Numeris puede mostrar la conversión del tiempo total a periodos. Por ejemplo: 0 años y 36 meses = 36 meses = 3 años y 0 meses.`,
     link: "https://chatgpt.com/share/6ac29da2-c960-83e9-8f61-55e943f3151f",
-  },
+  }
 ];
 
 function BloqueInteraccion({ label, children }) {
