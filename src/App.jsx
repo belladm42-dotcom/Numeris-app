@@ -1392,7 +1392,7 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
       {/* SECCIÓN 9 */}
       <Acordeon title="9 · Anualidades + pagos extra: la galleta grande fuera de la fila">
 
-        <NivelCinco titulo="🧸 Nivel 7 años">
+        <NivelCinco titulo="🧸 Nivel 5 años">
           {`Imagina una fila de galletas IGUALES sobre la mesa. Esa fila es la anualidad: todas las galletas son del mismo tamaño y están una detrás de otra.
 
 Un día llega una galleta GRANDE, diferente a las demás. No puedes meterla en la fila, porque la fila es solo de galletas iguales. Entonces la dejas aparte.
