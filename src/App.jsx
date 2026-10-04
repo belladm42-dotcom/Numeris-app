@@ -1141,7 +1141,7 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
           <TarjetaMini titulo="3. Un pago por cada periodo">Si hay 24 meses, hay 24 cuotas. Ni una más, ni una menos.</TarjetaMini>
           <TarjetaMini titulo="4. La misma tasa">El mismo interés vale para todos los pagos de la fila.</TarjetaMini>
         </div>
-        <BloqueFormula>Anualidad = pagos iguales + periódicos + uno por periodo + misma tasa</BloqueFormula>
+        <TarjetaMini titulo="Regla de anualidad" tono="azul">Para que sea anualidad, los pagos deben ser iguales, periódicos, uno por periodo y con la misma tasa.</TarjetaMini>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
           <TarjetaMini titulo="Si una cuota cambia de valor" tono="alerta">
             Esa cuota se sale de la fila. La fórmula de anualidades solo sirve cuando todas valen lo mismo.
@@ -1235,10 +1235,7 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
         </ul>
         <p style={{ color: C.slate }}><strong>Diferencia:</strong> en el interés compuesto traías UN valor futuro a hoy. Aquí traes una FILA de valores futuros y los sumas.</p>
 
-        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Primero la idea, como una suma</div>
-        <BloqueFormula>VP = A/(1+i)^1 + A/(1+i)^2 + A/(1+i)^3 + ... + A/(1+i)^n</BloqueFormula>
-        <p style={{ margin: "6px 0" }}>Cada cuota se trae a hoy y luego se suman todas.</p>
-        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Después, la fórmula "atajo"</div>
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Fórmula</div>
         <BloqueFormula>VP = A × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ]</BloqueFormula>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "8px 0" }}>
           <TarjetaMini titulo="VP">El valor de todas las cuotas hoy.</TarjetaMini>
@@ -1256,7 +1253,7 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
               { label: "Datos", content: "A = 1.000 · i = 5 % = 0,05 · n = 3" },
               { label: "Fórmula", content: "VP = A × [((1 + i)^n − 1) / (i × (1 + i)^n)]" },
               { label: "Sustitución", content: "VP = 1.000 × [((1 + 0,05)^3 − 1) / (0,05 × (1 + 0,05)^3)]" },
-              { label: "Comprobación como suma", content: "1.000/1,05 + 1.000/1,05^2 + 1.000/1,05^3" },
+              { label: "Fórmula usada", content: "VP = A × [((1 + i)^n − 1) / (i × (1 + i)^n)]" },
               { label: "Resultado", content: "VP = COP 2.723,25" },
               { label: "Interpretación", content: "Esas tres cuotas futuras de COP 1.000 equivalen hoy a COP 2.723,25." },
             ]} />
@@ -1392,7 +1389,7 @@ Es la misma fila de pagos vista desde dos días distintos: hoy o el último día
       {/* SECCIÓN 9 */}
       <Acordeon title="9 · Anualidades + pagos extra: la galleta grande fuera de la fila">
 
-        <NivelCinco titulo="🧸 Nivel 5 años">
+        <NivelCinco titulo="🧸 Nivel 7 años">
           {`Imagina una fila de galletas IGUALES sobre la mesa. Esa fila es la anualidad: todas las galletas son del mismo tamaño y están una detrás de otra.
 
 Un día llega una galleta GRANDE, diferente a las demás. No puedes meterla en la fila, porque la fila es solo de galletas iguales. Entonces la dejas aparte.
@@ -1417,7 +1414,7 @@ Resumen para no olvidar:
         </TarjetaMini>
 
         <p style={{ marginTop: 14 }}><strong>¿Qué es un pago extra?</strong> Es cualquier pago que NO es una de las cuotas iguales. Por ejemplo: un abono grande que haces un mes para pagar más rápido.</p>
-        <BloqueFormula>Cuotas iguales → fórmula de anualidades · Pagos distintos → se calculan aparte y se suman</BloqueFormula>
+        <TarjetaMini titulo="Regla para pagos extra" tono="azul">Las cuotas iguales usan la fórmula de anualidades. Los pagos distintos se calculan aparte y luego se suman.</TarjetaMini>
 
         {/* PASO 0 */}
         <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Paso 0 · Elegir la fecha focal</div>
@@ -1432,23 +1429,19 @@ Resumen para no olvidar:
         <p>La idea es siempre la misma: <strong>fórmula de la anualidad + cada pago extra movido hasta la fecha focal.</strong></p>
 
         <div style={{ fontSize: 12.5, color: C.slate, margin: "10px 0 4px" }}>Valor presente + pagos extra (la fecha focal es hoy)</div>
-        <BloqueFormula>VP total = A × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + P1 / (1 + i)^n1 + P2 / (1 + i)^n2 + ...</BloqueFormula>
+        <BloqueFormula>VP = A × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Vf1 / (1 + i)^n1</BloqueFormula>
 
         <div style={{ fontSize: 12.5, color: C.slate, margin: "10px 0 4px" }}>Valor futuro + pagos extra (la fecha focal es el final)</div>
-        <BloqueFormula>VF total = A × [ ((1 + i)^n − 1) / i ] + P1 × (1 + i)^(n − n1) + P2 × (1 + i)^(n − n2) + ...</BloqueFormula>
-
-        <div style={{ fontSize: 12.5, color: C.slate, margin: "10px 0 4px" }}>Las dos fórmulas con el signo de suma (para cualquier cantidad de pagos extra)</div>
-        <BloqueFormula>VP total = A × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Σ Pk / (1 + i)^nk</BloqueFormula>
-        <BloqueFormula>VF total = A × [ ((1 + i)^n − 1) / i ] + Σ Pk × (1 + i)^(n − nk)</BloqueFormula>
+        <BloqueFormula>VF = A × [ ((1 + i)^n − 1) / i ] + Vp1 × (1 + i)^(n − n1)</BloqueFormula>
 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "10px 0" }}>
           <TarjetaMini titulo="A">El valor de la cuota igual.</TarjetaMini>
           <TarjetaMini titulo="i">La tasa efectiva del periodo, del mismo tamaño que las cuotas.</TarjetaMini>
           <TarjetaMini titulo="n">El número total de cuotas (de periodos).</TarjetaMini>
-          <TarjetaMini titulo="P1, P2, ...">El valor de cada pago extra.</TarjetaMini>
-          <TarjetaMini titulo="n1, n2, ...">El periodo en que cae cada pago extra.</TarjetaMini>
+          <TarjetaMini titulo="Vf1 / Vp1">El valor del pago extra que se mueve a VP o a VF.</TarjetaMini>
+          <TarjetaMini titulo="n1">El momento en que ocurre el pago extra.</TarjetaMini>
         </div>
-        <p style={{ color: C.slate }}>En los apuntes de clase estos pagos extra aparecen como <strong>Vf1</strong> (en la fórmula de VP) y <strong>Vp1</strong> (en la fórmula de VF). Son el mismo pago extra, el valor que se paga en el periodo n1.</p>
+        <p style={{ color: C.slate }}>En los apuntes de clase el pago extra aparece como <strong>Vf1</strong> cuando se trae al presente y como <strong>Vp1</strong> cuando se lleva al futuro. <strong>n1</strong> es el momento donde ocurre ese pago extra.</p>
 
         <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Cómo se mueve cada pago extra (la regla para no enredarse)</div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -1487,9 +1480,9 @@ Resumen para no olvidar:
           <PasoLinea etiqueta="Momento" momento="1" pago="A" />
           <PasoLinea etiqueta="Momento" momento="2" pago="A" />
           <PasoLinea etiqueta="Momento" momento="..." pago="..." />
-          <PasoLinea etiqueta="Momento" momento="6" pago="A + P1" />
+          <PasoLinea etiqueta="Momento" momento="6" pago="A + Vf1" />
           <PasoLinea etiqueta="Momento" momento="..." pago="..." />
-          <PasoLinea etiqueta="Momento" momento="12" pago="A + P2" />
+          <PasoLinea etiqueta="Momento" momento="12" pago="A + Vf1" />
         </div>
         <TarjetaMini titulo="Ojo con el mes 12" tono="alerta">
           En el mes 12 caen dos pagos el mismo día: la cuota número 12 y el pago extra. Aun así no se mezclan. La cuota va dentro de la fórmula de la anualidad; el pago extra se calcula aparte.
@@ -1498,11 +1491,11 @@ Resumen para no olvidar:
         <Acordeon title="(a) Ver procedimiento: valor presente total (la fecha focal es hoy)">
           <FichaProcedimiento pasos={[
             { label: "Paso 1 — Fecha focal", content: "Hoy (momento 0), porque queremos saber cuánto vale todo hoy." },
-            { label: "Datos", content: "A = 400.000 · i = 2 % = 0,02 · n = 12 · P1 = 1.000.000 en n1 = 6 · P2 = 1.500.000 en n2 = 12" },
-            { label: "Fórmula", content: "VP total = A × [((1 + i)^n − 1) / (i × (1 + i)^n)] + P1/(1 + i)^n1 + P2/(1 + i)^n2" },
+            { label: "Datos", content: "A = 400.000 · i = 2 % = 0,02 · n = 12 · Vf1 = 1.000.000 en n1 = 6 · otro pago extra de 1.500.000 en n1 = 12" },
+            { label: "Fórmula", content: "VP = A × [((1 + i)^n − 1) / (i × (1 + i)^n)] + Vf1/(1 + i)^n1" },
             { label: "Paso 2 — Las 12 cuotas (anualidad)", content: `VP cuotas = 400.000 × [((1,02)^12 − 1) / (0,02 × (1,02)^12)] = 400.000 × ${formatNumberCO(mFactorVP, 6, 6)} = COP ${formatNumberCO(mVPcuotas, 2, 2)}` },
-            { label: "Paso 3a — Pago extra del mes 6 (se divide)", content: `VP P1 = 1.000.000 / (1,02)^6 = COP ${formatNumberCO(mVPe1, 2, 2)}` },
-            { label: "Paso 3b — Pago extra del mes 12 (se divide)", content: `VP P2 = 1.500.000 / (1,02)^12 = COP ${formatNumberCO(mVPe2, 2, 2)}` },
+            { label: "Paso 3a — Pago extra del mes 6", content: `Vf1 / (1+i)^n1 = 1.000.000 / (1,02)^6 = COP ${formatNumberCO(mVPe1, 2, 2)}` },
+            { label: "Paso 3b — Se repite la misma fórmula para el otro pago extra", content: `Vf1 / (1+i)^n1 = 1.500.000 / (1,02)^12 = COP ${formatNumberCO(mVPe2, 2, 2)}` },
             { label: "Paso 4 — Sumar todo", content: `VP total = ${formatNumberCO(mVPcuotas, 2, 2)} + ${formatNumberCO(mVPe1, 2, 2)} + ${formatNumberCO(mVPe2, 2, 2)}` },
             { label: "Resultado", content: `VP total ≈ COP ${formatNumberCO(mVPtotal, 2, 2)}` },
             { label: "Interpretación", content: "Las 12 cuotas y los dos pagos extra, juntos, valen hoy ese valor. Es lo que costó la moto el día de la compra." },
@@ -1512,11 +1505,11 @@ Resumen para no olvidar:
         <Acordeon title="(b) Ver procedimiento: valor futuro total (la fecha focal es el final)">
           <FichaProcedimiento pasos={[
             { label: "Paso 1 — Fecha focal", content: "El final (momento 12), porque queremos saber cuánto vale todo al terminar." },
-            { label: "Datos", content: "A = 400.000 · i = 0,02 · n = 12 · P1 = 1.000.000 en n1 = 6 · P2 = 1.500.000 en n2 = 12" },
-            { label: "Fórmula", content: "VF total = A × [((1 + i)^n − 1) / i] + P1 × (1 + i)^(n − n1) + P2 × (1 + i)^(n − n2)" },
+            { label: "Datos", content: "A = 400.000 · i = 0,02 · n = 12 · Vp1 = 1.000.000 en n1 = 6 · otro pago extra de 1.500.000 en n1 = 12" },
+            { label: "Fórmula", content: "VF = A × [((1 + i)^n − 1) / i] + Vp1 × (1 + i)^(n − n1)" },
             { label: "Paso 2 — Las 12 cuotas (anualidad)", content: `VF cuotas = 400.000 × [((1,02)^12 − 1) / 0,02] = 400.000 × ${formatNumberCO(mFactorVF, 6, 6)} = COP ${formatNumberCO(mVFcuotas, 2, 2)}` },
-            { label: "Paso 3a — Pago extra del mes 6 (se multiplica)", content: `VF P1 = 1.000.000 × (1,02)^(12 − 6) = COP ${formatNumberCO(mVFe1, 2, 2)}` },
-            { label: "Paso 3b — Pago extra del mes 12 (no se mueve)", content: `VF P2 = 1.500.000 × (1,02)^(12 − 12) = 1.500.000 × 1 = COP ${formatNumberCO(mVFe2, 2, 2)}` },
+            { label: "Paso 3a — Pago extra del mes 6", content: `Vp1 × (1+i)^(n − n1) = 1.000.000 × (1,02)^(12 − 6) = COP ${formatNumberCO(mVFe1, 2, 2)}` },
+            { label: "Paso 3b — Se repite la misma fórmula para el otro pago extra", content: `Vp1 × (1+i)^(n − n1) = 1.500.000 × (1,02)^(12 − 12) = 1.500.000 × 1 = COP ${formatNumberCO(mVFe2, 2, 2)}` },
             { label: "Paso 4 — Sumar todo", content: `VF total = ${formatNumberCO(mVFcuotas, 2, 2)} + ${formatNumberCO(mVFe1, 2, 2)} + ${formatNumberCO(mVFe2, 2, 2)}` },
             { label: "Resultado", content: `VF total ≈ COP ${formatNumberCO(mVFtotal, 2, 2)}` },
             { label: "Comprobación", content: `El VP llevado al final debe dar lo mismo: ${formatNumberCO(mVPtotal, 2, 2)} × (1,02)^12 = ${formatNumberCO(mVPtotal * Math.pow(1 + mi, mn), 2, 2)}` },
@@ -1529,19 +1522,13 @@ Resumen para no olvidar:
 
         {/* INCÓGNITAS */}
         <div style={{ fontWeight: 700, color: C.navy, margin: "22px 0 4px" }}>Cuando lo que no sabemos es el pago extra o la cuota</div>
-        <p>Es el mismo plan de siempre: la incógnita se deja como una letra y se despeja. Estas son las tres más usadas:</p>
+        <p>Es el mismo plan de siempre: la incógnita se deja como una letra y se despeja desde la fórmula oficial que corresponda. Si el problema está en VP, usamos la fórmula de valor presente con pago extra; si está en VF, usamos la fórmula de valor futuro con pago extra.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <TarjetaMini titulo="Hallar un pago extra P (con VP)" tono="azul">
-            <div style={{ fontFamily: F_MONO, fontSize: 13 }}>P = (VP − VP de la anualidad) / (1/(1+i)^n1 + 1/(1+i)^n2 + ...)</div>
-          </TarjetaMini>
-          <TarjetaMini titulo="Hallar la cuota A (con VP y extras conocidos)" tono="azul">
-            <div style={{ fontFamily: F_MONO, fontSize: 13 }}>A = (VP − VP de los extras) / [((1+i)^n − 1) / (i × (1+i)^n)]</div>
-          </TarjetaMini>
-          <TarjetaMini titulo="Hallar la cuota A (con VF y extras conocidos)" tono="azul">
-            <div style={{ fontFamily: F_MONO, fontSize: 13 }}>A = (VF − VF de los extras) / [((1+i)^n − 1) / i]</div>
-          </TarjetaMini>
+          <TarjetaMini titulo="Si busco VP" tono="azul">Uso la fórmula oficial de valor presente con pago extra.</TarjetaMini>
+          <TarjetaMini titulo="Si busco VF" tono="azul">Uso la fórmula oficial de valor futuro con pago extra.</TarjetaMini>
+          <TarjetaMini titulo="Si busco A" tono="azul">Uso el despeje oficial de cuota desde VP o desde VF.</TarjetaMini>
         </div>
-        <p style={{ color: C.slate, marginTop: 10 }}>Con valor futuro es igual, pero se usa la fórmula de VF y los extras se multiplican en lugar de dividirse. En la sección 10 hay un ejemplo completo donde la incógnita es el pago extra.</p>
+        <p style={{ color: C.slate, marginTop: 10 }}>En la sección 10 hay un ejemplo completo donde la incógnita es el pago extra.</p>
 
         {/* ERRORES */}
         <div style={{ fontWeight: 700, color: C.navy, margin: "22px 0 8px" }}>Errores comunes con los pagos extra</div>
@@ -1861,7 +1848,7 @@ Un secreto para que lo recuerdes: como cada pago se hace un periodo ANTES, cada 
           </div>
         </div>
         <p style={{ marginTop: 14 }}><strong>¿Entonces qué tasa se usa?</strong> Para calcular anualidades anticipadas se usan tasas <strong>efectivas vencidas</strong> que coincidan con el periodo de pago de las cuotas. Si la tasa viene anticipada, primero se pasa a vencida con la fórmula del módulo 4:</p>
-        <BloqueFormula>{"iv = ia / (1 − ia)"}</BloqueFormula>
+        <TarjetaMini titulo="Primero se traduce la tasa" tono="azul">Si la tasa viene anticipada, primero se convierte con el módulo de conversión de tasas y luego entra a la fórmula de anualidades.</TarjetaMini>
         <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 8px" }}>Las cuatro combinaciones que pueden aparecer</div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <TarjetaMini titulo="Tasa vencida + cuota vencida">Ya la conoces: es el módulo 5.</TarjetaMini>
@@ -1882,7 +1869,7 @@ Un secreto para que lo recuerdes: como cada pago se hace un periodo ANTES, cada 
         <p style={{ marginTop: 12 }}><strong>¿Por qué?</strong> Cada cuota cae en un momento distinto del tiempo. Para llevar una cuota hasta hoy o hasta el final, usamos factores de interés compuesto: la cuota se divide o se multiplica por (1 + i) elevado a los periodos que la separan de la fecha elegida.</p>
 
         <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Lo que aprendiste en el módulo 2</div>
-        <BloqueFormula>{"VF = VP × (1 + i)^n"}</BloqueFormula>
+        <TarjetaMini titulo="Idea clave" tono="azul">Las anualidades usan interés compuesto para mover pagos en el tiempo, pero las fórmulas visibles de este módulo son las fórmulas de anualidades.</TarjetaMini>
         <p style={{ color: C.slate }}>Con una anualidad usamos la misma lógica, pero no con un solo pago: la aplicamos a muchas cuotas iguales y las sumamos. Las fórmulas de anualidades son simplemente ese resultado, ya resumido.</p>
 
         <div style={{ fontWeight: 700, color: C.navy, margin: "16px 0 6px" }}>Conexión con la conversión de tasas (módulo 4)</div>
@@ -1915,11 +1902,10 @@ Un secreto para que lo recuerdes: como cada pago se hace un periodo ANTES, cada 
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
           Como cada pago se hace un periodo antes, cada pago tiene un periodito más para crecer. Es como si cada galleta de la fila se hubiera corrido un puestico hacia adelante.
         </TarjetaMini>
-        <div style={{ fontWeight: 700, color: C.navy, margin: "16px 0 6px" }}>La relación clave</div>
-        <BloqueFormula>{"Valor de anualidad anticipada = valor de anualidad vencida × (1 + i)"}</BloqueFormula>
-        <BloqueFormula>{"VP anticipada = VP vencida × (1 + i)"}</BloqueFormula>
-        <BloqueFormula>{"VF anticipada = VF vencida × (1 + i)"}</BloqueFormula>
-        <p>La anticipada está un periodo adelantada. Por eso se multiplica por (1 + i).</p>
+        <div style={{ fontWeight: 700, color: C.navy, margin: "16px 0 6px" }}>Las fórmulas oficiales que usaremos</div>
+        <BloqueFormula>{"VP = A × (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ]"}</BloqueFormula>
+        <BloqueFormula>{"VF = A × [ ((1 + i)^(n+1) − (1 + i)) / i ]"}</BloqueFormula>
+        <p>La anticipada está un periodo adelantada. Por eso sus fórmulas cambian frente a la vencida.</p>
         <div style={{ fontWeight: 700, color: C.navy, margin: "16px 0 6px" }}>¿En qué dirección cambia?</div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <TarjetaMini titulo="Valor presente" tono="azul">Si la tasa es positiva, el VP de la anticipada es MAYOR que el VP de la vencida con los mismos datos.</TarjetaMini>
@@ -1936,10 +1922,10 @@ Un secreto para que lo recuerdes: como cada pago se hace un periodo ANTES, cada 
           <Acordeon title="Ver procedimiento completo">
             <FichaProcedimiento pasos={[
               { label: "Datos", content: "A = 1.000 · i = 5 % = 0,05 · n = 3" },
-              { label: "Relación", content: "Anticipada = vencida × (1 + i) = vencida × 1,05" },
-              { label: "Valor presente", content: `${formatMilesCO(eVPv)} × 1,05 = COP ${formatMilesCO(eVPa)}` },
-              { label: "Valor futuro", content: `${formatMilesCO(eVFv)} × 1,05 = COP ${formatMilesCO(eVFa)}` },
-              { label: "Interpretación", content: "Las dos versiones suben exactamente 5 %: justo el (1 + i) de un periodo." },
+              { label: "Fórmula de VP", content: "VP = A × (1 + i) × [((1 + i)^n − 1) / (i × (1 + i)^n)]" },
+              { label: "Fórmula de VF", content: "VF = A × [((1 + i)^(n+1) − (1 + i)) / i]" },
+              { label: "Resultado VP", content: `VP = COP ${formatMilesCO(eVPa)}` },
+              { label: "Resultado VF", content: `VF = COP ${formatMilesCO(eVFa)}` },
             ]} />
           </Acordeon>
           <Interpretacion>
@@ -1954,9 +1940,7 @@ Un secreto para que lo recuerdes: como cada pago se hace un periodo ANTES, cada 
         <p><strong>¿Cómo funciona?</strong> Empezamos con lo que ya sabes: el valor presente de la vencida. Como en la anticipada todo pasa un periodo antes, lo multiplicamos por (1 + i).</p>
         <p style={{ color: C.slate }}><strong>¿Por qué importa?</strong> Con este valor sabes cuánto costó de verdad un crédito con cuotas anticipadas, o cuánto vale hoy un contrato de arriendo o de leasing.</p>
 
-        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Primero, la relación con la vencida</div>
-        <BloqueFormula>{"VP anticipada = VP vencida × (1 + i)"}</BloqueFormula>
-        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Después, la fórmula completa</div>
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Fórmula</div>
         <BloqueFormula>{"VP = A × (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ]"}</BloqueFormula>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "8px 0" }}>
           <TarjetaMini titulo="VP">El valor de todas las cuotas hoy.</TarjetaMini>
@@ -1964,8 +1948,8 @@ Un secreto para que lo recuerdes: como cada pago se hace un periodo ANTES, cada 
           <TarjetaMini titulo="i">La tasa efectiva vencida del periodo.</TarjetaMini>
           <TarjetaMini titulo="n">El número de pagos.</TarjetaMini>
         </div>
-        <p style={{ color: C.slate }}>La parte entre corchetes es la fórmula de anualidad vencida, la misma del módulo 5. El factor (1 + i) aparece porque la anualidad anticipada está un periodo antes.</p>
-        <p style={{ color: C.slate }}><strong>Diferencia con la vencida:</strong> la única diferencia en la fórmula es ese (1 + i) que multiplica.</p>
+        <p style={{ color: C.slate }}>El factor (1 + i) aparece porque la anualidad anticipada está un periodo antes.</p>
+        <p style={{ color: C.slate }}><strong>Diferencia con la vencida:</strong> en la anticipada los pagos ocurren al inicio del periodo.</p>
 
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
@@ -1976,9 +1960,8 @@ Un secreto para que lo recuerdes: como cada pago se hace un periodo ANTES, cada 
               { label: "Fórmula", content: "VP = A × (1 + i) × [((1 + i)^n − 1) / (i × (1 + i)^n)]" },
               { label: "Sustitución", content: "VP = 1.000 × (1 + 0,05) × [((1 + 0,05)^3 − 1) / (0,05 × (1 + 0,05)^3)]" },
               { label: "Resultado", content: `VP = COP ${formatMilesCO(eVPa)}` },
-              { label: "Comparación con vencida", content: `VP vencida = COP ${formatMilesCO(eVPv)}` },
-              { label: "Relación", content: `VP anticipada = ${formatMilesCO(eVPv)} × (1 + 5 %) = COP ${formatMilesCO(eVPv * (1 + ei))}` },
-              { label: "Comprobación como suma", content: `1.000 + 1.000/1,05 + 1.000/1,05^2 = COP ${formatMilesCO(eVPsuma)}  (la primera cuota no se descuenta: ya está en el momento 0)` },
+              { label: "Fórmula usada", content: "VP = A × (1 + i) × [((1 + i)^n − 1) / (i × (1 + i)^n)]" },
+              { label: "Revisión", content: "Se usó únicamente la fórmula oficial de valor presente anticipado." },
               { label: "Interpretación", content: "Las cuotas anticipadas valen más hoy que las vencidas porque se pagan un periodo antes." },
             ]} />
           </Acordeon>
@@ -1996,20 +1979,16 @@ Un secreto para que lo recuerdes: como cada pago se hace un periodo ANTES, cada 
         </TarjetaMini>
         <p style={{ color: C.slate, marginTop: 12 }}><strong>¿Por qué importa?</strong> Sirve para saber cuánto vas a tener si ahorras al comienzo de cada periodo, por ejemplo en un fondo de pensiones voluntarias o un CDT con aportes mensuales.</p>
 
-        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Primero, la relación con la vencida</div>
-        <BloqueFormula>{"VF anticipada = VF vencida × (1 + i)"}</BloqueFormula>
-        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Después, la fórmula clara</div>
-        <BloqueFormula>{"VF = A × [ ((1 + i)^n − 1) / i ] × (1 + i)"}</BloqueFormula>
-        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Y la forma equivalente</div>
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Fórmula</div>
         <BloqueFormula>{"VF = A × [ ((1 + i)^(n+1) − (1 + i)) / i ]"}</BloqueFormula>
-        <p style={{ color: C.slate }}>Las dos fórmulas significan exactamente lo mismo: dan el mismo resultado. Usa la que te resulte más cómoda.</p>
+        <p style={{ color: C.slate }}>Esta es la fórmula oficial de valor futuro para anualidades anticipadas.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "8px 0" }}>
           <TarjetaMini titulo="VF">El valor de todas las cuotas al final.</TarjetaMini>
           <TarjetaMini titulo="A">La cuota o anualidad.</TarjetaMini>
           <TarjetaMini titulo="i">La tasa efectiva vencida del periodo.</TarjetaMini>
           <TarjetaMini titulo="n">El número de pagos.</TarjetaMini>
         </div>
-        <p style={{ color: C.slate }}><strong>Diferencia con la vencida:</strong> otra vez, es el mismo VF de la vencida multiplicado por (1 + i). El "final" de la anticipada es el momento n, un periodo después de la última cuota.</p>
+        <p style={{ color: C.slate }}><strong>Diferencia con la vencida:</strong> en la anticipada cada pago se hace al inicio del periodo, por eso el valor futuro cambia.</p>
 
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
@@ -2017,13 +1996,11 @@ Un secreto para que lo recuerdes: como cada pago se hace un periodo ANTES, cada 
           <Acordeon title="Ver procedimiento completo">
             <FichaProcedimiento pasos={[
               { label: "Datos", content: "A = 1.000 · i = 5 % = 0,05 · n = 3" },
-              { label: "Fórmula", content: "VF = A × [((1 + i)^n − 1) / i] × (1 + i)" },
-              { label: "Sustitución", content: "VF = 1.000 × [((1 + 0,05)^3 − 1) / 0,05] × (1 + 0,05)" },
+              { label: "Fórmula", content: "VF = A × [((1 + i)^(n+1) − (1 + i)) / i]" },
+              { label: "Sustitución", content: "VF = 1.000 × [((1 + 0,05)^4 − (1 + 0,05)) / 0,05]" },
               { label: "Resultado", content: `VF = COP ${formatMilesCO(eVFa)}` },
-              { label: "Comparación con vencida", content: `VF vencida = COP ${formatMilesCO(eVFv)}` },
-              { label: "Relación", content: `VF anticipada = ${formatMilesCO(eVFv)} × (1 + 5 %) = COP ${formatMilesCO(eVFv * (1 + ei))}` },
-              { label: "Con la fórmula equivalente", content: `VF = 1.000 × [((1,05)^4 − 1,05) / 0,05] = COP ${formatMilesCO(eVFaAlt)}` },
-              { label: "Comprobación como suma", content: `1.000 × 1,05^3 + 1.000 × 1,05^2 + 1.000 × 1,05 = COP ${formatMilesCO(eVFsuma)}` },
+              { label: "Fórmula usada", content: "VF = A × [((1 + i)^(n+1) − (1 + i)) / i]" },
+              { label: "Revisión", content: `VF = 1.000 × [((1,05)^4 − 1,05) / 0,05] = COP ${formatMilesCO(eVFaAlt)}` },
               { label: "Interpretación", content: "El valor futuro es mayor porque cada pago tuvo un periodo más para crecer." },
             ]} />
           </Acordeon>
@@ -2140,24 +2117,21 @@ Un secreto para que lo recuerdes: como cada pago se hace un periodo ANTES, cada 
         </TarjetaMini>
 
         <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>La estructura</div>
-        <BloqueFormula>{"VP total = VP de la anualidad anticipada + VP de pagos extra"}</BloqueFormula>
-        <BloqueFormula>{"VF total = VF de la anualidad anticipada + VF de pagos extra"}</BloqueFormula>
-        <div style={{ fontSize: 12.5, color: C.slate, margin: "10px 0 4px" }}>Con el signo de suma, para cualquier cantidad de pagos extra</div>
-        <BloqueFormula>{"VP total = A × (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Σ Pk / (1 + i)^nk"}</BloqueFormula>
-        <BloqueFormula>{"VF total = A × [ ((1 + i)^n − 1) / i ] × (1 + i) + Σ Pk × (1 + i)^(n − nk)"}</BloqueFormula>
+        <BloqueFormula>{"VP = A × (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Vf1 / (1 + i)^n1"}</BloqueFormula>
+        <BloqueFormula>{"VF = A × [ ((1 + i)^(n+1) − (1 + i)) / i ] + Vp1 × (1 + i)^(n − n1)"}</BloqueFormula>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "10px 0" }}>
           <TarjetaMini titulo="A">La cuota anticipada igual.</TarjetaMini>
           <TarjetaMini titulo="i">Tasa efectiva vencida del mismo tamaño que las cuotas.</TarjetaMini>
           <TarjetaMini titulo="n">Número total de cuotas.</TarjetaMini>
-          <TarjetaMini titulo="Pk">El valor de cada pago extra.</TarjetaMini>
-          <TarjetaMini titulo="nk">El periodo en que cae cada pago extra.</TarjetaMini>
+          <TarjetaMini titulo="Vf1 / Vp1">El valor del pago extra que se mueve a VP o a VF.</TarjetaMini>
+          <TarjetaMini titulo="n1">El momento en que ocurre el pago extra.</TarjetaMini>
         </div>
 
         <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>La fecha focal: todos en la misma foto</div>
         <p>Para sumar pagos que caen en momentos distintos, todos deben llevarse al mismo momento. Ese momento es la fecha focal.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <TarjetaMini titulo="Si quiero valor presente" tono="azul">Traigo todo a hoy (momento 0). Los pagos extra se dividen entre (1 + i)^nk.</TarjetaMini>
-          <TarjetaMini titulo="Si quiero valor futuro" tono="azul">Llevo todo al final (momento n). Los pagos extra se multiplican por (1 + i)^(n − nk).</TarjetaMini>
+          <TarjetaMini titulo="Si quiero valor presente" tono="azul">Traigo todo a hoy (momento 0). El pago extra usa Vf1 / (1 + i)^n1.</TarjetaMini>
+          <TarjetaMini titulo="Si quiero valor futuro" tono="azul">Llevo todo al final (momento n). El pago extra usa Vp1 × (1 + i)^(n − n1).</TarjetaMini>
         </div>
         <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Receta en 4 pasos</div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -2190,10 +2164,10 @@ Un secreto para que lo recuerdes: como cada pago se hace un periodo ANTES, cada 
           { label: "Paso 5 — ¿Cuántas cuotas hay?", content: "15 años = 180 meses. Como las cuotas son bimestrales: n = 180 / 2 = 90 cuotas" },
           { label: "Paso 6 — Valor presente de las cuotas anticipadas", content: `VP anualidad = 8.906.829,51 × (1 + ${formatMilesCO(h3EB, 6)}) × [((1 + ${formatMilesCO(h3EB, 6)})^90 − 1) / (${formatMilesCO(h3EB, 6)} × (1 + ${formatMilesCO(h3EB, 6)})^90)]` },
           { label: "Resultado del paso 6", content: `VP anualidad ≈ COP ${formatMilesCO(hVPanual)}` },
-          { label: "Paso 7 — Ecuación de valor", content: `720.000.000 = ${formatMilesCO(hVPanual)} + X/(1 + ${formatMilesCO(h3EB, 6)})^20 + X/(1 + ${formatMilesCO(h3EB, 6)})^40` },
-          { label: "Paso 7b — Factores de cada pago extra", content: `1/(1 + i)^20 ≈ ${formatMilesCO(hF20, 4)} · 1/(1 + i)^40 ≈ ${formatMilesCO(hF40, 4)}` },
-          { label: "Paso 8 — Agrupar los pagos extra", content: `720.000.000 = ${formatMilesCO(hVPanual)} + X × (${formatMilesCO(hF20, 4)} + ${formatMilesCO(hF40, 4)}) = ${formatMilesCO(hVPanual)} + X × ${formatMilesCO(hFsuma, 4)}` },
-          { label: "Paso 9 — Pasar lo conocido al otro lado", content: `720.000.000 − ${formatMilesCO(hVPanual)} = ${formatMilesCO(hResto)}` },
+          { label: "Paso 7 — Fórmula con pago extra", content: "VP = A × (1 + i) × [((1 + i)^n − 1) / (i × (1 + i)^n)] + Vf1/(1 + i)^n1" },
+          { label: "Paso 7b — Primer pago extra", content: `Vf1/(1+i)^n1 = X/(1 + ${formatMilesCO(h3EB, 6)})^20` },
+          { label: "Paso 8 — Se repite la misma fórmula para el segundo pago extra", content: `Vf1/(1+i)^n1 = X/(1 + ${formatMilesCO(h3EB, 6)})^40` },
+          { label: "Paso 9 — Ecuación con los dos pagos", content: `720.000.000 = ${formatMilesCO(hVPanual)} + X/(1+i)^20 + X/(1+i)^40` },
           { label: "Paso 9b — Despejar X", content: `X = ${formatMilesCO(hResto)} / ${formatMilesCO(hFsuma, 4)}` },
           { label: "Resultado", content: `X ≈ COP ${formatMilesCO(hX)} (cada pago adicional)` },
         ]} />
@@ -3465,21 +3439,31 @@ const OPC_CALCULO_ANUALIDAD = [
 ];
 
 function formulasAnualidad(mod, tipo) {
-  const ant = mod === "anticipada";
-  const fvp = ant ? "(1 + i) × [((1 + i)^n − 1) / (i × (1 + i)^n)]" : "[((1 + i)^n − 1) / (i × (1 + i)^n)]";
-  const fvf = ant ? "[((1 + i)^n − 1) / i] × (1 + i)" : "[((1 + i)^n − 1) / i]";
-  const map = {
-    VP: `VP = A × ${fvp}`,
-    VF: `VF = A × ${fvf}`,
-    A_desde_VP: `A = VP / { ${fvp} }`,
-    A_desde_VF: ant ? "A = VF × [i / ((1 + i)^n − 1)] / (1 + i)" : "A = VF × [i / ((1 + i)^n − 1)]",
-    VP_extras: `VP total = A × ${fvp} + Σ ± Pk / (1 + i)^k`,
-    VF_extras: `VF total = A × ${fvf} + Σ ± Pk × (1 + i)^(n − k)`,
-    extra_desconocido: "X = (objetivo − anualidad − Σ pagos conocidos) / (± factor del pago desconocido)",
-    A_extras_VP: `A = (VP − Σ ± Pk / (1 + i)^k) / { ${fvp} }`,
-    A_extras_VF: `A = (VF − Σ ± Pk × (1 + i)^(n − k)) / { ${fvf} }`,
+  const FORMULAS_ANUALIDADES = {
+    vencida: {
+      VP: "VP = A × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ]",
+      VF: "VF = A × [ ((1 + i)^n − 1) / i ]",
+      A_desde_VP: "A = VP / [ ((1 + i)^n − 1) / (i × (1 + i)^n) ]",
+      A_desde_VF: "A = VF × [ i / ((1 + i)^n − 1) ]",
+      VP_extras: "VP = A × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Vf1 / (1 + i)^n1",
+      VF_extras: "VF = A × [ ((1 + i)^n − 1) / i ] + Vp1 × (1 + i)^(n − n1)",
+      extra_desconocido: "VP o VF con pago extra, usando la fórmula oficial correspondiente",
+      A_extras_VP: "A = VP / [ ((1 + i)^n − 1) / (i × (1 + i)^n) ]",
+      A_extras_VF: "A = VF × [ i / ((1 + i)^n − 1) ]",
+    },
+    anticipada: {
+      VP: "VP = A × (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ]",
+      VF: "VF = A × [ ((1 + i)^(n+1) − (1 + i)) / i ]",
+      A_desde_VP: "A = VP / { (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] }",
+      A_desde_VF: "A = VF × [ i / ((1 + i)^n − 1) ] / (1 + i)",
+      VP_extras: "VP = A × (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Vf1 / (1 + i)^n1",
+      VF_extras: "VF = A × [ ((1 + i)^(n+1) − (1 + i)) / i ] + Vp1 × (1 + i)^(n − n1)",
+      extra_desconocido: "VP o VF con pago extra, usando la fórmula oficial correspondiente",
+      A_extras_VP: "A = VP / { (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] }",
+      A_extras_VF: "A = VF × [ i / ((1 + i)^n − 1) ] / (1 + i)",
+    },
   };
-  return map[tipo];
+  return FORMULAS_ANUALIDADES[mod]?.[tipo] || "—";
 }
 
 function SimuladorAnualidades({ moneda }) {
@@ -3530,8 +3514,8 @@ function SimuladorAnualidades({ moneda }) {
         VF: `VF = ${m(a)} × ${f6(r.fVFa)} = ${m(r.valor)}`,
         A_desde_VP: `A = ${m(vp)} / ${f6(r.fVPa)} = ${m(r.valor)}`,
         A_desde_VF: `A = ${m(vf)} / ${f6(r.fVFa)} = ${m(r.valor)}`,
-        VP_extras: `VP total = ${m(a)} × ${f6(r.fVPa)} + (${m(r.sumaExtras)}) = ${m(r.valor)}`,
-        VF_extras: `VF total = ${m(a)} × ${f6(r.fVFa)} + (${m(r.sumaExtras)}) = ${m(r.valor)}`,
+        VP_extras: `VP = A × [((1 + i)^n − 1) / (i × (1 + i)^n)] + Vf1/(1+i)^n1 = ${m(r.valor)}`,
+        VF_extras: `VF = A × [((1 + i)^n − 1) / i] + Vp1 × (1+i)^(n−n1) = ${m(r.valor)}`,
         extra_desconocido: `X = (${m(r.objetivo)} − ${m(a)} × ${f6(r.fa)} − (${m(r.sumaExtras)})) / ${f6(r.coef)} = ${m(r.valor)}`,
         A_extras_VP: `A = (${m(vp)} − (${m(r.sumaExtras)})) / ${f6(r.fVPa)} = ${m(r.valor)}`,
         A_extras_VF: `A = (${m(vf)} − (${m(r.sumaExtras)})) / ${f6(r.fVFa)} = ${m(r.valor)}`,
@@ -3562,8 +3546,8 @@ function SimuladorAnualidades({ moneda }) {
       r.trasl.forEach((e, k) => pasos.push({
         label: `10.${k + 1} Pago adicional ${k + 1} (${e.direccion})`,
         content: r.base === "VP"
-          ? `${e.signo < 0 ? "−" : "+"} ${m(e.monto)} / (1 + i)^${e.momento} = ${m(e.valor)} (traído a hoy)`
-          : `${e.signo < 0 ? "−" : "+"} ${m(e.monto)} × (1 + i)^(${n} − ${e.momento}) = ${m(e.valor)} (llevado al final)`,
+          ? `${e.signo < 0 ? "−" : "+"} Vf1 / (1 + i)^n1 = ${m(e.monto)} / (1 + i)^${e.momento} = ${m(e.valor)} (traído a hoy)`
+          : `${e.signo < 0 ? "−" : "+"} Vp1 × (1 + i)^(n − n1) = ${m(e.monto)} × (1 + i)^(${n} − ${e.momento}) = ${m(e.valor)} (llevado al final)`,
       }));
       pasos.push({ label: "9. Interpretación", content: interp });
       setRes({ r, pasos, interp, i, etiquetaRes });
