@@ -3904,6 +3904,59 @@ El error se evidenció con una inversión al 3 % bimestral: $4.000.000 hoy, un s
     trazabilidad: `Después de realizar un cálculo en Simulación aparece una tarjeta de “Verificación matemática”. Cuando corresponde, esta sección muestra el error residual de la operación y explica que una pequeña diferencia puede ser consecuencia de la precisión numérica utilizada internamente por el sistema.`,
     link: "https://chatgpt.com/share/e/6a91ed48-54c0-8012-a31d-ad9105eb4d9b",
   },
+
+   {
+    n: 6,
+    titulo: "Diagnóstico de Numeris para el segundo corte",
+    prompt: `Estoy trabajando en un proyecto de matemáticas financieras llamado Numeris, que es el link que te envié. Es una herramienta web de educación financiera que desarrollamos para el primer corte y ahora debemos evolucionarlo para el segundo corte, dependiendo de las indicaciones del documento de segundo corte que te mandé. La idea no es crear una calculadora solamente, sino una herramienta que permita que una persona sin conocimientos financieros entienda los conceptos y pueda tomar decisiones.`,
+    respuesta: `La IA revisó el enfoque del segundo corte y explicó que Numeris no debía evolucionar solamente agregando botones o fórmulas, sino pasando de ser un simulador financiero a una herramienta que traduzca situaciones financieras reales en decisiones comprensibles. Identificó tres bloques principales para el segundo corte: conversión de tasas, anualidades y educación financiera. También señaló que cada concepto debía explicar qué significa, cómo funciona, por qué importa, fórmula, variables, ejemplo colombiano y diferencias con conceptos relacionados.`,
+    problema: `La primera respuesta era útil como visión general, pero todavía era muy amplia. Faltaba aterrizarla a la herramienta real y revisar qué partes de Numeris podían parecer solo una calculadora y cuáles mostraban comprensión financiera.`,
+    correccion: `Se le pidió a la IA que analizara la herramienta como si fuera un profesor evaluando el proyecto según la rúbrica, indicandole aquellos aspectos que el profesor esperaba que se mejoraran en la versión de este corte tales como la comprensión de los conceptos .`,
+    resultado: `A partir de esta interacción, Numeris se orientó más hacia una herramienta educativa y no solo una calculadora. La página debía mostrar por qué se usa una fórmula, qué significa el resultado y qué decisión financiera permite entender.`,
+    trazabilidad: `Esta interacción se refleja en la estructura general de Numeris: Educación financiera, Simulación y Comparación. También se conecta con los procedimientos paso a paso, donde la herramienta muestra la tasa ingresada, la conversión, la fórmula aplicada, el resultado y la interpretación.`,
+    link: "https://chatgpt.com/share/6ac29da2-c960-83e9-8f61-55e943f3151f",
+  },
+
+  {
+    n: 7,
+    titulo: "Actualización de las descripciones de Aprender, Simular y Comparar",
+    prompt: `Teniendo en cuenta la información de la página web que te compartí y el proyecto, así como de la rúbrica para este corte, quiero que me ayudes a cambiar la descripción que se tiene sobre qué se puede hacer en cada sección, ya que en aprender aparece entender los tres tipos de interés: simple, compuesto y continuo con explicaciones sencillas y matemáticas. En simular aparece calcular créditos e inversiones con incógnitas de valor, tasa, tiempo, flujo y momento, y en comparar observar cómo cambia el resultado según el régimen utilizado. Sin embargo, para este corte tenemos que añadir el tema de conversión de tasas, anualidades vencidas y anualidades anticipadas. Entonces es importante actualizar la plataforma.`,
+    respuesta: `La IA explicó que no era necesario cambiar la estructura de las secciones Aprender, Simular y Comparar, porque seguían funcionando bien. Sin embargo, propuso ampliar sus descripciones para que reflejaran los nuevos contenidos del segundo corte: conversión de tasas, tasas nominales y efectivas, tasas anticipadas y vencidas, anualidades vencidas y anticipadas, cuotas y pagos extraordinarios.`,
+    problema: `La primera propuesta todavía mencionaba demasiado el enfoque académico del proyecto y podía sonar como una lista de temas de clase. Además, el usuario final de Numeris no necesitaba saber qué era del primer corte o del segundo corte, sino entender qué podía hacer con la herramienta.`,
+    correccion: `Se le pidió a la IA que eliminara la referencia al primer corte, porque Numeris debía presentarse como una herramienta para una persona externa que quiere aprender matemáticas financieras, no como una entrega académica dividida por cortes.`,
+    resultado: `Las secciones quedaron así: Aprender para comprender conceptos con explicaciones, ejemplos y fórmulas; Simular para explorar créditos, ahorros e inversiones, convertir tasas, calcular cuotas y valores; y Comparar para analizar tasas, formas de pago y escenarios financieros.`,
+    trazabilidad: `Esta interacción se refleja directamente en las tres tarjetas o secciones iniciales de la plataforma: Aprender, Simular y Comparar. La descripción dejó de enfocarse solo en interés simple, compuesto y continuo, y pasó a incluir intereses, tasas, anualidades, conversión de tasas, cuotas, valores y pagos extraordinarios.`,
+    link: "https://chatgpt.com/share/6ac29da2-c960-83e9-8f61-55e943f3151f",
+  },
+
+   {
+    n: 8,
+    titulo: "Revisión del código y corrección de conceptos financieros",
+    prompt: `Este es el código de la app Numeris que estoy trabajando. quiero que busques errores en temas de redacción o información que se pueda dejar más clara y me des un ejemplo de cómo ponerla.`,
+    respuesta: `La IA revisó directamente el contenido del archivo App.jsx y encontró varios aspectos por corregir antes de entregar. Identificó errores de redacción, expresiones demasiado infantiles para una herramienta universitaria y explicaciones que podían generar confusión financiera, especialmente en conversión de tasas y anualidades.`,
+    problema: `La IA encontró varios problemas concretos. Por ejemplo, señaló que “Conceptos de platas fundamentales” y “Educación de plata” eran expresiones poco adecuadas. También indicó que “interés sobre interés” funcionaba como explicación, pero no debía reemplazar el término interés compuesto. Además, advirtió que la explicación de tasa nominal podía hacer pensar que la tasa nominal era falsa, y que decir “la tasa efectiva es el número de verdad” era financieramente impreciso.`,
+    correccion: `La IA propuso mantener el lenguaje sencillo, pero usando primero los conceptos financieros correctos. Por ejemplo, recomendó explicar la tasa nominal como una tasa anual expresada junto con una frecuencia de capitalización, y la tasa efectiva como el crecimiento o costo correspondiente a un periodo determinado teniendo en cuenta la capitalización.`,
+    resultado: `Después de aplicar esas correcciones, se revisó una nueva versión del código. La IA confirmó que la versión estaba bastante mejor: ya aparecía “Conceptos fundamentales de matemáticas financieras”, la tasa nominal ya no se explicaba como una tasa falsa, y el interés compuesto aparecía como término técnico acompañado de la explicación sencilla “interés sobre interés”.`,
+    trazabilidad: `Esta interacción se refleja en Educación financiera, especialmente en las secciones de conceptos fundamentales, interés compuesto, tasas, conversión de tasas, anualidades vencidas y anualidades anticipadas. También se refleja en el simulador, porque se reforzó que la tasa usada en anualidades debe estar en el periodo correcto y que los conceptos VP, VF, A y periodo deben explicarse con mayor precisión.`,
+    link: "https://chatgpt.com/share/6ac29da2-c960-83e9-8f61-55e943f3151f",
+  },
+  {
+    n: 9,
+    titulo: "Corrección del ingreso de meses en el simulador",
+    prompt: `Estoy desarrollando una página web que se llama Numeris, la cual es un simulador financiero. Sin embargo, me di cuenta que en la parte de simulación, en tiempo, no me deja escribir, por ejemplo, 36 meses o un valor de meses que sea mayor a 11. Y quiero corregir esto ya que muchas veces los problemas dan el tiempo en meses y no en años. Entonces necesito que el simulador convierta directamente esos meses adicionales a años o que los acepte para poder operar. Te voy a enviar el código y necesito que me indiques qué parte actualizar para que esto sea posible.`,
+    respuesta: `La IA revisó el problema dentro del código y encontró que la restricción no estaba en todo el simulador, sino en un punto específico: la función calcular() del componente SimularBasico.
+La IA explicó que el resto del código ya podía trabajar correctamente con meses mayores a 11, porque las funciones de conversión ya usaban el total de meses. Por ejemplo, para interés simple y compuesto se usa la lógica de años por 12 más meses, y para interés continuo se convierte el tiempo a años decimales.
+También indicó que el modo avanzado no tenía ese límite.`,
+    problema: `El problema era que el simulador básico no permitía ingresar valores como 36 meses, aunque matemáticamente sí son válidos. Esto podía afectar ejercicios reales, porque muchas veces los enunciados dan el tiempo directamente en meses y no en años.
+Además, el campo decía “Meses (0–11)”, lo que obligaba al usuario a convertir manualmente, por ejemplo, 36 meses en 3 años. Eso hacía la herramienta menos práctica y menos intuitiva.`,
+    correccion: `La IA indicó que debía eliminarse la validación que bloqueaba meses mayores o iguales a 12. Antes, el código mostraba un error cuando el usuario escribía 12 meses o más.
+También recomendó cambiar el texto del campo de entrada de “Meses (0–11)” a simplemente “Meses”, para que el usuario entendiera que podía escribir cualquier cantidad de meses.
+Como mejora adicional, sugirió que el procedimiento mostrara la equivalencia. Por ejemplo, si el usuario escribe 0 años y 36 meses, el procedimiento puede mostrar que eso equivale a 36 meses, es decir, 3 años y 0 meses.`,
+    resultado: `Después de la corrección, el simulador puede aceptar meses mayores a 11. Por ejemplo, el usuario puede escribir 0 años y 36 meses, y Numeris los interpreta correctamente como 36 meses o 3 años, dependiendo del tipo de cálculo.`,
+    trazabilidad: Esta interacción se refleja en Simulación, específicamente en el campo de tiempo del simulador básico. El campo de meses ahora puede aceptar valores como 12, 24 o 36 meses.
+También se refleja en el procedimiento paso a paso, porque Numeris puede mostrar la conversión del tiempo total a periodos. Por ejemplo: 0 años y 36 meses = 36 meses = 3 años y 0 meses.`,
+    link: "https://chatgpt.com/share/6ac29da2-c960-83e9-8f61-55e943f3151f",
+  },
 ];
 
 function BloqueInteraccion({ label, children }) {
