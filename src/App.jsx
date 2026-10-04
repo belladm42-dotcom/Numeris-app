@@ -147,7 +147,7 @@ function validateSolution(value) {
 
 /* ============================================================
    CONVERSIÓN DE TASAS — MOTOR CENTRALIZADO
-   Se reutiliza en: interés sobre interés, calculadora de tasas y anualidades.
+   Se reutiliza en: interés compuesto, calculadora de tasas y anualidades.
    Funciones puras (no dependen de React). NO se usa en interés simple
    ni en interés continuo.
    Convención del curso: año = 365 días = 52 semanas = 12 meses.
@@ -365,27 +365,27 @@ const PERIODICIDADES = [
 ];
 
 const GLOSARIO = [
-  { t: "VP", d: "Valor presente. Es la plata vista como si todo pasara HOY. Es la foto de hoy." },
-  { t: "VF", d: "Valor futuro. Es la plata vista al FINAL, después de que pasó el tiempo." },
-  { t: "i", d: "Interés de cada pedacito de tiempo. Por ejemplo: lo que crece la plata cada mes." },
-  { t: "n", d: "Número de pedacitos de tiempo. En anualidades casi siempre es el número de cuotas." },
-  { t: "r", d: "Tasa especial del interés continuo. Es para cuando la plata crece sin parar." },
+  { t: "VP", d: "Valor presente. Es el valor de una plata mirada en el momento de hoy o en un momento de referencia." },
+  { t: "VF", d: "Valor futuro. Es el valor de una plata mirada al final, después de que pasa el tiempo." },
+  { t: "i", d: "Tasa periódica de interés. Es el porcentaje que se aplica en cada periodo, por ejemplo cada mes." },
+  { t: "n", d: "Número de periodos. En anualidades casi siempre coincide con el número de cuotas." },
+  { t: "r", d: "Tasa continua. Se usa cuando el dinero se modela como si creciera todo el tiempo, sin pausas." },
   { t: "t", d: "Tiempo en años. Por ejemplo, 2 años y medio." },
-  { t: "Capital", d: "La plata con la que empiezas." },
-  { t: "Interés", d: "La platica extra que pagas o ganas por usar dinero." },
-  { t: "Periodo", d: "Un pedacito de tiempo: un mes, dos meses, tres meses o un año." },
-  { t: "Periodicidad", d: "Periodicidad pasa algo. Por ejemplo: cada mes." },
+  { t: "Capital", d: "La plata inicial con la que empieza la operación." },
+  { t: "Interés", d: "La plata adicional que pagas o ganas por usar dinero durante un tiempo." },
+  { t: "Periodo", d: "Intervalo de tiempo entre dos momentos de la operación: un mes, un trimestre, un semestre, etc." },
+  { t: "Periodicidad", d: "Cada cuánto pasa algo. Por ejemplo: cada mes." },
   { t: "Flujo", d: "Una plata que entra o sale." },
   { t: "Momento", d: "El lugar donde cae un pago en la línea de tiempo. El 0 es hoy." },
   { t: "Línea de tiempo", d: "Un dibujito para ver cuándo pasa cada pago." },
-  { t: "Momento focal", d: "El día de la foto. Llevamos todos los pagos a ese día para poder sumarlos." },
-  { t: "Fecha focal", d: "Es el mismo día de la foto: el punto donde ponemos todos los pagos juntos." },
+  { t: "Momento focal", d: "Momento donde comparamos todos los pagos. Es como tomar una foto: todos los pagos deben llevarse a esa misma fecha." },
+  { t: "Fecha focal", d: "Es el mismo momento focal: la fecha donde ubicamos todos los pagos para poder compararlos." },
   { t: "Ecuación de valor", d: "Una cuenta donde todos los pagos están en el mismo día. Sirve para encontrar el número que falta." },
   { t: "Coeficiente", d: "Un número que acompaña a otro. Por ejemplo, 2X quiere decir dos veces X." },
-  { t: "Capitalización", d: "Llevar una plata hacia adelante, como empujarla al futuro." },
+  { t: "Capitalización", d: "Momento en que los intereses se suman al capital y desde ahí también generan nuevos intereses." },
   { t: "Descuento", d: "Traer una plata del futuro hacia hoy." },
-  { t: "Tasa nominal", d: "Una tasa del año que toca partir en pedacitos." },
-  { t: "Tasa efectiva", d: "La tasa que ya está lista para usar en un pedacito de tiempo." },
+  { t: "Tasa nominal", d: "Tasa anual expresada con una frecuencia de capitalización. Por ejemplo, nominal anual capitalizable mensual." },
+  { t: "Tasa efectiva", d: "Tasa que muestra el crecimiento o costo de un periodo específico, teniendo en cuenta la capitalización." },
   { t: "Anualidad", d: "Una fila de pagos iguales. Como muchas galletas del mismo tamaño." },
   { t: "Anualidad vencida", d: "Pagos iguales que se hacen al final. Primero pasa el tiempo y después pagas." },
   { t: "Cuota (A)", d: "La plata igual que pagas cada vez." },
@@ -395,17 +395,17 @@ const GLOSARIO = [
   { t: "Pago extra", d: "Un pago diferente a las cuotas. Es una galleta aparte." },
   { t: "Pago extraordinario", d: "Otro nombre para pago extra." },
   { t: "Anualidad anticipada", d: "Pagos iguales que se hacen al inicio. Primero pagas y después pasa el tiempo." },
-  { t: "Tasa anticipada", d: "Una tasa donde el interés se cobra al comienzo." },
+  { t: "Tasa anticipada", d: "Tasa donde el interés del periodo se descuenta o se paga al inicio del periodo." },
   { t: "Cuota anticipada", d: "Una cuota que pagas al comienzo." },
   { t: "Valor presente de una anualidad anticipada", d: "La foto de HOY de cuotas que se pagan al inicio." },
   { t: "Valor futuro de una anualidad anticipada", d: "La foto del FINAL de cuotas que se pagan al inicio." },
   { t: "NAMA", d: "Tasa anual que se parte por meses y se cobra al inicio." },
   { t: "NACA", d: "Tasa anual que se parte cada cuatro meses y se cobra al inicio." },
   { t: "NATA", d: "Tasa anual que se parte cada tres meses y se cobra al inicio." },
-  { t: "Tasa efectiva vencida", d: "La tasa ya traducida y lista para entrar a la fórmula." },
-  { t: "Conversión automática de tasas", d: "La app cambia la tasa al pedacito correcto antes de calcular." },
+  { t: "Tasa efectiva vencida", d: "Tasa periódica efectiva que se paga al final del periodo. Es la tasa que entra en las fórmulas de anualidades." },
+  { t: "Conversión automática de tasas", d: "La app expresa la tasa en el periodo correcto antes de calcular." },
   { t: "Periodo de la operación", d: "El tamaño del tiempo que usa la cuenta: mes, trimestre, semestre, etc." },
-  { t: "Periodo de las cuotas", d: "Periodicidad pagas una cuota." },
+  { t: "Periodo de las cuotas", d: "Cada cuánto pagas una cuota." },
   { t: "Pago adicional desconocido", d: "Un pago extra que no sabemos cuánto vale y queremos encontrar." },
 ];
 
@@ -844,7 +844,7 @@ Por ejemplo, si tienes dinero guardado en una inversión, ese dinero puede ganar
 
 Es el mismo dinero y el mismo crecimiento. Solo cambia la forma de contarlo: por mes o por año.
 
-Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambia, solo cambiamos cómo lo decimos.`}
+Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma equivalente. El dinero no cambia; cambiamos la forma correcta de escribir la tasa según su periodo, capitalización y modalidad.`}
 
 
       </NivelCinco>
@@ -854,10 +854,10 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
         <p>Piensa en una tasa como si fuera una persona: tiene un <strong>nombre</strong> y dos <strong>apellidos</strong>. Si conoces los tres, ya sabes todo lo que necesitas saber de esa tasa.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
           <TarjetaMini titulo="Nombre">
-            Te dice si es <strong>Nominal</strong> o <strong>Efectiva</strong>. Es como preguntar: ¿es el número "de mentiritas" (nominal) o es el número "de verdad-verdad" (efectiva)?
+            Te dice si es <strong>Nominal</strong> o <strong>Efectiva</strong>. La nominal no es falsa: solo viene escrita como tasa anual con una frecuencia. La efectiva ya muestra el crecimiento o costo de un periodo.
           </TarjetaMini>
           <TarjetaMini titulo="Primer apellido">
-            Te dice periodicidad tiempo se cobran los intereses. Por ejemplo: cada mes, cada tres meses, cada seis meses.
+            Indica cada cuánto se capitalizan o aplican los intereses. Por ejemplo: cada mes, cada tres meses, cada seis meses.
           </TarjetaMini>
           <TarjetaMini titulo="Segundo apellido">
             Te dice CUÁNDO se paga el interés: al final (<strong>vencida</strong>) o al principio (<strong>anticipada</strong>).
@@ -879,8 +879,8 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
 
       {/* SECCIÓN 2 */}
       <Acordeon title="2 · ¿Qué es una tasa nominal?">
-        <p><strong>¿Qué es?</strong> La tasa nominal es como el precio que ves pegado en la vitrina de la tienda. Te dice más o menos cuánto es, pero no es lo que pagas de verdad. Es un número para mirar, no el número final.</p>
-        <p style={{ color: C.slate }}><strong>¿Cuándo se usa?</strong> Los bancos casi siempre te muestran este número primero, porque se ve chiquito y bonito. Pero ojo: no es lo que de verdad te va a costar el dinero.</p>
+        <p><strong>¿Qué es?</strong> La tasa nominal es una tasa anual escrita junto con la frecuencia con la que se capitalizan o aplican los intereses. No es falsa: solo necesita convertirse antes de usarla o compararla.</p>
+        <p style={{ color: C.slate }}><strong>¿Cuándo se usa?</strong> Se usa mucho para presentar tasas anuales. Para saber qué tasa entra realmente en una fórmula, primero revisamos su capitalización y la convertimos al periodo correcto.</p>
       </Acordeon>
 
       {/* SECCIÓN 3 */}
@@ -925,10 +925,10 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
 
       {/* SECCIÓN 5 */}
       <Acordeon title="5 · ¿Qué es una tasa efectiva?">
-        <p><strong>¿Qué es?</strong> La tasa efectiva es el número de VERDAD. Te dice cuánto creció o cuánto costó el dinero de verdad, contando también las moneditas que nacieron de otras moneditas.</p>
+        <p><strong>¿Qué es?</strong> La tasa efectiva muestra cuánto crece o cuesta el dinero en un periodo determinado, teniendo en cuenta la capitalización de los intereses.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 10 }}>
-          <TarjetaMini titulo="Nominal">Es el precio de la vitrina. Da una idea, pero no es el número final.</TarjetaMini>
-          <TarjetaMini titulo="Efectiva">Es lo que pagas de verdad en la caja. El número real.</TarjetaMini>
+          <TarjetaMini titulo="Nominal">Es una tasa anual expresada con una frecuencia de capitalización.</TarjetaMini>
+          <TarjetaMini titulo="Efectiva">Muestra el crecimiento o costo para un periodo específico.</TarjetaMini>
         </div>
       </Acordeon>
 
@@ -946,7 +946,7 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
               { label: "Fórmula", content: "EA = (1 + iy)^(ny/nx) − 1" },
               { label: "Sustitución", content: "EA = (1 + 0,02)^12 − 1" },
               { label: "Resultado", content: `EA = ${formatPercentCO(Math.pow(1.02, 12) - 1, 2)}` },
-              { label: "Interpretación", content: "El 2 % de cada mes se ve chiquito, pero cada mes se suma al anterior y las moneditas nuevas hacen más moneditas. Por eso, al final del año, crece más que 24 %." },
+              { label: "Interpretación", content: "El 2 % de cada mes se capitaliza durante el año. Por eso la efectiva anual equivalente queda por encima de 24 %, porque cada periodo se acumula sobre el anterior." },
             ]} />
           </Acordeon>
         </div>
@@ -954,13 +954,13 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
 
       {/* SECCIÓN 7 */}
       <Acordeon title="7 · Capitalización (cuando el interés hace más interés)">
-        <p>Capitalizar es como una alcancía mágica: metes moneditas y aparecen moneditas nuevas. Y esas moneditas nuevas también hacen aparecer más moneditas.</p>
+        <p>Capitalizar significa que los intereses se incorporan al capital. Dicho fácil: es como una alcancía donde las moneditas nuevas también empiezan a producir más moneditas.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
-          <TarjetaMini titulo="Mensual">La alcancía mágica hace moneditas nuevas 12 veces al año (una vez por mes).</TarjetaMini>
-          <TarjetaMini titulo="Trimestral">La alcancía mágica hace moneditas nuevas 4 veces al año (cada tres meses).</TarjetaMini>
-          <TarjetaMini titulo="Semestral">La alcancía mágica hace moneditas nuevas 2 veces al año (cada seis meses).</TarjetaMini>
+          <TarjetaMini titulo="Mensual">Los intereses se incorporan al capital 12 veces al año (una vez por mes).</TarjetaMini>
+          <TarjetaMini titulo="Trimestral">Los intereses se incorporan al capital 4 veces al año (cada tres meses).</TarjetaMini>
+          <TarjetaMini titulo="Semestral">Los intereses se incorporan al capital 2 veces al año (cada seis meses).</TarjetaMini>
         </div>
-        <p style={{ color: C.slate }}>Mientras más seguido aparezcan moneditas nuevas, más rápido crece la alcancía.</p>
+        <p style={{ color: C.slate }}>Una mayor frecuencia de capitalización puede cambiar el valor acumulado si la tasa nominal y las demás condiciones son comparables. Por eso es importante convertir tasas antes de compararlas.</p>
       </Acordeon>
 
       {/* SECCIÓN 8 */}
@@ -970,7 +970,7 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
             Pagas el interés AL FINAL. Como en el restaurante: primero comes y después pagas.
           </TarjetaMini>
           <TarjetaMini titulo="Anticipada">
-            Pagas el interés AL PRINCIPIO. Como en el cine: primero pagas la boleta y después ves la película.
+            El interés se descuenta o se paga AL PRINCIPIO del periodo. Como idea fácil: se cobra antes de que termine el periodo.
           </TarjetaMini>
         </div>
       </Acordeon>
@@ -996,10 +996,10 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
               Te dan $10.000.000 completos. Al final devuelves $10.500.000. El interés real fue 5 %.
             </TarjetaMini>
             <TarjetaMini titulo="Anticipada">
-              Te cobran el interés de una vez, así que solo te dan $9.500.000. Pero igual devuelves $10.000.000. Como te dieron menos plata, el interés real es un poquito más grande: 5,26 %.
+              Te descuentan el interés al inicio: de $10.000.000 descuentan $500.000, así que recibes $9.500.000. Como recibiste menos y devuelves $10.000.000, esa tasa anticipada no equivale a una vencida del 5 %.
             </TarjetaMini>
           </div>
-          <p style={{ color: C.slate }}>La tasa "cambia" solo porque cambia el momento en que te cobran: antes o después.</p>
+          <p style={{ color: C.slate }}>La tasa equivalente cambia porque cambia el momento en que se descuenta o se paga el interés: al inicio o al final.</p>
         </div>
       </Acordeon>
 
@@ -1021,7 +1021,7 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
             "Trimestral" no se divide entre 3: se divide entre 4, porque en un año caben 4 trimestres (4 × 3 meses = 12 meses).
           </TarjetaMini>
           <TarjetaMini titulo="2. Pensar que si el número es igual, la tasa es igual" tono="alerta">
-            24% NAM y 24% NAT NO son lo mismo, aunque el número "24%" se vea igual. Todo depende de periodicidad se cobra.
+            24% NAM y 24% NAT NO son lo mismo, aunque el número "24%" se vea igual. Todo depende de cada cuánto se cobra.
           </TarjetaMini>
           <TarjetaMini titulo="3. Saltarse pasos al convertir anticipada a vencida" tono="alerta">
             No puedes saltar de un solo brinco de anticipada a vencida. Hay que ir paso a pasito, pasando por el pedacito de cada periodo.
@@ -1226,7 +1226,7 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
         <p style={{ marginTop: 12 }}><strong>¿Para qué sirve?</strong></p>
         <ul style={{ margin: "0 0 8px", paddingLeft: 20 }}>
           <li>Para saber cuánto valen hoy muchas cuotas, por ejemplo las de un carro.</li>
-          <li>Para saber cuánto vale hoy una ahorro con pagos constantes.</li>
+          <li>Para saber cuánto vale hoy un ahorro con pagos constantes.</li>
           <li>Para juntar pagos de después y ver cuánto serían hoy.</li>
         </ul>
         <p style={{ color: C.slate }}><strong>Diferencia fácil:</strong> antes traías un solo pago. Aquí traes una fila de pagos iguales.</p>
@@ -1404,33 +1404,33 @@ La regla es fácil:
 
         <div style={{ fontWeight: 700, color: C.navy, margin: "4px 0 6px" }}>La definición, con las palabras de la clase</div>
         <TarjetaMini titulo="Anualidades + pagos extra" tono="azul">
-          A veces aparece un pago diferente a las cuotas. Ese pago no entra en la fila. Se calcula aparte y luego se suma en el mismo día de la foto.
+          A veces aparece un pago diferente a las cuotas. Ese pago no entra en la fila. Se calcula aparte y luego se suma en el mismo momento focal.
         </TarjetaMini>
 
         <p style={{ marginTop: 14 }}><strong>¿Qué es un pago extra?</strong> Es cualquier pago que NO es una de las cuotas iguales. Por ejemplo: un abono grande que haces un mes para pagar más rápido.</p>
         <TarjetaMini titulo="Regla para pagos extra" tono="azul">Las cuotas iguales usan la fórmula de anualidades. Los pagos distintos se calculan aparte y luego se suman.</TarjetaMini>
 
         {/* PASO 0 */}
-        <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Paso 0 · Elegir la día de la foto</div>
-        <p>La día de la foto depende de lo que quieres encontrar. Solo hay dos casos:</p>
+        <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Paso 0 · Elegir el momento focal</div>
+        <p>El momento focal es la fecha donde vamos a comparar todos los pagos. Para entenderlo fácil, es como tomar una foto de la operación. Solo hay dos casos:</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <TarjetaMini titulo="Quiero un valor de hoy (VP)" tono="azul">La día de la foto es hoy (momento 0). Todo se trae a hoy.</TarjetaMini>
-          <TarjetaMini titulo="Quiero un valor del final (VF)" tono="azul">La día de la foto es el final (momento n). Todo se lleva al final.</TarjetaMini>
+          <TarjetaMini titulo="Quiero un valor de hoy (VP)" tono="azul">El momento focal es hoy (momento 0). Todo se trae a hoy.</TarjetaMini>
+          <TarjetaMini titulo="Quiero un valor del final (VF)" tono="azul">El momento focal es el final (momento n). Todo se lleva al final.</TarjetaMini>
         </div>
 
         {/* PASO 1 */}
         <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Paso 1 · La fórmula completa</div>
         <p>La idea es simple: <strong>cuotas iguales por un lado + pago extra por otro lado.</strong></p>
 
-        <div style={{ fontSize: 12.5, color: C.slate, margin: "10px 0 4px" }}>Valor de hoy + pagos extra (la día de la foto es hoy)</div>
+        <div style={{ fontSize: 12.5, color: C.slate, margin: "10px 0 4px" }}>Valor de hoy + pagos extra (momento focal: hoy)</div>
         <BloqueFormula>VP = A × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Vf1 / (1 + i)^n1</BloqueFormula>
 
-        <div style={{ fontSize: 12.5, color: C.slate, margin: "10px 0 4px" }}>Valor del final + pagos extra (la día de la foto es el final)</div>
+        <div style={{ fontSize: 12.5, color: C.slate, margin: "10px 0 4px" }}>Valor del final + pagos extra (momento focal: final)</div>
         <BloqueFormula>VF = A × [ ((1 + i)^n − 1) / i ] + Vp1 × (1 + i)^(n − n1)</BloqueFormula>
 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "10px 0" }}>
           <TarjetaMini titulo="A">El valor de la cuota igual.</TarjetaMini>
-          <TarjetaMini titulo="i">La tasa efectiva del pedacito de tiempo, del mismo tamaño que las cuotas.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa periódica efectiva del mismo periodo de las cuotas.</TarjetaMini>
           <TarjetaMini titulo="n">El número total de cuotas (de pedacitos de tiempo).</TarjetaMini>
           <TarjetaMini titulo="Vf1 / Vp1">El valor del pago extra que se mueve a VP o a VF.</TarjetaMini>
           <TarjetaMini titulo="n1">El momento en que ocurre el pago extra.</TarjetaMini>
@@ -1439,21 +1439,21 @@ La regla es fácil:
 
         <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Cómo se mueve cada pago extra (la regla para no enredarse)</div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <TarjetaMini titulo="El pago está DESPUÉS de la día de la foto" tono="azul">
+          <TarjetaMini titulo="El pago está DESPUÉS del momento focal" tono="azul">
             Hay que traerlo hacia atrás, así que se <strong>divide</strong> entre (1 + i) elevado al número de periodos que lo separan. Pasa en el VP: el pago extra está en el final y se trae a hoy.
           </TarjetaMini>
-          <TarjetaMini titulo="El pago está ANTES de la día de la foto" tono="azul">
+          <TarjetaMini titulo="El pago está ANTES del momento focal" tono="azul">
             Hay que llevarlo hacia adelante, así que se <strong>multiplica</strong> por (1 + i) elevado al número de periodos que lo separan. Pasa en el VF: el pago extra se lleva hasta el final.
           </TarjetaMini>
         </div>
-        <p style={{ color: C.slate, marginTop: 10 }}>Un pago extra es un solo pago, no una fila. Por eso se mueve con las fórmulas del interés sobre interés (parte 2), no con la fórmula de anualidades.</p>
+        <p style={{ color: C.slate, marginTop: 10 }}>Un pago extra es un solo pago, no una fila. Por eso se mueve con las fórmulas de interés compuesto, no con la fórmula de anualidades.</p>
 
         {/* PASO 2 */}
         <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Paso 2 · Receta en 4 pasos</div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <TarjetaMini titulo="1. Elige la día de la foto">¿Quiero VP o VF? Hoy o el final.</TarjetaMini>
+          <TarjetaMini titulo="1. Elige el momento focal">¿Quiero VP o VF? Hoy o el final.</TarjetaMini>
           <TarjetaMini titulo="2. Calcula la anualidad">Usa la fórmula de VP o de VF solo con las cuotas iguales.</TarjetaMini>
-          <TarjetaMini titulo="3. Mueve cada pago extra">Divide o multiplica según esté después o antes de la día de la foto.</TarjetaMini>
+          <TarjetaMini titulo="3. Mueve cada pago extra">Divide o multiplica según esté después o antes del momento focal.</TarjetaMini>
           <TarjetaMini titulo="4. Suma todo">Anualidad + todos los pagos extra ya movidos.</TarjetaMini>
         </div>
 
@@ -1482,7 +1482,7 @@ La regla es fácil:
           En el mes 12 caen dos pagos el mismo día: la cuota número 12 y el pago extra. Aun así no se mezclan. La cuota va dentro de la fórmula de la anualidad; el pago extra se calcula aparte.
         </TarjetaMini>
 
-        <Acordeon title="(a) Ver procedimiento: valor de hoy total (la día de la foto es hoy)">
+        <Acordeon title="(a) Ver procedimiento: valor de hoy total (momento focal: hoy)">
           <FichaProcedimiento pasos={[
             { label: "Paso 1 — Día de la foto", content: "Hoy (momento 0), porque queremos saber cuánto vale todo hoy." },
             { label: "Datos", content: "A = 400.000 · i = 2 % = 0,02 · n = 12 · Vf1 = 1.000.000 en n1 = 6 · otro pago extra de 1.500.000 en n1 = 12" },
@@ -1496,7 +1496,7 @@ La regla es fácil:
           ]} />
         </Acordeon>
 
-        <Acordeon title="(b) Ver procedimiento: valor del final total (la día de la foto es el final)">
+        <Acordeon title="(b) Ver procedimiento: valor del final total (momento focal: final)">
           <FichaProcedimiento pasos={[
             { label: "Paso 1 — Día de la foto", content: "El último día, porque queremos mirar la plata al final." },
             { label: "Datos", content: "A = 400.000 · i = 0,02 · n = 12 · Vp1 = 1.000.000 en n1 = 6 · otro pago extra de 1.500.000 en n1 = 12" },
@@ -1531,7 +1531,7 @@ La regla es fácil:
             La fórmula solo sirve para cuotas iguales. El pago extra siempre va aparte, sumado al final.
           </TarjetaMini>
           <TarjetaMini titulo="2. Dividir cuando había que multiplicar (o al revés)" tono="alerta">
-            Pregúntate: ¿el pago está antes o después de la día de la foto? Después → se divide. Antes → se multiplica.
+            Pregúntate: ¿el pago está antes o después del momento focal? Después → se divide. Antes → se multiplica.
           </TarjetaMini>
           <TarjetaMini titulo="3. Usar mal el numerito de arriba" tono="alerta">
             Mira bien el numerito de arriba: en VP usamos cuándo cae el pago. En VF usamos cuánto falta para llegar al final.
@@ -1599,10 +1599,10 @@ La regla es fácil:
           <ol style={{ margin: 0, paddingLeft: 20 }}>
             <li>¿Qué se requiere para que un pago sea considerado una anualidad?</li>
             <li>¿Un pago extra se puede considerar una cuota?</li>
-            <li>¿Las cuotas y la tasa de interés tienen que tener la misma mismo ritmo de tiempo?</li>
+            <li>¿Las cuotas y la tasa de interés tienen que tener el mismo ritmo de tiempo?</li>
             <li>¿Qué diferencia hay entre valor de hoy y valor del final?</li>
             <li>¿Qué significa que una anualidad sea vencida?</li>
-            <li>¿Cómo se suma un pago extra a una anualidad y qué papel tiene la día de la foto?</li>
+            <li>¿Cómo se suma un pago extra a una anualidad y qué papel tiene el momento focal?</li>
           </ol>
         </div>
         <Acordeon title="Ver respuestas esperadas">
@@ -1612,7 +1612,7 @@ La regla es fácil:
             <li style={{ marginBottom: 6 }}>Sí. La tasa debe coincidir con el tiempo de las cuotas.</li>
             <li style={{ marginBottom: 6 }}>El valor de hoy trae las cuotas a hoy; el valor del final las lleva al final.</li>
             <li style={{ marginBottom: 6 }}>Que la cuota se paga al final de cada pedacito de tiempo.</li>
-            <li>El pago extra se calcula aparte de la fórmula de anualidades: se mueve hasta la día de la foto (se divide si va para atrás, se multiplica si va para adelante) y se suma al valor de la anualidad. La día de la foto es hoy si quiero un VP y el final si quiero un VF.</li>
+            <li>El pago extra se calcula aparte de la fórmula de anualidades: se mueve hasta el momento focal (se divide si va para atrás, se multiplica si va para adelante) y se suma al valor de la anualidad. El momento focal es hoy si quiero VP y es el final si quiero VF.</li>
           </ol>
         </Acordeon>
         <p style={{ color: C.slate }}>Próximamente: ¿y si pagas todo al inicio del pedacito de tiempo? Eso será la anualidad anticipada.</p>
@@ -1623,9 +1623,9 @@ La regla es fácil:
 }
 
 /* ============================================================
-   ANUALIDADES ANTICIPADAS — parte educativo
-   Clase interactiva: se conecta con Interés sobre interés (parte 2),
-   Conversión de tasas (parte 4) y Anualidades vencidas (parte 5).
+   ANUALIDADES ANTICIPADAS — módulo educativo
+   Clase interactiva: se conecta con interés compuesto,
+   Conversión de tasas (sección de conversión de tasas) y Anualidades vencidas (sección de anualidades vencidas).
    Todas las cifras de los ejemplos se calculan con las fórmulas.
    ============================================================ */
 
@@ -1643,7 +1643,7 @@ function formatPctMilesCO(valor, decimales = 2) {
 }
 
 function AnualidadesAnticipadas() {
-  // Factores de anualidad vencida (se usan en todo el parte)
+  // Factores de anualidad vencida (se usan en todo la parte)
   const fVP = (i, n) => (Math.pow(1 + i, n) - 1) / (i * Math.pow(1 + i, n));
   const fVF = (i, n) => (Math.pow(1 + i, n) - 1) / i;
 
@@ -1652,8 +1652,8 @@ function AnualidadesAnticipadas() {
   const eVPv = eA * fVP(ei, en);
   const eVPa = eA * (1 + ei) * fVP(ei, en);
   const eVFv = eA * fVF(ei, en);
-  const eVFa = eA * fVF(ei, en) * (1 + ei);
-  const eVFaAlt = eA * ((Math.pow(1 + ei, en + 1) - (1 + ei)) / ei);
+  const eVFa = eA * ((Math.pow(1 + ei, en + 1) - (1 + ei)) / ei);
+  const eVFaAlt = eVFa;
   const eVPsuma = eA + eA / (1 + ei) + eA / Math.pow(1 + ei, 2);
   const eVFsuma = eA * Math.pow(1 + ei, 3) + eA * Math.pow(1 + ei, 2) + eA * (1 + ei);
 
@@ -1729,7 +1729,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
       </NivelCinco>
 
       <div style={{ padding: 14, background: C.paperDark, borderRadius: 8, fontSize: 13.5, color: C.slate, marginBottom: 14 }}>
-        <strong style={{ color: C.navy }}>Para entender esto necesitas tres ideas:</strong> interés sobre interés, conversión de tasas y anualidades vencidas. Aquí las usamos juntas, pero con lenguaje sencillo.
+        <strong style={{ color: C.navy }}>Para entender esto necesitas tres ideas:</strong> interés compuesto, conversión de tasas y anualidades vencidas. Aquí las usamos juntas, pero con lenguaje sencillo.
       </div>
 
       {/* SECCIÓN 1 */}
@@ -1840,14 +1840,14 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
             No confundas tasa anticipada con anualidad anticipada. La tasa habla del interés. La anualidad habla de la cuota. Primero se arregla la tasa y después se usa la fórmula correcta.
           </div>
         </div>
-        <p style={{ marginTop: 14 }}><strong>¿Entonces qué tasa se usa?</strong> Siempre usamos una tasa lista para usar del mismo tamaño que las cuotas. Si la tasa llega anticipada, primero se convierte.</p>
-        <TarjetaMini titulo="Primero se traduce la tasa" tono="azul">Si la tasa viene anticipada, primero se convierte con el parte de conversión de tasas y luego entra a la fórmula de anualidades.</TarjetaMini>
+        <p style={{ marginTop: 14 }}><strong>¿Entonces qué tasa se usa?</strong> Siempre usamos una <strong>tasa periódica efectiva</strong>, es decir, una tasa lista para usar porque ya está en el mismo periodo de las cuotas. Si la tasa llega anticipada, primero se convierte.</p>
+        <TarjetaMini titulo="Primero se traduce la tasa" tono="azul">Si la tasa viene anticipada, primero se convierte con la sección de conversión de tasas y luego entra a la fórmula de anualidades.</TarjetaMini>
         <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 8px" }}>Las cuatro combinaciones que pueden aparecer</div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <TarjetaMini titulo="Tasa vencida + cuota vencida">Ya la conoces: es el parte 5.</TarjetaMini>
-          <TarjetaMini titulo="Tasa vencida + cuota anticipada">Es la fórmula de este parte.</TarjetaMini>
+          <TarjetaMini titulo="Tasa vencida + cuota vencida">Ya la conoces: es la sección 5.</TarjetaMini>
+          <TarjetaMini titulo="Tasa vencida + cuota anticipada">Es la fórmula de esta sección.</TarjetaMini>
           <TarjetaMini titulo="Tasa anticipada + cuota vencida">Primero la tasa pasa a vencida; luego se usa la fórmula de vencidas.</TarjetaMini>
-          <TarjetaMini titulo="Tasa anticipada + cuota anticipada">Primero la tasa pasa a vencida; luego se usa la fórmula de este parte.</TarjetaMini>
+          <TarjetaMini titulo="Tasa anticipada + cuota anticipada">Primero la tasa pasa a vencida; luego se usa la fórmula de esta sección.</TarjetaMini>
         </div>
         <Interpretacion>
           Cada pregunta se resuelve por separado. Primero miras la tasa y la dejas como lista para usar del tamaño de las cuotas. Después miras la cuota y decides si usas la fórmula de vencida o la de anticipada.
@@ -1855,17 +1855,17 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
       </Acordeon>
 
       {/* SECCIÓN 4 */}
-      <Acordeon title="4 · Conexión con interés sobre interés y conversión de tasas">
+      <Acordeon title="4 · Conexión con interés compuesto y conversión de tasas">
         <TarjetaMini titulo="Dicho claramente" tono="azul">
-          Las anualidades usan <strong>interés sobre interés</strong>. No se calculan con interés simple.
+          Las anualidades usan <strong>interés compuesto</strong> (interés sobre interés). No se calculan con interés simple.
         </TarjetaMini>
-        <p style={{ marginTop: 12 }}><strong>¿Por qué?</strong> Porque cada cuota cae en una fecha diferente. Para compararlas, hay que moverlas a una misma fecha usando interés sobre interés.</p>
+        <p style={{ marginTop: 12 }}><strong>¿Por qué?</strong> Porque cada cuota cae en una fecha diferente. Para compararlas, hay que moverlas a una misma fecha usando interés compuesto.</p>
 
-        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Lo que aprendiste en el parte 2</div>
-        <TarjetaMini titulo="Idea clave" tono="azul">Las anualidades usan interés sobre interés para mover pagos en el tiempo, pero las fórmulas visibles de este parte son las fórmulas de anualidades.</TarjetaMini>
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Lo que aprendiste en la sección 2</div>
+        <TarjetaMini titulo="Idea clave" tono="azul">Las anualidades usan interés compuesto para mover pagos en el tiempo, pero las fórmulas visibles de esta sección son las fórmulas de anualidades.</TarjetaMini>
         <p style={{ color: C.slate }}>Con anualidades hacemos eso con muchas cuotas iguales. La fórmula ya resume todo ese trabajo.</p>
 
-        <div style={{ fontWeight: 700, color: C.navy, margin: "16px 0 6px" }}>Conexión con la conversión de tasas (parte 4)</div>
+        <div style={{ fontWeight: 700, color: C.navy, margin: "16px 0 6px" }}>Conexión con la sección de conversión de tasas</div>
         <p>Antes de usar la fórmula, la tasa debe quedar en el mismo tamaño que las cuotas:</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <TarjetaMini titulo="Cuotas mensuales">La tasa debe ser mensual.</TarjetaMini>
@@ -1874,7 +1874,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         </div>
         <div style={{ marginTop: 12 }}>
           <TarjetaMini titulo="Advertencia" tono="alerta">
-            Si la tasa viene nominal o anticipada, primero se debe convertir a una tasa lista para usar del tamaño correcto. Solo después entra a la fórmula.
+            Si la tasa viene nominal o anticipada, primero se debe convertir a una tasa periódica efectiva del tamaño correcto. Solo después entra a la fórmula.
           </TarjetaMini>
         </div>
         <div style={{ fontSize: 13, color: C.slate, margin: "14px 0 6px" }}>El camino completo de la tasa</div>
@@ -1885,7 +1885,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
           { label: "Paso 4 — Usar la tasa en la fórmula", content: "Ahora sí: lista para usar del mismo tamaño que las cuotas." },
         ]} />
         <Interpretacion>
-          La fórmula de anualidades solo entiende un tipo de tasa: lista para usar, del mismo tamaño que las cuotas. Todo lo demás se traduce primero con el parte 4.
+          La fórmula de anualidades solo entiende un tipo de tasa: lista para usar, del mismo tamaño que las cuotas. Todo lo demás se traduce primero con la sección 4.
         </Interpretacion>
       </Acordeon>
 
@@ -1938,7 +1938,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "8px 0" }}>
           <TarjetaMini titulo="VP">El valor de todas las cuotas hoy.</TarjetaMini>
           <TarjetaMini titulo="A">La cuota o anualidad.</TarjetaMini>
-          <TarjetaMini titulo="i">La tasa lista para usar del pedacito de tiempo.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa periódica efectiva del periodo de las cuotas.</TarjetaMini>
           <TarjetaMini titulo="n">El número de pagos.</TarjetaMini>
         </div>
         <p style={{ color: C.slate }}>El (1 + i) aparece porque cada cuota se paga antes.</p>
@@ -1978,7 +1978,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "8px 0" }}>
           <TarjetaMini titulo="VF">El valor de todas las cuotas al final.</TarjetaMini>
           <TarjetaMini titulo="A">La cuota o anualidad.</TarjetaMini>
-          <TarjetaMini titulo="i">La tasa lista para usar del pedacito de tiempo.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa periódica efectiva del periodo de las cuotas.</TarjetaMini>
           <TarjetaMini titulo="n">El número de pagos.</TarjetaMini>
         </div>
         <p style={{ color: C.slate }}><strong>Diferencia con la vencida:</strong> en la anticipada cada pago se hace al inicio del pedacito de tiempo, por eso el valor del final cambia.</p>
@@ -2063,7 +2063,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
             Advertencia
           </div>
           <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.6 }}>
-            En anualidades anticipadas no metas la tasa como venga. Primero debes dejarla como tasa lista para usar del mismo tiempo de las cuotas.
+            En anualidades anticipadas no metas la tasa como venga. Primero debes dejarla como tasa periódica efectiva del mismo periodo de las cuotas.
           </div>
         </div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -2114,23 +2114,23 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <BloqueFormula>{"VF = A × [ ((1 + i)^(n+1) − (1 + i)) / i ] + Vp1 × (1 + i)^(n − n1)"}</BloqueFormula>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "10px 0" }}>
           <TarjetaMini titulo="A">La cuota anticipada igual.</TarjetaMini>
-          <TarjetaMini titulo="i">Tasa lista para usar del mismo tamaño que las cuotas.</TarjetaMini>
+          <TarjetaMini titulo="i">Tasa periódica efectiva del mismo periodo de las cuotas.</TarjetaMini>
           <TarjetaMini titulo="n">Número total de cuotas.</TarjetaMini>
           <TarjetaMini titulo="Vf1 / Vp1">El valor del pago extra que se mueve a VP o a VF.</TarjetaMini>
           <TarjetaMini titulo="n1">El momento en que ocurre el pago extra.</TarjetaMini>
         </div>
 
-        <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>La día de la foto: todos en la misma foto</div>
-        <p>Para sumar pagos de fechas distintas, primero los llevamos a una misma fecha. Esa fecha es la día de la foto.</p>
+        <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Momento focal: todos en la misma fecha</div>
+        <p>Para sumar pagos de fechas distintas, primero los llevamos a una misma fecha. Esa fecha se llama momento focal. Para entenderlo fácil, es como tomar una foto de toda la operación.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <TarjetaMini titulo="Si quiero valor de hoy" tono="azul">Traigo todo a hoy (momento 0). El pago extra usa Vf1 / (1 + i)^n1.</TarjetaMini>
           <TarjetaMini titulo="Si quiero valor del final" tono="azul">Llevo todo al final (momento n). El pago extra usa Vp1 × (1 + i)^(n − n1).</TarjetaMini>
         </div>
         <div style={{ fontWeight: 700, color: C.navy, margin: "18px 0 4px" }}>Receta en 4 pasos</div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <TarjetaMini titulo="1. Elige la día de la foto">¿Quiero VP o VF? Hoy o el final.</TarjetaMini>
-          <TarjetaMini titulo="2. Calcula la anualidad anticipada">Usa la fórmula de este parte solo con las cuotas iguales.</TarjetaMini>
-          <TarjetaMini titulo="3. Mueve cada pago extra">Divide o multiplica según esté después o antes de la día de la foto.</TarjetaMini>
+          <TarjetaMini titulo="1. Elige el momento focal">¿Quiero VP o VF? Hoy o el final.</TarjetaMini>
+          <TarjetaMini titulo="2. Calcula la anualidad anticipada">Usa la fórmula de esta sección solo con las cuotas iguales.</TarjetaMini>
+          <TarjetaMini titulo="3. Mueve cada pago extra">Divide o multiplica según esté después o antes del momento focal.</TarjetaMini>
           <TarjetaMini titulo="4. Suma todo">Anualidad anticipada + pagos extra ya movidos.</TarjetaMini>
         </div>
         <div style={{ marginTop: 12 }}>
@@ -2150,7 +2150,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
           Las 90 cuotas son la fila de pagos iguales. Los dos X son pagos aparte. La foto es hoy, porque la casa se compró hoy.
         </TarjetaMini>
         <FichaProcedimiento pasos={[
-          { label: "Paso 1 — Identificar la mismo ritmo de tiempo de las cuotas", content: "Las cuotas son bimestrales anticipadas. Necesitamos una tasa efectiva bimestral vencida para usar en la fórmula." },
+          { label: "Paso 1 — Identificar el ritmo de las cuotas", content: "Las cuotas son bimestrales anticipadas. Necesitamos una tasa efectiva bimestral vencida para usar en la fórmula." },
           { label: "Paso 2 — Repartir la nominal anticipada", content: `5,73 % NACA: un año tiene 3 cuatrimestres. 5,73 % / 3 = ${formatPctMilesCO(h1ia, 2)} efectiva cuatrimestral anticipada` },
           { label: "Paso 3 — Anticipada a vencida", content: `${formatPctMilesCO(h1ia, 2)} / (1 − ${formatPctMilesCO(h1ia, 2)}) ≈ ${formatPctMilesCO(h2iv, 2)} efectiva cuatrimestral vencida` },
           { label: "Paso 4 — Cuatrimestral a bimestral", content: `EB = (1 + 0,0195)^(3/6) − 1 = ${formatPctMilesCO(h3EB, 4)} ≈ 0,97 % efectiva bimestral vencida` },
@@ -2208,12 +2208,12 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
           <ol style={{ margin: 0, paddingLeft: 20 }}>
             <li style={{ marginBottom: 6 }}>Que la cuota se paga al inicio de cada pedacito de tiempo.</li>
             <li style={{ marginBottom: 6 }}>No. La tasa anticipada habla del interés; la anualidad anticipada habla del momento de pago de la cuota.</li>
-            <li style={{ marginBottom: 6 }}>Una tasa lista para usar del mismo tamaño que las cuotas.</li>
+            <li style={{ marginBottom: 6 }}>Una tasa periódica efectiva del mismo periodo de las cuotas.</li>
             <li style={{ marginBottom: 6 }}>Porque cada cuota ocurre un pedacito de tiempo antes.</li>
             <li style={{ marginBottom: 6 }}>Mayor, si la tasa es positiva.</li>
             <li style={{ marginBottom: 6 }}>Mayor, si la tasa es positiva.</li>
             <li style={{ marginBottom: 6 }}>Sí, pero se calculan aparte como pagos extra.</li>
-            <li>Se calculan con interés sobre interés.</li>
+            <li>Se calculan con interés compuesto.</li>
           </ol>
         </Acordeon>
         <Interpretacion>
@@ -2228,12 +2228,12 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
 function Aprender() {
   return (
     <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
-      <Etiqueta>Educación de plata</Etiqueta>
-      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 32, color: C.navy, margin: "0 0 26px" }}> Conceptos de platas fundamentales </h1>
+      <Etiqueta>Educación financiera</Etiqueta>
+      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 32, color: C.navy, margin: "0 0 26px" }}>Conceptos fundamentales de matemáticas financieras</h1>
 
       <Acordeon title="1 · Interés simple" defaultOpen>
         <BloqueInteres
-          queEs="El interés simple es la forma más fácil de ganar o pagar intereses. Siempre se calcula sobre el mismo numerito del principio. Ese numerito nunca cambia."
+          queEs="El interés simple es la forma más fácil de ganar o pagar intereses. Siempre se calcula sobre el mismo capital inicial. Ese capital inicial no cambia."
           analogia={`Imagina que le prestas tu bicicleta a un amigo.
 
 Cada mes, tu amigo te regala UNA moneda de las gracias.
@@ -2241,7 +2241,7 @@ Pase el tiempo que pase, siempre te da la MISMA moneda.
 
 ¿Por qué? Porque siempre te está pagando por la MISMA bicicleta.
 
-El interés simple es igual: siempre se calcula sobre el mismo numerito del principio, sin importar cuántos meses pasen.`}
+El interés simple es igual: siempre se calcula sobre el mismo capital inicial, sin importar cuántos meses pasen.`}
           comoFunciona="Cada mes se cobra el mismo interés. Ese interés NO se junta con el numerito del principio. Se queda guardado aparte, como moneditas sueltas en un frasco."
           usoLabel="¿Cuándo se usa?"
           usoRespuesta="En préstamos cortos, y en cuentas donde lo que ganas no se vuelve a sumar para ganar más."
@@ -2262,9 +2262,9 @@ El interés simple es igual: siempre se calcula sobre el mismo numerito del prin
         />
       </Acordeon>
 
-      <Acordeon title="2 · Interés sobre interés">
+      <Acordeon title="2 · Interés compuesto: interés sobre interés">
         <BloqueInteres
-          queEs="El interés sobre interés es cuando el interés que ganaste se junta con tu dinero. Y ese dinero más grande gana todavía más interés."
+          queEs="El interés compuesto es cuando los intereses generados se incorporan al capital. Dicho fácil: es interés sobre interés, porque el dinero crece y los intereses también empiezan a producir más intereses."
           analogia={`Imagina una bola de nieve.
 
 La empujas cuesta abajo y empieza chiquitica.
@@ -2276,7 +2276,7 @@ Cada vuelta, la bola es más grande que la vuelta de antes.
 El dinero hace lo mismo: gana intereses, esos intereses se vuelven parte del dinero, y ese dinero más grande gana más intereses todavía.`}
           comoFunciona="Al final de cada mes, el interés se suma al dinero que ya tenías. Al mes siguiente, el interés se calcula sobre ese dinero más grande. Por eso crece cada vez más rápido."
           usoLabel="¿Por qué es diferente al interés simple?"
-          usoRespuesta="En el simple, siempre pagas sobre el mismo numerito. En el compuesto, el numerito crece cada mes. Por eso el compuesto siempre da más dinero que el simple, con el mismo tiempo y la misma tasa."
+          usoRespuesta="En el simple, siempre calculas sobre el capital inicial. En el compuesto, el capital va creciendo. Con una tasa positiva y durante más de un periodo, el compuesto genera más valor porque los intereses acumulados también producen intereses."
           formula="VF = VP · (1 + i)ⁿ"
           despejes={["VP = VF / (1+i)ⁿ", "i = (VF/VP)^(1/n) − 1", "n = ln(VF/VP) / ln(1+i)"]}
           ejemploTexto="Un capital de $ 1.000.000,00 COP se invierte al 3,00 % trimestral compuesto durante 4 trimestres."
@@ -2287,7 +2287,7 @@ El dinero hace lo mismo: gana intereses, esos intereses se vuelven parte del din
             { label: "Sustitución", content: "VF = 1.000.000 × (1,03)⁴" },
             { label: "Resultado sin redondear", content: String(futureValueCompound(1000000, 0.03, 4)) },
             { label: "Resultado presentado", content: formatCurrencyCO(futureValueCompound(1000000, 0.03, 4), "COP") },
-            { label: "Interpretación", content: "El saldo crece más rápido que en interés simple porque cada trimestre genera interés sobre interés." },
+            { label: "Interpretación", content: "El saldo puede crecer más que en interés simple porque cada trimestre los intereses se suman al capital y generan más intereses." },
           ]}
         />
       </Acordeon>
@@ -2300,16 +2300,16 @@ El dinero hace lo mismo: gana intereses, esos intereses se vuelven parte del din
 Ahora imagina que no espera a dar una vuelta completa para que se le pegue nieve.
 Se le va pegando nieve en CADA segundito, sin parar.
 
-Por eso esta bola crece un poquito más rápido que la del interés sobre interés normal.`}
+Por eso esta bola crece un poquito más rápido que la del interés compuesto normal.`}
           comoFunciona="El dinero no espera a que termine el mes para crecer. Va creciendo poquito a poquito, todo el tiempo, sin pausas. Para calcular esto usamos un número especial que se llama 'e'."
           usoLabel="¿Dónde se usa y en qué se diferencia del compuesto?"
-          usoRespuesta="Se usa más en cuentas avanzadas de bancos y en estudios de platas, no tanto en la vida diaria. La diferencia con el compuesto es que el compuesto suma los intereses cada cierto tiempo (cada mes, por ejemplo), y el continuo los va sumando sin parar nunca."
+          usoRespuesta="Se usa más en cuentas avanzadas de bancos y en estudios de dinero, no tanto en la vida diaria. La diferencia con el compuesto es que el compuesto suma los intereses cada cierto tiempo (cada mes, por ejemplo), y el continuo los va sumando sin parar nunca."
           notaEspecial="En interés continuo, t siempre se expresa en años. Ejemplo: 2 años y 6 meses = 2 + 6/12 = 2,5 años."
           formula="VF = VP · e^(r·t)"
           despejes={["VP = VF · e^(−r·t)", "r = ln(VF/VP) / t", "t = ln(VF/VP) / r"]}
           ejemploTexto="Un capital de $ 850.000,00 COP se invierte al 8,95 % continuo durante 2 años y 6 meses (t = 2,5 años)."
           pasosEjemplo={[
-            { label: "Datos", content: "VP = $850.000,00 · r = 8,95 % continua · tiempo = 2 años 6 meses" },
+            { label: "Datos", content: "VP = $850.000,00 · r = 8,95 % anual de tasa continua · tiempo = 2 años 6 meses" },
             { label: "Conversión temporal", content: "t = 2 + 6/12 = 2,5 años" },
             { label: "Incógnita", content: "VF (Valor Futuro)" },
             { label: "Fórmula", content: "VF = VP · e^(r·t)" },
@@ -2333,7 +2333,7 @@ Por eso esta bola crece un poquito más rápido que la del interés sobre inter�
       </Acordeon>
 
       <div style={{ marginTop: 18, padding: 16, background: C.paperDark, borderRadius: 8, fontSize: 13, color: C.slate }}>
-        <strong style={{ color: C.navy }}>Notación:</strong> para interés simple y compuesto usamos <em>i</em> (tasa por pedacito de tiempo) y <em>n</em> (número de periodos). Para interés continuo usamos <em>r</em> (tasa continua) y <em>t</em> (tiempo en años). Nunca usamos una "T" aislada: siempre indicamos "Momento del flujo" con su unidad explícita.
+        <strong style={{ color: C.navy }}>Notación:</strong> para interés simple y compuesto usamos <em>i</em> (tasa por periodo) y <em>n</em> (número de periodos). Para interés continuo usamos <em>r</em> (tasa continua) y <em>t</em> (tiempo en años). Nunca usamos una "T" aislada: siempre indicamos "Momento del flujo" con su unidad explícita.
       </div>
       
     </Section>
@@ -2530,7 +2530,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
           content: `${a} años y ${m} meses = ${a * 12 + m} meses. Como la tasa es ${etiquetaPer} (1 período = ${mesesPorPeriodo} ${mesesPorPeriodo === 1 ? "mes" : "meses"}), n = ${a * 12 + m}/${mesesPorPeriodo} = ${formatNumberCO(n, 2, 6)} períodos.`,
         });
         if (regimen === "compuesto" && incognita !== "i") {
-          // Interés sobre interés: conversión automática a efectiva vencida del periodo de la operación.
+          // Interés compuesto: conversión automática a efectiva vencida del periodo de la operación.
           const tasaIngresada = parseNum(tasaPct);
           if (!Number.isFinite(tasaIngresada)) throw new Error("La tasa ingresada debe ser numérica.");
           const conv = convertirTasaAPeriodoOperacion({
@@ -2539,16 +2539,16 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
           });
           tasa = conv.iEfectivaVencida;
           const entradaTxt = descripcionTasa({ tasaPct: tasaIngresada, tipo: tasaDef.tipo, modalidad: tasaDef.modalidad, periodo: tasaDef.periodo, meses: tasaDef.meses });
-          pasos.push({ label: "Conversión automática de la tasa (solo interés sobre interés)", content: `Tasa ingresada: ${entradaTxt}. Se convierte a efectiva ${etiquetaPer} vencida, el periodo de la operación.` });
+          pasos.push({ label: "Conversión automática de la tasa (solo interés compuesto)", content: `Tasa ingresada: ${entradaTxt}. Se convierte a efectiva ${etiquetaPer} vencida, el periodo de la operación.` });
           conv.pasos.slice(1, -1).forEach((p) => pasos.push({ label: `Conversión — ${p.label}`, content: p.content }));
-          pasos.push({ label: "Tasa efectiva vencida final usada", content: `i = ${formatPercentCO(tasa, 4)} efectiva ${etiquetaPer} vencida. Esta es la tasa que entra en la fórmula de interés sobre interés.` });
+          pasos.push({ label: "Tasa efectiva vencida final usada", content: `i = ${formatPercentCO(tasa, 4)} efectiva ${etiquetaPer} vencida. Esta es la tasa que entra en la fórmula de interés compuesto.` });
           convResumen = { entrada: entradaTxt, final: formatPercentCO(tasa, 4), periodo: etiquetaPer };
         }
         pasos.push({
           label: "4. Régimen y periodicidad",
           content: regimen === "simple"
             ? `Interés simple: i = ${formatPercentCO(tasa)} ${etiquetaPer}; los intereses NO se capitalizan y siempre se calculan sobre el capital inicial.`
-            : `Interés sobre interés: i = ${formatPercentCO(tasa)} ${etiquetaPer}; los intereses sí se capitalizan y generan nuevos intereses.`,
+            : `Interés compuesto: i = ${formatPercentCO(tasa)} ${etiquetaPer}; los intereses sí se capitalizan y generan nuevos intereses.`,
         });
         if (regimen === "simple") {
           if (incognita === "VF") {
@@ -2728,14 +2728,14 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
 
         {mostrarTasaTiempo && regimen === "compuesto" && incognita !== "i" && (
           <div style={{ padding: 12, border: `1px solid ${C.line}`, borderRadius: 8, marginBottom: 14, background: C.paper }}>
-            <div style={{ fontSize: 12, color: C.slate, marginBottom: 8 }}>En interés sobre interés puedes ingresar cualquier tasa: la herramienta la convierte sola a efectiva vencida del periodo de la operación.</div>
+            <div style={{ fontSize: 12, color: C.slate, marginBottom: 8 }}>En interés compuesto puedes ingresar cualquier tasa: la herramienta la convierte sola a efectiva vencida del periodo de la operación.</div>
             <EditorTasa valor={tasaDef} onChange={setTasaDef} conValor={false} />
           </div>
         )}
         {mostrarTasaTiempo && regimen !== "continuo" && (
           <Campo label={regimen === "compuesto" ? "Período de la operación (en el que se mide n)" : "Período de la tasa"} help={regimen === "compuesto" ? "La tasa se convierte automáticamente a efectiva vencida de este período." : "En simple la tasa tiene periodicidad, pero los intereses no se capitalizan."}>
             <Selector value={periodicidad} onChange={(e) => setPeriodicidad(e.target.value)} options={PERIODICIDADES.map((p) => ({ value: p.value, label: p.label }))} />
-            {periodicidad === "personalizada" && <div style={{ marginTop: 8 }}><span style={{ fontSize: 12.5, color: C.slate }}>¿Periodicidads meses se aplica la tasa?</span><Entrada value={nPersonalizado} onChange={(e) => setNPersonalizado(e.target.value)} placeholder="5" style={{ marginTop: 4 }} /></div>}
+            {periodicidad === "personalizada" && <div style={{ marginTop: 8 }}><span style={{ fontSize: 12.5, color: C.slate }}>¿Cada cuántos meses se aplica la tasa?</span><Entrada value={nPersonalizado} onChange={(e) => setNPersonalizado(e.target.value)} placeholder="5" style={{ marginTop: 4 }} /></div>}
             <div style={{ marginTop: 7, fontSize: 12, color: C.slate }}>
               {periodicidad === "personalizada" ? `La tasa se aplica ${nombrePeriodo}.` : `1 período ${periodicidad === "anual" ? "anual" : periodicidad} = ${mesesPeriodoVista} ${mesesPeriodoVista === 1 ? "mes" : "meses"}.`}
             </div>
@@ -2782,7 +2782,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
             {resultado.convResumen && (
               <div style={{ marginTop: 10, padding: 13, background: C.paperDark, borderRadius: 8, fontSize: 13, color: C.navy, lineHeight: 1.6 }}>
                 <strong>Tasa ingresada:</strong> {resultado.convResumen.entrada}.<br />
-                <strong>Tasa efectiva vencida final ({resultado.convResumen.periodo}):</strong> {resultado.convResumen.final}. Es la que entra en la fórmula de interés sobre interés.
+                <strong>Tasa efectiva vencida final ({resultado.convResumen.periodo}):</strong> {resultado.convResumen.final}. Es la que entra en la fórmula de interés compuesto.
               </div>
             )}
             <Verificacion ok={resultado.verifOk} residual={resultado.residual} />
@@ -2909,7 +2909,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
     }
 
     const pasosConversion = [];
-    // Interés sobre interés: conversión automática con el motor central (no aplica a simple ni continuo).
+    // Interés compuesto: conversión automática con el motor central (no aplica a simple ni continuo).
     if (regimen === "compuesto" && tipoIncognita !== "tasa") {
       const tasaIngresada = parseNumCO(tasaPct);
       if (!Number.isFinite(tasaIngresada)) { setError("La tasa ingresada debe ser numérica."); return; }
@@ -2919,12 +2919,12 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
           mesesEntradaPersonalizados: parseNumCO(tasaDef.meses), periodoOperacion: "personalizado_meses", mesesOperacionPersonalizados: mesesPorPeriodo,
         });
         tasa = conv.iEfectivaVencida;
-        pasosConversion.push({ label: "Tasa ingresada (conversión automática, solo interés sobre interés)", content: descripcionTasa({ tasaPct: tasaIngresada, tipo: tasaDef.tipo, modalidad: tasaDef.modalidad, periodo: tasaDef.periodo, meses: tasaDef.meses }) });
+        pasosConversion.push({ label: "Tasa ingresada (conversión automática, solo interés compuesto)", content: descripcionTasa({ tasaPct: tasaIngresada, tipo: tasaDef.tipo, modalidad: tasaDef.modalidad, periodo: tasaDef.periodo, meses: tasaDef.meses }) });
         conv.pasos.slice(1, -1).forEach((p) => pasosConversion.push({ label: `Conversión — ${p.label}`, content: p.content }));
         pasosConversion.push({ label: "Tasa efectiva vencida final usada", content: `i = ${formatPercentCO(tasa, 4)} efectiva vencida del periodo de los flujos. Esta es la tasa que entra en la ecuación de valor.` });
       } catch (e) { setError(e.message); return; }
     } else if (regimen === "compuesto") {
-      pasosConversion.push({ label: "Tasa como incógnita (interés sobre interés)", content: "No hay conversión automática porque la tasa es lo que se despeja. El resultado queda como tasa efectiva vencida del periodo seleccionado." });
+      pasosConversion.push({ label: "Tasa como incógnita (interés compuesto)", content: "No hay conversión automática porque la tasa es lo que se despeja. El resultado queda como tasa efectiva vencida del periodo seleccionado." });
     }
     pasosConversion.push({
       label: "Periodicidad de la tasa",
@@ -2962,7 +2962,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
     });
 
     // Construye el procedimiento matemático completo de la ecuación de valor.
-    // No muestra solo “sumatoria de entradas menos salidas”: enseña qué fórmula se aplica a cada flujo.
+    // No muestra solo una suma de entradas menos salidas: enseña qué fórmula se aplica a cada flujo.
     const formulaGeneralTraslado = regimen === "simple"
       ? "Hacia el futuro: VF = VP·(1+i·n). Hacia el pasado: VP = VF/(1+i·n)."
       : regimen === "compuesto"
@@ -3141,7 +3141,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
       <Tarjeta style={{ marginBottom: 20 }}>
         <Etiqueta>Motor general de ecuaciones de valor</Etiqueta>
         <p style={{ fontSize: 13.5, color: C.slate, margin: "0 0 16px" }}>
-          Para comparar cantidades de dinero ubicadas en momentos diferentes (ej. Valor Presente 1, Valor Presente 2 y Valor Futuro) las llevamos a un mismo momento focal y construimos una ecuación de valor. En interés simple y continuo la tasa y el tiempo deben quedar en la misma unidad y la herramienta NO convierte tasas. En interés sobre interés, cuando la incógnita no es la tasa, la herramienta convierte automáticamente la tasa ingresada a efectiva vencida del periodo de los flujos.
+          Para comparar cantidades de dinero ubicadas en momentos diferentes (ej. Valor Presente 1, Valor Presente 2 y Valor Futuro) las llevamos a un mismo momento focal y construimos una ecuación de valor. En interés simple y continuo la tasa y el tiempo deben quedar en la misma unidad y la herramienta NO convierte tasas. En interés compuesto, cuando la incógnita no es la tasa, la herramienta convierte automáticamente la tasa ingresada a efectiva vencida del periodo de los flujos.
         </p>
         <div style={{ padding: 13, background: C.paperDark, borderRadius: 8, fontSize: 12.5, lineHeight: 1.55, color: C.slate, marginBottom: 16 }}>
           <strong style={{ color: C.navy }}>¿Qué significa entrada y salida?</strong><br />
@@ -3166,7 +3166,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
             </Campo>
           )}
           {regimen !== "continuo" && periodicidad === "personalizada" && (
-            <Campo label="¿Periodicidads meses?">
+            <Campo label="¿Cada cuántos meses?">
               <Entrada value={nPersonalizado} onChange={(e) => setNPersonalizado(e.target.value)} placeholder="5" />
             </Campo>
           )}
@@ -3189,7 +3189,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
         </div>
         {regimen === "compuesto" && tipoIncognita !== "tasa" && (
           <div style={{ marginTop: 14, padding: 12, border: `1px solid ${C.line}`, borderRadius: 8, background: C.paper }}>
-            <div style={{ fontSize: 12, color: C.slate, marginBottom: 8 }}>Conversión automática (solo interés sobre interés): ingresa cualquier tasa y la herramienta la convierte a efectiva vencida del periodo de los flujos. En interés simple y continuo no se convierte.</div>
+            <div style={{ fontSize: 12, color: C.slate, marginBottom: 8 }}>Conversión automática (solo interés compuesto): ingresa cualquier tasa y la herramienta la convierte a efectiva vencida del periodo de los flujos. En interés simple y continuo no se convierte.</div>
             <EditorTasa valor={tasaDef} onChange={setTasaDef} conValor={false} />
           </div>
         )}
@@ -3356,7 +3356,7 @@ function EditorTasa({ titulo, valor, onChange, conValor = true, opcionesPeriodo 
         <Selector value={valor.periodo} onChange={set("periodo")} options={opcionesPeriodo} />
         {valor.periodo === "personalizado_meses" && (
           <div style={{ marginTop: 8 }}>
-            <span style={{ fontSize: 12.5, color: C.slate }}>¿Periodicidads meses?</span>
+            <span style={{ fontSize: 12.5, color: C.slate }}>¿Cada cuántos meses?</span>
             <Entrada value={valor.meses} onChange={set("meses")} placeholder="5" />
           </div>
         )}
@@ -3440,9 +3440,9 @@ function formulasAnualidad(mod, tipo) {
       A_desde_VF: "A = VF × [ i / ((1 + i)^n − 1) ]",
       VP_extras: "VP = A × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Vf1 / (1 + i)^n1",
       VF_extras: "VF = A × [ ((1 + i)^n − 1) / i ] + Vp1 × (1 + i)^(n − n1)",
-      extra_desconocido: "VP o VF con pago extra, usando la fórmula oficial correspondiente",
-      A_extras_VP: "A = VP / [ ((1 + i)^n − 1) / (i × (1 + i)^n) ]",
-      A_extras_VF: "A = VF × [ i / ((1 + i)^n − 1) ]",
+      extra_desconocido: "VP = A × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Vf1 / (1 + i)^n1",
+      A_extras_VP: "VP = A × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Vf1 / (1 + i)^n1",
+      A_extras_VF: "VF = A × [ ((1 + i)^n − 1) / i ] + Vp1 × (1 + i)^(n − n1)",
     },
     anticipada: {
       VP: "VP = A × (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ]",
@@ -3451,9 +3451,9 @@ function formulasAnualidad(mod, tipo) {
       A_desde_VF: "A = VF × [ i / ((1 + i)^n − 1) ] / (1 + i)",
       VP_extras: "VP = A × (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Vf1 / (1 + i)^n1",
       VF_extras: "VF = A × [ ((1 + i)^(n+1) − (1 + i)) / i ] + Vp1 × (1 + i)^(n − n1)",
-      extra_desconocido: "VP o VF con pago extra, usando la fórmula oficial correspondiente",
-      A_extras_VP: "A = VP / { (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] }",
-      A_extras_VF: "A = VF × [ i / ((1 + i)^n − 1) ] / (1 + i)",
+      extra_desconocido: "VP = A × (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Vf1 / (1 + i)^n1",
+      A_extras_VP: "VP = A × (1 + i) × [ ((1 + i)^n − 1) / (i × (1 + i)^n) ] + Vf1 / (1 + i)^n1",
+      A_extras_VF: "VF = A × [ ((1 + i)^(n+1) − (1 + i)) / i ] + Vp1 × (1 + i)^(n − n1)",
     },
   };
   return FORMULAS_ANUALIDADES[mod]?.[tipo] || "—";
@@ -3524,6 +3524,13 @@ function SimuladorAnualidades({ moneda }) {
       const objetivoTxt = r.base === "VP" ? m(vp) : m(vf);
       const extrasVPConSigno = extrasVPFormula ? (extrasVPFormula.trimStart().startsWith("−") ? ` ${extrasVPFormula}` : ` + ${extrasVPFormula}`) : "";
       const extrasVFConSigno = extrasVFFormula ? (extrasVFFormula.trimStart().startsWith("−") ? ` ${extrasVFFormula}` : ` + ${extrasVFFormula}`) : "";
+      const formulaVisible = tipoCalculo === "extra_desconocido"
+        ? formulasAnualidad(modalidad, r.base === "VP" ? "VP_extras" : "VF_extras")
+        : tipoCalculo === "A_extras_VP"
+          ? formulasAnualidad(modalidad, "VP_extras")
+          : tipoCalculo === "A_extras_VF"
+            ? formulasAnualidad(modalidad, "VF_extras")
+            : formulasAnualidad(modalidad, tipoCalculo);
       const sust = {
         VP: `VP = ${m(a)} × ${factorVPTexto} = ${m(r.valor)}`,
         VF: `VF = ${m(a)} × ${factorVFTexto} = ${m(r.valor)}`,
@@ -3531,9 +3538,11 @@ function SimuladorAnualidades({ moneda }) {
         A_desde_VF: `A = ${m(vf)} × ${factorADesdeVFTexto} = ${m(r.valor)}`,
         VP_extras: `VP = ${m(a)} × ${factorVPTexto}${extrasVPConSigno} = ${m(r.valor)}`,
         VF_extras: `VF = ${m(a)} × ${factorVFTexto}${extrasVFConSigno} = ${m(r.valor)}`,
-        extra_desconocido: `X = (${objetivoTxt} − (${m(a)} × ${r.base === "VP" ? factorVPTexto : factorVFTexto}) − (${m(r.sumaExtras)})) / ${f6(r.coef)} = ${m(r.valor)}`,
-        A_extras_VP: `A = (${m(vp)} − (${extrasVPValores})) / ${factorVPTexto} = ${m(r.valor)}`,
-        A_extras_VF: `A = (${m(vf)} − (${r.trasl.map((e, idx) => `${signoTxt(e, idx === 0)}${m(Math.abs(e.valor))}`).join("") || "0"})) / ${factorVFTexto} = ${m(r.valor)}`,
+        extra_desconocido: r.base === "VP"
+          ? `${objetivoTxt} = ${m(a)} × ${factorVPTexto}${extrasVPConSigno} + X × ${f6(r.coef)}  →  X = ${m(r.valor)}`
+          : `${objetivoTxt} = ${m(a)} × ${factorVFTexto}${extrasVFConSigno} + X × ${f6(r.coef)}  →  X = ${m(r.valor)}`,
+        A_extras_VP: `${m(vp)} = A × ${factorVPTexto}${extrasVPConSigno}  →  A = (${m(vp)} − (${extrasVPValores})) / ${factorVPTexto} = ${m(r.valor)}`,
+        A_extras_VF: `${m(vf)} = A × ${factorVFTexto}${extrasVFConSigno}  →  A = (${m(vf)} − (${r.trasl.map((e, idx) => `${signoTxt(e, idx === 0)}${m(Math.abs(e.valor))}`).join("") || "0"})) / ${factorVFTexto} = ${m(r.valor)}`,
       }[tipoCalculo];
       const interp = {
         VP: `Hoy, las ${n} cuotas ${modalidad === "anticipada" ? "anticipadas" : "vencidas"} de ${m(a)} valen ${m(r.valor)}.`,
@@ -3554,7 +3563,7 @@ function SimuladorAnualidades({ moneda }) {
         ...conv.pasos.slice(1).map((p, k) => ({ label: `4.${k + 1} Conversión — ${p.label}`, content: p.content })),
         { label: "5. Tasa efectiva vencida final usada (i)", content: `i = ${formatPercentCO(i, 4)} efectiva ${perTxt} vencida (periodo de las cuotas)` },
         { label: "Datos", content: `n = ${n} cuotas (${perTxt})${Number.isFinite(a) && muestraA ? ` · A = ${m(a)}` : ""}${muestraVP ? ` · VP = ${m(vp)}` : ""}${muestraVF ? ` · VF = ${m(vf)}` : ""}` },
-        { label: "6. Fórmula usada", content: formulasAnualidad(modalidad, tipoCalculo) },
+        { label: "6. Fórmula usada", content: formulaVisible },
         { label: "7. Sustitución", content: sust },
         { label: "8. Resultado", content: `${etiquetaRes} = ${m(r.valor)}` },
       ];
@@ -3576,7 +3585,7 @@ function SimuladorAnualidades({ moneda }) {
       <Tarjeta>
         <Etiqueta>Configuración</Etiqueta>
         <div style={{ padding: 12, background: C.paperDark, borderRadius: 8, fontSize: 12.5, color: C.slate, marginBottom: 14, lineHeight: 1.5 }}>
-          Las anualidades se calculan con interés sobre interés porque cada cuota está ubicada en un día diferente del tiempo y se traslada usando factores como (1+i)^n. La tasa que entra a las fórmulas siempre es la efectiva vencida del periodo de las cuotas; la herramienta la convierte sola.
+          Las anualidades se calculan con interés compuesto porque cada cuota está ubicada en un día diferente del tiempo y se traslada usando factores como (1+i)^n. La tasa que entra a las fórmulas siempre es la efectiva vencida del periodo de las cuotas; la herramienta la convierte sola.
         </div>
         <Campo label="Tipo de anualidad"><Selector value={modalidad} onChange={(e) => setModalidad(e.target.value)} options={[{ value: "vencida", label: "Vencida" }, { value: "anticipada", label: "Anticipada" }]} /></Campo>
         <Campo label="¿Qué desea calcular?"><Selector value={tipoCalculo} onChange={(e) => setTipoCalculo(e.target.value)} options={OPC_CALCULO_ANUALIDAD} /></Campo>
@@ -3592,7 +3601,7 @@ function SimuladorAnualidades({ moneda }) {
         <Campo label="Periodo de las cuotas">
           <Selector value={periodoCuotas} onChange={(e) => setPeriodoCuotas(e.target.value)} options={OPC_PERIODOS_CUOTAS} />
           {periodoCuotas === "personalizado_meses" && (
-            <div style={{ marginTop: 8 }}><span style={{ fontSize: 12.5, color: C.slate }}>¿Periodicidads meses se paga una cuota?</span><Entrada value={mesesCuotas} onChange={(e) => setMesesCuotas(e.target.value)} placeholder="5" /></div>
+            <div style={{ marginTop: 8 }}><span style={{ fontSize: 12.5, color: C.slate }}>¿Cada cuántos meses se paga una cuota?</span><Entrada value={mesesCuotas} onChange={(e) => setMesesCuotas(e.target.value)} placeholder="5" /></div>
           )}
         </Campo>
         <EditorTasa titulo="Tasa ingresada" valor={tasaIn} onChange={setTasaIn} />
@@ -3627,7 +3636,7 @@ function SimuladorAnualidades({ moneda }) {
         {!res && !error && <Tarjeta style={{ color: C.slate, fontSize: 14, textAlign: "center", padding: 40 }}>Completa los datos y presiona <strong>Calcular</strong>. Verás la conversión de la tasa, la fórmula, la sustitución y la interpretación.</Tarjeta>}
         {res && (
           <Tarjeta>
-            <div style={{ fontSize: 13, color: C.slate, marginBottom: 4 }}>Anualidad {modalidad} · interés sobre interés</div>
+            <div style={{ fontSize: 13, color: C.slate, marginBottom: 4 }}>Anualidad {modalidad} · interés compuesto</div>
             <Etiqueta>{res.r.etiqueta}</Etiqueta>
             <div style={{ fontFamily: F_MONO, fontSize: 30, color: C.navy, fontWeight: 700, marginBottom: 6 }}>{formatCurrencyCO(res.r.valor, moneda)}</div>
             <div style={{ fontSize: 13.5, color: C.ink, marginBottom: 8 }}>Tasa efectiva vencida usada: <strong>{formatPercentCO(res.i, 4)}</strong> por periodo de cuota.</div>
@@ -3775,10 +3784,10 @@ function Comparar({ moneda }) {
       )}
 
       <div style={{ fontSize: 13.5, color: C.ink, lineHeight: 1.6, marginBottom: 16 }}>
-        El interés <strong>simple</strong> crece linealmente porque siempre calcula sobre el capital inicial. El interés <strong>compuesto</strong> crece más rápido porque cada periodo capitaliza sobre el saldo anterior. El interés <strong>continuo</strong> es el límite del compuesto cuando la capitalización ocurre en cada instante, por lo que supera ligeramente al compuesto discreto para la misma tasa nominal.
+        El interés <strong>simple</strong> crece linealmente porque siempre calcula sobre el capital inicial. El interés <strong>compuesto</strong> puede crecer más rápido que el simple porque cada periodo capitaliza sobre el saldo anterior. El interés <strong>continuo</strong> es el límite del compuesto cuando la capitalización ocurre en cada instante, por lo que supera ligeramente al compuesto discreto para la misma tasa nominal.
       </div>
       <div style={{ padding: 14, background: C.paperDark, borderRadius: 8, fontSize: 12, color: C.slate }}>
-        Esta comparación es educativa y usa una misma tasa del periodo para observar cómo cambian los resultados entre interés simple, compuesto y continuo. La conversión automática de tasas se realiza en el simulador de interés sobre interés, en la calculadora de tasas y en el simulador de anualidades.
+        Esta comparación es educativa y usa una misma tasa del periodo para observar cómo cambian los resultados entre interés simple, compuesto y continuo. La conversión automática de tasas se realiza en el simulador de interés compuesto, en la calculadora de tasas y en el simulador de anualidades.
       </div>
     </Section>
   );
