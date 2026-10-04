@@ -2406,7 +2406,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
     const a = parseNum(anios) || 0, m = parseNum(meses) || 0;
 
     if (a < 0 || m < 0) { setError("El tiempo no puede ser negativo."); return; }
-    if (m >= 12) { setError("En el campo Meses usa un valor entre 0 y 11. Si tienes 14 meses, escribe 1 año y 2 meses."); return; }
+
 
     let mesesPorPeriodo = 1;
     if (regimen !== "continuo") {
@@ -2527,7 +2527,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
         const etiquetaPer = periodicidad === "personalizada" ? `cada ${mesesPorPeriodo} meses` : periodoActual?.label?.toLowerCase();
         if (incognita !== "n") pasos.push({
           label: "3. Conversión del tiempo a n",
-          content: `${a} años y ${m} meses = ${a * 12 + m} meses. Como la tasa es ${etiquetaPer} (1 período = ${mesesPorPeriodo} ${mesesPorPeriodo === 1 ? "mes" : "meses"}), n = ${a * 12 + m}/${mesesPorPeriodo} = ${formatNumberCO(n, 2, 6)} períodos.`,
+          content: `${a} años y ${m} meses = ${a * 12 + m} meses (${Math.floor((a * 12 + m) / 12)} años y ${(a * 12 + m) % 12} meses). Como la tasa es ${etiquetaPer} (1 período = ${mesesPorPeriodo} ${mesesPorPeriodo === 1 ? "mes" : "meses"}), n = ${a * 12 + m}/${mesesPorPeriodo} = ${formatNumberCO(n, 2, 6)} períodos.`,
         });
         if (regimen === "compuesto" && incognita !== "i") {
           // Interés compuesto: conversión automática a efectiva vencida del periodo de la operación.
@@ -2744,7 +2744,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
 
         {mostrarTasaTiempo && (regimen === "continuo" ? incognita !== "t" : incognita !== "n") && (
           <Campo label={regimen === "continuo" ? "Tiempo total → t (años)" : "Tiempo total → se convierte a n períodos"}>
-            <div style={{ display: "flex", gap: 8 }}><Entrada value={anios} onChange={(e) => setAnios(e.target.value)} placeholder="Años" /><Entrada value={meses} onChange={(e) => setMeses(e.target.value)} placeholder="Meses (0–11)" /></div>
+            <div style={{ display: "flex", gap: 8 }}><Entrada value={anios} onChange={(e) => setAnios(e.target.value)} placeholder="Años" /><Entrada value={meses} onChange={(e) => setMeses(e.target.value)} placeholder="Meses" /></div>
             <div style={{ marginTop: 7, fontSize: 12, color: C.slate }}>
               {regimen === "continuo" ? `t = años + meses/12. Aquí no usamos n.` : regimen === "compuesto" ? `n = meses totales ÷ ${mesesPeriodoVista || "meses por período"}. La tasa se convierte automáticamente a efectiva vencida del período de la operación.` : `n = meses totales ÷ ${mesesPeriodoVista || "meses por período"}. En interés simple la tasa NO se convierte.`}
             </div>
