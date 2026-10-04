@@ -374,7 +374,7 @@ const GLOSARIO = [
   { t: "Capital", d: "La plata con la que empiezas." },
   { t: "Interés", d: "La platica extra que pagas o ganas por usar dinero." },
   { t: "Periodo", d: "Un pedacito de tiempo: un mes, dos meses, tres meses o un año." },
-  { t: "Cada cuánto", d: "Cada cuánto pasa algo. Por ejemplo: cada mes." },
+  { t: "Periodicidad", d: "Periodicidad pasa algo. Por ejemplo: cada mes." },
   { t: "Flujo", d: "Una plata que entra o sale." },
   { t: "Momento", d: "El lugar donde cae un pago en la línea de tiempo. El 0 es hoy." },
   { t: "Línea de tiempo", d: "Un dibujito para ver cuándo pasa cada pago." },
@@ -405,13 +405,13 @@ const GLOSARIO = [
   { t: "Tasa efectiva vencida", d: "La tasa ya traducida y lista para entrar a la fórmula." },
   { t: "Conversión automática de tasas", d: "La app cambia la tasa al pedacito correcto antes de calcular." },
   { t: "Periodo de la operación", d: "El tamaño del tiempo que usa la cuenta: mes, trimestre, semestre, etc." },
-  { t: "Periodo de las cuotas", d: "Cada cuánto pagas una cuota." },
+  { t: "Periodo de las cuotas", d: "Periodicidad pagas una cuota." },
   { t: "Pago adicional desconocido", d: "Un pago extra que no sabemos cuánto vale y queremos encontrar." },
 ];
 
 const EJEMPLOS = {
-  simple: { VP: "1000000", tasa: "3.8", cada cuánto: "trimestral", nPersonalizado: "", anios: "7", meses: "6", incognita: "VP", VF: "3622937", operacion: "credito" },
-  compuesto: { VP: "1000000", tasa: "3", cada cuánto: "trimestral", nPersonalizado: "", anios: "3", meses: "0", incognita: "VF", VF: "", operacion: "inversion" },
+  simple: { VP: "1000000", tasa: "3.8", periodicidad: "trimestral", nPersonalizado: "", anios: "7", meses: "6", incognita: "VP", VF: "3622937", operacion: "credito" },
+  compuesto: { VP: "1000000", tasa: "3", periodicidad: "trimestral", nPersonalizado: "", anios: "3", meses: "0", incognita: "VF", VF: "", operacion: "inversion" },
   continuo: { VP: "850000", tasa: "8.95", anios: "2", meses: "6", incognita: "VF", VF: "", operacion: "inversion" },
 };
 /* ============================================================
@@ -857,7 +857,7 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
             Te dice si es <strong>Nominal</strong> o <strong>Efectiva</strong>. Es como preguntar: ¿es el número "de mentiritas" (nominal) o es el número "de verdad-verdad" (efectiva)?
           </TarjetaMini>
           <TarjetaMini titulo="Primer apellido">
-            Te dice cada cuánto tiempo se cobran los intereses. Por ejemplo: cada mes, cada tres meses, cada seis meses.
+            Te dice periodicidad tiempo se cobran los intereses. Por ejemplo: cada mes, cada tres meses, cada seis meses.
           </TarjetaMini>
           <TarjetaMini titulo="Segundo apellido">
             Te dice CUÁNDO se paga el interés: al final (<strong>vencida</strong>) o al principio (<strong>anticipada</strong>).
@@ -1021,7 +1021,7 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
             "Trimestral" no se divide entre 3: se divide entre 4, porque en un año caben 4 trimestres (4 × 3 meses = 12 meses).
           </TarjetaMini>
           <TarjetaMini titulo="2. Pensar que si el número es igual, la tasa es igual" tono="alerta">
-            24% NAM y 24% NAT NO son lo mismo, aunque el número "24%" se vea igual. Todo depende de cada cuánto se cobra.
+            24% NAM y 24% NAT NO son lo mismo, aunque el número "24%" se vea igual. Todo depende de periodicidad se cobra.
           </TarjetaMini>
           <TarjetaMini titulo="3. Saltarse pasos al convertir anticipada a vencida" tono="alerta">
             No puedes saltar de un solo brinco de anticipada a vencida. Hay que ir paso a pasito, pasando por el pedacito de cada periodo.
@@ -1037,7 +1037,7 @@ Convertir una tasa es solamente cambiar la forma de contarla. El dinero no cambi
    ANUALIDADES VENCIDAS — módulo educativo
    Clase interactiva: de la idea sencilla a la fórmula, el ejemplo
    paso a paso y la interpretación. Se conecta con Conversión de
-   tasas (la tasa debe coincidir con la cada cuánto de las cuotas).
+   tasas (la tasa debe coincidir con la periodicidad de las cuotas).
    ============================================================ */
 
 function Interpretacion({ children }) {
@@ -1065,17 +1065,17 @@ function PasoLinea({ momento, pago, etiqueta }) {
 }
 
 function AnualidadesVencidas() {
-  const pedacito de la fórmula20 = Math.pow(1.0095, -20);
-  const pedacito de la fórmula40 = Math.pow(1.0095, -40);
+  const factor20 = Math.pow(1.0095, -20);
+  const factor40 = Math.pow(1.0095, -40);
   // Ejemplo de la moto (sección 9): todo calculado con las fórmulas, sin números escritos a mano
   const mA = 400000, mi = 0.02, mn = 12, mP1 = 1000000, mm1 = 6, mP2 = 1500000, mm2 = 12;
-  const mPedacito de la fórmulaVP = (Math.pow(1 + mi, mn) - 1) / (mi * Math.pow(1 + mi, mn));
-  const mPedacito de la fórmulaVF = (Math.pow(1 + mi, mn) - 1) / mi;
-  const mVPcuotas = mA * mPedacito de la fórmulaVP;
+  const mFactorVP = (Math.pow(1 + mi, mn) - 1) / (mi * Math.pow(1 + mi, mn));
+  const mFactorVF = (Math.pow(1 + mi, mn) - 1) / mi;
+  const mVPcuotas = mA * mFactorVP;
   const mVPe1 = mP1 / Math.pow(1 + mi, mm1);
   const mVPe2 = mP2 / Math.pow(1 + mi, mm2);
   const mVPtotal = mVPcuotas + mVPe1 + mVPe2;
-  const mVFcuotas = mA * mPedacito de la fórmulaVF;
+  const mVFcuotas = mA * mFactorVF;
   const mVFe1 = mP1 * Math.pow(1 + mi, mn - mm1);
   const mVFe2 = mP2 * Math.pow(1 + mi, mn - mm2);
   const mVFtotal = mVFcuotas + mVFe1 + mVFe2;
@@ -1487,7 +1487,7 @@ La regla es fácil:
             { label: "Paso 1 — Día de la foto", content: "Hoy (momento 0), porque queremos saber cuánto vale todo hoy." },
             { label: "Datos", content: "A = 400.000 · i = 2 % = 0,02 · n = 12 · Vf1 = 1.000.000 en n1 = 6 · otro pago extra de 1.500.000 en n1 = 12" },
             { label: "Fórmula", content: "VP = A × [((1 + i)^n − 1) / (i × (1 + i)^n)] + Vf1/(1 + i)^n1" },
-            { label: "Paso 2 — Las 12 cuotas (anualidad)", content: `VP cuotas = 400.000 × [((1,02)^12 − 1) / (0,02 × (1,02)^12)] = 400.000 × ${formatNumberCO(mPedacito de la fórmulaVP, 6, 6)} = COP ${formatNumberCO(mVPcuotas, 2, 2)}` },
+            { label: "Paso 2 — Las 12 cuotas (anualidad)", content: `VP cuotas = 400.000 × [((1,02)^12 − 1) / (0,02 × (1,02)^12)] = 400.000 × ${formatNumberCO(mFactorVP, 6, 6)} = COP ${formatNumberCO(mVPcuotas, 2, 2)}` },
             { label: "Paso 3a — Pago extra del mes 6", content: `Vf1 / (1+i)^n1 = 1.000.000 / (1,02)^6 = COP ${formatNumberCO(mVPe1, 2, 2)}` },
             { label: "Paso 3b — Se repite la misma fórmula para el otro pago extra", content: `Vf1 / (1+i)^n1 = 1.500.000 / (1,02)^12 = COP ${formatNumberCO(mVPe2, 2, 2)}` },
             { label: "Paso 4 — Sumar todo", content: `VP total = ${formatNumberCO(mVPcuotas, 2, 2)} + ${formatNumberCO(mVPe1, 2, 2)} + ${formatNumberCO(mVPe2, 2, 2)}` },
@@ -1501,7 +1501,7 @@ La regla es fácil:
             { label: "Paso 1 — Día de la foto", content: "El último día, porque queremos mirar la plata al final." },
             { label: "Datos", content: "A = 400.000 · i = 0,02 · n = 12 · Vp1 = 1.000.000 en n1 = 6 · otro pago extra de 1.500.000 en n1 = 12" },
             { label: "Fórmula", content: "VF = A × [((1 + i)^n − 1) / i] + Vp1 × (1 + i)^(n − n1)" },
-            { label: "Paso 2 — Las 12 cuotas (anualidad)", content: `VF cuotas = 400.000 × [((1,02)^12 − 1) / 0,02] = 400.000 × ${formatNumberCO(mPedacito de la fórmulaVF, 6, 6)} = COP ${formatNumberCO(mVFcuotas, 2, 2)}` },
+            { label: "Paso 2 — Las 12 cuotas (anualidad)", content: `VF cuotas = 400.000 × [((1,02)^12 − 1) / 0,02] = 400.000 × ${formatNumberCO(mFactorVF, 6, 6)} = COP ${formatNumberCO(mVFcuotas, 2, 2)}` },
             { label: "Paso 3a — Pago extra del mes 6", content: `Vp1 × (1+i)^(n − n1) = 1.000.000 × (1,02)^(12 − 6) = COP ${formatNumberCO(mVFe1, 2, 2)}` },
             { label: "Paso 3b — Se repite la misma fórmula para el otro pago extra", content: `Vp1 × (1+i)^(n − n1) = 1.500.000 × (1,02)^(12 − 12) = 1.500.000 × 1 = COP ${formatNumberCO(mVFe2, 2, 2)}` },
             { label: "Paso 4 — Sumar todo", content: `VF total = ${formatNumberCO(mVFcuotas, 2, 2)} + ${formatNumberCO(mVFe1, 2, 2)} + ${formatNumberCO(mVFe2, 2, 2)}` },
@@ -1562,15 +1562,15 @@ La regla es fácil:
           { label: "Paso 3b — Traer las 90 cuotas a hoy", content: "VP = 8.927.479,48 × [((1 + 0,0095)^90 − 1) / (0,0095 × (1 + 0,0095)^90)]" },
           { label: "Resultado del paso 3", content: "VP de la anualidad ≈ COP 538.465.173,45" },
           { label: "Paso 4 — Poner todo en la misma foto", content: "720.000.000 = 538.465.173,45 + X/(1 + 0,0095)^20 + X/(1 + 0,0095)^40" },
-          { label: "Paso 5 — Calcular los pedacito de la fórmulaes de cada pago extra", content: `1/(1,0095)^20 ≈ ${formatNumberCO(pedacito de la fórmula20, 4, 4)} · 1/(1,0095)^40 ≈ ${formatNumberCO(pedacito de la fórmula40, 4, 4)}` },
-          { label: "Paso 6 — Agrupar los dos pagos extra", content: `720.000.000 = 538.465.173,45 + X × (${formatNumberCO(pedacito de la fórmula20, 4, 4)} + ${formatNumberCO(pedacito de la fórmula40, 4, 4)}) = 538.465.173,45 + X × ${formatNumberCO(pedacito de la fórmula20 + pedacito de la fórmula40, 4, 4)}` },
+          { label: "Paso 5 — Calcular los factores de cada pago extra", content: `1/(1,0095)^20 ≈ ${formatNumberCO(factor20, 4, 4)} · 1/(1,0095)^40 ≈ ${formatNumberCO(factor40, 4, 4)}` },
+          { label: "Paso 6 — Agrupar los dos pagos extra", content: `720.000.000 = 538.465.173,45 + X × (${formatNumberCO(factor20, 4, 4)} + ${formatNumberCO(factor40, 4, 4)}) = 538.465.173,45 + X × ${formatNumberCO(factor20 + factor40, 4, 4)}` },
           { label: "Paso 7 — Pasar lo conocido al otro lado", content: "720.000.000 − 538.465.173,45 = 181.534.826,55" },
-          { label: "Paso 8 — Despejar X", content: `X = 181.534.826,55 / ${formatNumberCO(pedacito de la fórmula20 + pedacito de la fórmula40, 4, 4)}` },
+          { label: "Paso 8 — Despejar X", content: `X = 181.534.826,55 / ${formatNumberCO(factor20 + factor40, 4, 4)}` },
           { label: "Resultado", content: "X ≈ COP 120.000.000 (cada pago extra)" },
-          { label: "Revisión", content: `120.000.000 × ${formatNumberCO(pedacito de la fórmula20, 4, 4)} ≈ ${formatNumberCO(120000000 * pedacito de la fórmula20 / 1e6, 1, 1)} millones · 120.000.000 × ${formatNumberCO(pedacito de la fórmula40, 4, 4)} ≈ ${formatNumberCO(120000000 * pedacito de la fórmula40 / 1e6, 1, 1)} millones · cuotas 538,5 millones → total ≈ 720 millones` },
+          { label: "Revisión", content: `120.000.000 × ${formatNumberCO(factor20, 4, 4)} ≈ ${formatNumberCO(120000000 * factor20 / 1e6, 1, 1)} millones · 120.000.000 × ${formatNumberCO(factor40, 4, 4)} ≈ ${formatNumberCO(120000000 * factor40 / 1e6, 1, 1)} millones · cuotas 538,5 millones → total ≈ 720 millones` },
         ]} />
         <Interpretacion>
-          Las 90 cuotas aportan COP 538,5 millones al valor de la casa de hoy. Los COP 181,5 millones que faltan los cubren los dos pagos extra: cada uno es de COP 120.000.000 cuando se paga, pero traídos a hoy valen menos (unos 99,3 millones y 82,2 millones), porque llegan más adelante. En clase los pedacito de la fórmulaes se redondean a 0,83 y 0,69 (suman 1,51); aquí usamos más decimales y el resultado sigue dando 120 millones.
+          Las 90 cuotas aportan COP 538,5 millones al valor de la casa de hoy. Los COP 181,5 millones que faltan los cubren los dos pagos extra: cada uno es de COP 120.000.000 cuando se paga, pero traídos a hoy valen menos (unos 99,3 millones y 82,2 millones), porque llegan más adelante. En clase los factores se redondean a 0,83 y 0,69 (suman 1,51); aquí usamos más decimales y el resultado sigue dando 120 millones.
         </Interpretacion>
       </Acordeon>
 
@@ -1643,7 +1643,7 @@ function formatPctMilesCO(valor, decimales = 2) {
 }
 
 function AnualidadesAnticipadas() {
-  // Pedacito de la fórmulaes de anualidad vencida (se usan en todo el parte)
+  // Factores de anualidad vencida (se usan en todo el parte)
   const fVP = (i, n) => (Math.pow(1 + i, n) - 1) / (i * Math.pow(1 + i, n));
   const fVF = (i, n) => (Math.pow(1 + i, n) - 1) / i;
 
@@ -2022,7 +2022,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
             { label: "Sustitución", content: `i = 2,5 % / (1 − 2,5 %) = ${formatPctMilesCO(c1i, 4)} EM  (en clase se redondea a 2,56 %)` },
             { label: "Datos", content: `VP = 30.000.000 · i = ${formatPctMilesCO(c1i, 4)} = ${formatMilesCO(c1i, 6)} · n = 24` },
             { label: "Fórmula", content: "A = VP / { (1 + i) × [((1 + i)^n − 1) / (i × (1 + i)^n)] }" },
-            { label: "Pedacito de la fórmula de anualidad vencida", content: `((1 + i)^24 − 1) / (i × (1 + i)^24) = ${formatMilesCO(fVP(c1i, c1n), 6)}` },
+            { label: "Factor de anualidad vencida", content: `((1 + i)^24 − 1) / (i × (1 + i)^24) = ${formatMilesCO(fVP(c1i, c1n), 6)}` },
             { label: "Denominador completo", content: `(1 + i) × ${formatMilesCO(fVP(c1i, c1n), 6)} = ${formatMilesCO((1 + c1i) * fVP(c1i, c1n), 6)}` },
             { label: "Resultado", content: `A = 30.000.000 / ${formatMilesCO((1 + c1i) * fVP(c1i, c1n), 6)} = COP ${formatMilesCO(c1A)}` },
             { label: "Interpretación", content: `Para pagar esa deuda en 24 cuotas mensuales anticipadas, cada cuota debe ser aproximadamente COP ${formatMilesCO(c1A)}.` },
@@ -2044,7 +2044,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
             { label: "Resultado de la conversión", content: `ET = (1 + ${formatMilesCO(c1i, 6)})^3 − 1 = ${formatPctMilesCO(c2ET, 4)} efectiva trimestral vencida  (en clase se redondea a 7,89 %)` },
             { label: "Datos", content: `VF = 150.000.000 · i = ${formatPctMilesCO(c2ET, 4)} = ${formatMilesCO(c2ET, 6)} · n = 36` },
             { label: "Fórmula", content: "A = VF × [i / ((1 + i)^n − 1)] / (1 + i)" },
-            { label: "Pedacito de la fórmula", content: `i / ((1 + i)^36 − 1) = ${formatMilesCO(c2ET / (Math.pow(1 + c2ET, c2n) - 1), 6)}` },
+            { label: "Factor", content: `i / ((1 + i)^36 − 1) = ${formatMilesCO(c2ET / (Math.pow(1 + c2ET, c2n) - 1), 6)}` },
             { label: "Dividir entre (1 + i)", content: `A = 150.000.000 × ${formatMilesCO(c2ET / (Math.pow(1 + c2ET, c2n) - 1), 6)} / ${formatMilesCO(1 + c2ET, 6)}` },
             { label: "Resultado", content: `A = COP ${formatMilesCO(c2A)}` },
             { label: "Interpretación", content: `Para llegar a COP 150.000.000 al final de 36 trimestres con cuotas anticipadas, cada cuota debe ser aproximadamente COP ${formatMilesCO(c2A)}.` },
@@ -2165,7 +2165,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
           { label: "Resultado", content: `X ≈ COP ${formatMilesCO(hX)} (cada pago adicional)` },
         ]} />
         <Interpretacion>
-          Cada pago adicional fue de aproximadamente COP {formatMilesCO(hX)}. Las 90 cuotas aportan COP {formatMilesCO(hVPanual / 1e6, 1)} millones al valor de la casa de hoy, y los COP {formatMilesCO(hResto / 1e6, 1)} millones que faltan los cubren los dos pagos extra, que traídos a hoy valen menos que cuando se pagaron. En clase los pedacito de la fórmulaes se redondean a 0,82 y 0,68 (suman unos 1,50); aquí usamos más decimales ({formatMilesCO(hFsuma, 4)}). Este ejemplo usa la tasa cuatrimestral redondeada a 1,95 %; si se conservan todos sus decimales, X sale cerca de COP {formatMilesCO(hXexacto, 2)}. Por eso conviene guardar todos los decimales de las tasas.
+          Cada pago adicional fue de aproximadamente COP {formatMilesCO(hX)}. Las 90 cuotas aportan COP {formatMilesCO(hVPanual / 1e6, 1)} millones al valor de la casa de hoy, y los COP {formatMilesCO(hResto / 1e6, 1)} millones que faltan los cubren los dos pagos extra, que traídos a hoy valen menos que cuando se pagaron. En clase los factores se redondean a 0,82 y 0,68 (suman unos 1,50); aquí usamos más decimales ({formatMilesCO(hFsuma, 4)}). Este ejemplo usa la tasa cuatrimestral redondeada a 1,95 %; si se conservan todos sus decimales, X sale cerca de COP {formatMilesCO(hXexacto, 2)}. Por eso conviene guardar todos los decimales de las tasas.
         </Interpretacion>
       </Acordeon>
 
@@ -2352,7 +2352,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
   const [I, setI] = useState("");
   const [usarI, setUsarI] = useState(false);
   const [tasaPct, setTasaPct] = useState("2");
-  const [cada cuánto, setCada cuánto] = useState("mensual");
+  const [periodicidad, setPeriodicidad] = useState("mensual");
   const [nPersonalizado, setNPersonalizado] = useState("3");
   const [anios, setAnios] = useState("1");
   const [meses, setMeses] = useState("0");
@@ -2385,18 +2385,18 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
     return parseFloat(txt);
   };
 
-  const periodoActual = PERIODICIDADES.find((p) => p.value === cada cuánto);
-  const mesesPeriodoVista = cada cuánto === "personalizada" ? parseNum(nPersonalizado) : periodoActual?.meses;
-  const nombrePeriodo = cada cuánto === "personalizada"
+  const periodoActual = PERIODICIDADES.find((p) => p.value === periodicidad);
+  const mesesPeriodoVista = periodicidad === "personalizada" ? parseNum(nPersonalizado) : periodoActual?.meses;
+  const nombrePeriodo = periodicidad === "personalizada"
     ? `cada ${Number.isFinite(mesesPeriodoVista) ? formatNumberCO(mesesPeriodoVista, 0, 2) : "N"} meses`
-    : cada cuánto;
+    : periodicidad;
 
   function cargarEjemplo() {
     const ej = EJEMPLOS[regimen];
     setOperacion(ej.operacion); setVP(ej.VP); setTasaPct(ej.tasa); setAnios(ej.anios); setMeses(ej.meses);
     setIncognita(ej.incognita); setVF(ej.VF || ""); setI(""); setUsarI(false);
-    if (regimen !== "continuo") setCada cuánto(ej.cada cuánto);
-    if (regimen === "compuesto") setTasaDef({ tipo: "efectiva", modalidad: "vencida", periodo: ej.cada cuánto === "personalizada" ? "personalizado_meses" : ej.cada cuánto, meses: ej.nPersonalizado || "5" });
+    if (regimen !== "continuo") setPeriodicidad(ej.periodicidad);
+    if (regimen === "compuesto") setTasaDef({ tipo: "efectiva", modalidad: "vencida", periodo: ej.periodicidad === "personalizada" ? "personalizado_meses" : ej.periodicidad, meses: ej.nPersonalizado || "5" });
   }
 
   function calcular() {
@@ -2410,8 +2410,8 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
 
     let mesesPorPeriodo = 1;
     if (regimen !== "continuo") {
-      const perio = PERIODICIDADES.find((p) => p.value === cada cuánto);
-      mesesPorPeriodo = cada cuánto === "personalizada" ? parseNum(nPersonalizado) : perio?.meses;
+      const perio = PERIODICIDADES.find((p) => p.value === periodicidad);
+      mesesPorPeriodo = periodicidad === "personalizada" ? parseNum(nPersonalizado) : perio?.meses;
       if (!mesesPorPeriodo || mesesPorPeriodo <= 0) { setError("Ingresa cuántos meses tiene el período personalizado."); return; }
     }
 
@@ -2524,7 +2524,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
         }
       } else {
         const n = incognita === "n" ? null : convertTimeToPeriods(a, m, mesesPorPeriodo);
-        const etiquetaPer = cada cuánto === "personalizada" ? `cada ${mesesPorPeriodo} meses` : periodoActual?.label?.toLowerCase();
+        const etiquetaPer = periodicidad === "personalizada" ? `cada ${mesesPorPeriodo} meses` : periodoActual?.label?.toLowerCase();
         if (incognita !== "n") pasos.push({
           label: "3. Conversión del tiempo a n",
           content: `${a} años y ${m} meses = ${a * 12 + m} meses. Como la tasa es ${etiquetaPer} (1 período = ${mesesPorPeriodo} ${mesesPorPeriodo === 1 ? "mes" : "meses"}), n = ${a * 12 + m}/${mesesPorPeriodo} = ${formatNumberCO(n, 2, 6)} períodos.`,
@@ -2545,7 +2545,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
           convResumen = { entrada: entradaTxt, final: formatPercentCO(tasa, 4), periodo: etiquetaPer };
         }
         pasos.push({
-          label: "4. Régimen y cada cuánto",
+          label: "4. Régimen y periodicidad",
           content: regimen === "simple"
             ? `Interés simple: i = ${formatPercentCO(tasa)} ${etiquetaPer}; los intereses NO se capitalizan y siempre se calculan sobre el capital inicial.`
             : `Interés sobre interés: i = ${formatPercentCO(tasa)} ${etiquetaPer}; los intereses sí se capitalizan y generan nuevos intereses.`,
@@ -2733,11 +2733,11 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
           </div>
         )}
         {mostrarTasaTiempo && regimen !== "continuo" && (
-          <Campo label={regimen === "compuesto" ? "Período de la operación (en el que se mide n)" : "Período de la tasa"} help={regimen === "compuesto" ? "La tasa se convierte automáticamente a efectiva vencida de este período." : "En simple la tasa tiene cada cuánto, pero los intereses no se capitalizan."}>
-            <Selector value={cada cuánto} onChange={(e) => setCada cuánto(e.target.value)} options={PERIODICIDADES.map((p) => ({ value: p.value, label: p.label }))} />
-            {cada cuánto === "personalizada" && <div style={{ marginTop: 8 }}><span style={{ fontSize: 12.5, color: C.slate }}>¿Cada cuántos meses se aplica la tasa?</span><Entrada value={nPersonalizado} onChange={(e) => setNPersonalizado(e.target.value)} placeholder="5" style={{ marginTop: 4 }} /></div>}
+          <Campo label={regimen === "compuesto" ? "Período de la operación (en el que se mide n)" : "Período de la tasa"} help={regimen === "compuesto" ? "La tasa se convierte automáticamente a efectiva vencida de este período." : "En simple la tasa tiene periodicidad, pero los intereses no se capitalizan."}>
+            <Selector value={periodicidad} onChange={(e) => setPeriodicidad(e.target.value)} options={PERIODICIDADES.map((p) => ({ value: p.value, label: p.label }))} />
+            {periodicidad === "personalizada" && <div style={{ marginTop: 8 }}><span style={{ fontSize: 12.5, color: C.slate }}>¿Periodicidads meses se aplica la tasa?</span><Entrada value={nPersonalizado} onChange={(e) => setNPersonalizado(e.target.value)} placeholder="5" style={{ marginTop: 4 }} /></div>}
             <div style={{ marginTop: 7, fontSize: 12, color: C.slate }}>
-              {cada cuánto === "personalizada" ? `La tasa se aplica ${nombrePeriodo}.` : `1 período ${cada cuánto === "anual" ? "anual" : cada cuánto} = ${mesesPeriodoVista} ${mesesPeriodoVista === 1 ? "mes" : "meses"}.`}
+              {periodicidad === "personalizada" ? `La tasa se aplica ${nombrePeriodo}.` : `1 período ${periodicidad === "anual" ? "anual" : periodicidad} = ${mesesPeriodoVista} ${mesesPeriodoVista === 1 ? "mes" : "meses"}.`}
             </div>
           </Campo>
         )}
@@ -2800,7 +2800,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
    SIMULAR — MODO AVANZADO (múltiples flujos)
    Alineado con los ejercicios de clase: Valor Presente 1, Valor
    Presente 2, desembolsos adicionales y Valor Futuro, con
-   cada cuánto configurable y momentos ingresados en años y meses.
+   periodicidad configurable y momentos ingresados en años y meses.
    ============================================================ */
 let flujoIdSeq = 1;
 
@@ -2841,7 +2841,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
   const [operacion, setOperacion] = useState("inversion");
   const [regimen, setRegimen] = useState("compuesto");
   const [tasaPct, setTasaPct] = useState("3");
-  const [cada cuánto, setCada cuánto] = useState("mensual");
+  const [periodicidad, setPeriodicidad] = useState("mensual");
   const [nPersonalizado, setNPersonalizado] = useState("3");
   const [focalAnios, setFocalAnios] = useState("0");
   const [focalMeses, setFocalMeses] = useState("6");
@@ -2865,11 +2865,11 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
   }
   function eliminarFlujo(id) { setFlujos((fs) => fs.filter((f) => f.id !== id)); }
 
-  // Meses por periodo según la cada cuánto elegida (no aplica en continuo: ahí el tiempo siempre es en años)
+  // Meses por periodo según la periodicidad elegida (no aplica en continuo: ahí el tiempo siempre es en años)
   function obtenerMesesPorPeriodo() {
     if (regimen === "continuo") return null;
-    const perio = PERIODICIDADES.find((p) => p.value === cada cuánto);
-    return cada cuánto === "personalizada" ? parseFloat(nPersonalizado) : perio.meses;
+    const perio = PERIODICIDADES.find((p) => p.value === periodicidad);
+    return periodicidad === "personalizada" ? parseFloat(nPersonalizado) : perio.meses;
   }
 
   // Convierte los años/meses de un flujo (o del momento focal) al "momento" en la unidad del régimen:
@@ -2927,8 +2927,8 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
       pasosConversion.push({ label: "Tasa como incógnita (interés sobre interés)", content: "No hay conversión automática porque la tasa es lo que se despeja. El resultado queda como tasa efectiva vencida del periodo seleccionado." });
     }
     pasosConversion.push({
-      label: "Cada cuánto de la tasa",
-      content: regimen === "continuo" ? "No aplica (interés continuo: el tiempo se expresa siempre en años)" : `${PERIODICIDADES.find((p) => p.value === cada cuánto)?.label}${cada cuánto === "personalizada" ? ` (cada ${mesesPorPeriodo} meses)` : ""}`,
+      label: "Periodicidad de la tasa",
+      content: regimen === "continuo" ? "No aplica (interés continuo: el tiempo se expresa siempre en años)" : `${PERIODICIDADES.find((p) => p.value === periodicidad)?.label}${periodicidad === "personalizada" ? ` (cada ${mesesPorPeriodo} meses)` : ""}`,
     });
     pasosConversion.push({
       label: "Momento focal",
@@ -3161,12 +3161,12 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
             <Entrada value={tasaPct} onChange={(e) => setTasaPct(e.target.value)} disabled={tipoIncognita === "tasa"} />
           </Campo>
           {regimen !== "continuo" && (
-            <Campo label={regimen === "compuesto" ? "Periodo de los flujos (al que se convierte la tasa)" : "Cada cuánto de la tasa"}>
-              <Selector value={cada cuánto} onChange={(e) => setCada cuánto(e.target.value)} options={PERIODICIDADES.map((p) => ({ value: p.value, label: p.label }))} />
+            <Campo label={regimen === "compuesto" ? "Periodo de los flujos (al que se convierte la tasa)" : "Periodicidad de la tasa"}>
+              <Selector value={periodicidad} onChange={(e) => setPeriodicidad(e.target.value)} options={PERIODICIDADES.map((p) => ({ value: p.value, label: p.label }))} />
             </Campo>
           )}
-          {regimen !== "continuo" && cada cuánto === "personalizada" && (
-            <Campo label="¿Cada cuántos meses?">
+          {regimen !== "continuo" && periodicidad === "personalizada" && (
+            <Campo label="¿Periodicidads meses?">
               <Entrada value={nPersonalizado} onChange={(e) => setNPersonalizado(e.target.value)} placeholder="5" />
             </Campo>
           )}
@@ -3250,7 +3250,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
         </div>
         <Boton small variant="outline" onClick={agregarFlujo} style={{ marginTop: 12 }}><Plus size={14} /> Agregar flujo</Boton>
         <div style={{ marginTop: 10, fontSize: 12, color: C.slate, lineHeight: 1.55 }}>
-          Ingresa el momento de cada flujo en años y meses; la herramienta lo convierte automáticamente {regimen === "continuo" ? "a t en años decimales" : "a n, el número de períodos según la cada cuánto elegida arriba"}.<br />
+          Ingresa el momento de cada flujo en años y meses; la herramienta lo convierte automáticamente {regimen === "continuo" ? "a t en años decimales" : "a n, el número de períodos según la periodicidad elegida arriba"}.<br />
           <strong>Coeficientes:</strong> si un enunciado dice “el segundo desembolso fue 1,4 veces el primero”, marca ambos montos como desconocidos y usa coeficientes 1 y 1,4. La herramienta resolverá una sola X y aplicará cada coeficiente.
         </div>
 
@@ -3356,7 +3356,7 @@ function EditorTasa({ titulo, valor, onChange, conValor = true, opcionesPeriodo 
         <Selector value={valor.periodo} onChange={set("periodo")} options={opcionesPeriodo} />
         {valor.periodo === "personalizado_meses" && (
           <div style={{ marginTop: 8 }}>
-            <span style={{ fontSize: 12.5, color: C.slate }}>¿Cada cuántos meses?</span>
+            <span style={{ fontSize: 12.5, color: C.slate }}>¿Periodicidads meses?</span>
             <Entrada value={valor.meses} onChange={set("meses")} placeholder="5" />
           </div>
         )}
@@ -3592,7 +3592,7 @@ function SimuladorAnualidades({ moneda }) {
         <Campo label="Periodo de las cuotas">
           <Selector value={periodoCuotas} onChange={(e) => setPeriodoCuotas(e.target.value)} options={OPC_PERIODOS_CUOTAS} />
           {periodoCuotas === "personalizado_meses" && (
-            <div style={{ marginTop: 8 }}><span style={{ fontSize: 12.5, color: C.slate }}>¿Cada cuántos meses se paga una cuota?</span><Entrada value={mesesCuotas} onChange={(e) => setMesesCuotas(e.target.value)} placeholder="5" /></div>
+            <div style={{ marginTop: 8 }}><span style={{ fontSize: 12.5, color: C.slate }}>¿Periodicidads meses se paga una cuota?</span><Entrada value={mesesCuotas} onChange={(e) => setMesesCuotas(e.target.value)} placeholder="5" /></div>
           )}
         </Campo>
         <EditorTasa titulo="Tasa ingresada" valor={tasaIn} onChange={setTasaIn} />
@@ -3815,13 +3815,13 @@ const INTERACCIONES_DATA = [
     prompt: `Estoy construyendo una página que cumpla con los requerimientos del documento que te acabo de enviar, pero necesito que me hagas un prompt para poder subirlo a la aplicación y poder cumplir con todo lo que el documento dice que el trabajo debe tener.`,
     respuesta: `La IA revisó el documento completo del proyecto y generó un prompt detallado para construir Numeris en Emergent. El prompt definió las tres secciones principales: Educación Financiera, Simulación/Cotización e Interacciones con IA.
 
-También especificó las principales capacidades financieras requeridas: interés simple, compuesto y continuo; selección entre crédito e inversión; COP, USD y EUR; cálculo de VP, VF, tasa y tiempo; múltiples flujos de dinero; coeficientes; momento de un flujo desconocido; cada cuántoes configurables; conversión del tiempo a períodos; ganancia neta; ecuaciones de valor; procedimientos paso a paso; formato numérico colombiano y requisitos técnicos.
+También especificó las principales capacidades financieras requeridas: interés simple, compuesto y continuo; selección entre crédito e inversión; COP, USD y EUR; cálculo de VP, VF, tasa y tiempo; múltiples flujos de dinero; coeficientes; momento de un flujo desconocido; periodicidades configurables; conversión del tiempo a períodos; ganancia neta; ecuaciones de valor; procedimientos paso a paso; formato numérico colombiano y requisitos técnicos.
 
 La IA señaló además que Numeris no debía limitarse a una calculadora básica y debía poder resolver ejercicios similares a los trabajados durante el primer corte.`,
-    problema: `Al probar en Emergent la primera versión construida a partir de este prompt, identificamos que la cada cuánto de la tasa no era suficientemente clara; no se distinguían adecuadamente n y t; la interfaz de interés continuo se parecía demasiado a la de simple y compuesto; y las explicaciones de los ejercicios eran demasiado básicas.`,
-    correccion: `Se envió un video de la primera versión de Numeris a la IA para que analizara visualmente la herramienta y se utilizó un nuevo prompt especificando los problemas detectados. A partir de esa revisión se reforzó la diferenciación entre los tres regímenes, el manejo de las cada cuántoes, las variables utilizadas y la explicación paso a paso de los ejercicios.`,
-    resultado: `Numeris pasó a diferenciar de manera mucho más clara los tres regímenes de interés y a explicar cómo se relacionan la tasa, el tiempo y los períodos. En interés simple y compuesto utiliza i y n, mientras que en interés continuo utiliza r y t, expresando siempre t en años. También se mejoró la selección de cada cuántoes y se incorporó una explicación más completa de los procedimientos.`,
-    trazabilidad: `En Simulación, al seleccionar interés continuo, las variables disponibles cambian automáticamente: el tiempo se expresa mediante t y la tasa continua mediante r. En interés simple y compuesto se utilizan i y n. También es posible seleccionar claramente la cada cuánto y, después de calcular, aparece el botón “Ver procedimiento completo”. En interés continuo, el procedimiento aclara que t siempre se expresa en años.`,
+    problema: `Al probar en Emergent la primera versión construida a partir de este prompt, identificamos que la periodicidad de la tasa no era suficientemente clara; no se distinguían adecuadamente n y t; la interfaz de interés continuo se parecía demasiado a la de simple y compuesto; y las explicaciones de los ejercicios eran demasiado básicas.`,
+    correccion: `Se envió un video de la primera versión de Numeris a la IA para que analizara visualmente la herramienta y se utilizó un nuevo prompt especificando los problemas detectados. A partir de esa revisión se reforzó la diferenciación entre los tres regímenes, el manejo de las periodicidades, las variables utilizadas y la explicación paso a paso de los ejercicios.`,
+    resultado: `Numeris pasó a diferenciar de manera mucho más clara los tres regímenes de interés y a explicar cómo se relacionan la tasa, el tiempo y los períodos. En interés simple y compuesto utiliza i y n, mientras que en interés continuo utiliza r y t, expresando siempre t en años. También se mejoró la selección de periodicidades y se incorporó una explicación más completa de los procedimientos.`,
+    trazabilidad: `En Simulación, al seleccionar interés continuo, las variables disponibles cambian automáticamente: el tiempo se expresa mediante t y la tasa continua mediante r. En interés simple y compuesto se utilizan i y n. También es posible seleccionar claramente la periodicidad y, después de calcular, aparece el botón “Ver procedimiento completo”. En interés continuo, el procedimiento aclara que t siempre se expresa en años.`,
     link: "https://chatgpt.com/share/e/6a91ed48-54c0-8012-a31d-ad9105eb4d9b",
   },
   {
