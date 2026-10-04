@@ -1083,7 +1083,7 @@ function AnualidadesVencidas() {
   return (
     <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
-      <NivelCinco titulo="🧸 Nivel 7 años">
+      <NivelCinco titulo="🧸 Nivel 5 años">
         {`Imagina que quieres una bicicleta que cuesta mucha plata y no tienes toda hoy.
 Tu mamá te dice: "Te la compro hoy y tú me la vas pagando: cada mes me das la misma cantidad de plata".
 
