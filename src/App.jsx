@@ -4033,7 +4033,7 @@ Esto permite que el usuario entienda por qué puede aparecer una pequeña difere
 También se refleja en Simulación > Anualidades > Ver procedimiento completo, donde aparece la aclaración sobre la precisión de la tasa y el uso de decimales internos.
 
 Además, la respuesta principal de anualidades ahora se presenta con 4 decimales.`,
-    link: "PEGA_AQUI_EL_LINK",
+    link: "https://chatgpt.com/share/6ac2fbeb-8358-83e9-8321-4264610c170d",
   },
 ];
 
