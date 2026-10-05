@@ -3904,10 +3904,7 @@ El error se evidenció con una inversión al 3 % bimestral: $4.000.000 hoy, un s
     trazabilidad: `Después de realizar un cálculo en Simulación aparece una tarjeta de “Verificación matemática”. Cuando corresponde, esta sección muestra el error residual de la operación y explica que una pequeña diferencia puede ser consecuencia de la precisión numérica utilizada internamente por el sistema.`,
     link: "https://chatgpt.com/share/e/6a91ed48-54c0-8012-a31d-ad9105eb4d9b",
   },
-/* ============================================================
-   SIMULAR — CALCULADORA DE TASAS Y SIMULADOR DE ANUALIDADES
-   Reutilizan el mismo motor de conversión (convertirTasa).
-   ============================================================ */
+
    {
     n: 6,
     titulo: "Diagnóstico de Numeris para el segundo corte",
@@ -4074,10 +4071,12 @@ function Interacciones() {
   return (
     <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
       <Etiqueta>Interacciones</Etiqueta>
-      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 30, color: C.navy, margin: "0 0 10px" }}>Interacciones</h1>
-      <p style={{ fontSize: 13.5, color: C.slate, marginBottom: 24, maxWidth: 760 }}>
-        Documentamos aquí cinco interacciones reales con inteligencia artificial durante el desarrollo de Numeris. Cada registro muestra la instrucción utilizada, la respuesta inicial, el problema detectado, la corrección aplicada, el resultado final, la parte visible de la herramienta relacionada y el enlace de evidencia. La interacción 5 documenta específicamente un error numérico detectado y corregido.
-      </p>
+<h1 style={{ fontFamily: F_DISPLAY, fontSize: 30, color: C.navy, margin: "0 0 10px" }}>
+  Interacciones · segundo corte
+</h1>
+<p style={{ fontSize: 13.5, color: C.slate, marginBottom: 24, maxWidth: 760 }}>
+  Desde la interacción 6 se documentan las interacciones correspondientes al segundo corte. Estas muestran cómo se revisó y mejoró Numeris a partir de la rúbrica, especialmente en conversión de tasas, anualidades vencidas, anualidades anticipadas, claridad conceptual, funcionamiento del simulador y corrección de errores detectados durante el desarrollo.
+</p>
 
       {INTERACCIONES_DATA.map((item) => (
         <TarjetaInteraccion key={item.n} item={item} />
