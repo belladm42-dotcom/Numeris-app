@@ -3499,10 +3499,13 @@ function SimuladorAnualidades({ moneda }) {
       const r = calcularAnualidad({ modalidadAnualidad: modalidad, tipoCalculo, A: a, VP: vp, VF: vf, n, i, pagosExtra, baseObjetivo: baseObj });
 
       const m = (x) => formatCurrencyCO(x, moneda);
+      const m4 = (x) => formatCurrencyCO(x, moneda, 4);
       const f6 = (x) => formatNumberCO(x, 6, 6);
       const perTxt = nombrePeriodoTasa(periodoCuotas, mesesCuotas);
       const etiquetaRes = tipoCalculo === "extra_desconocido" ? "X" : r.etiqueta;
-      const iTxt = formatNumberCO(i, 6, 6);
+      const iTxt = formatNumberCO(i, 8, 12);
+      const tasaLectura = formatPercentCO(i, 4);
+      const tasaExacta = formatPercentCO(i, 8);
       const nTxtFormula = formatNumberCO(n, 0, 0);
       const potenciaN = `(1 + ${iTxt})^${nTxtFormula}`;
       const factorVPTexto = modalidad === "anticipada"
@@ -3561,11 +3564,12 @@ function SimuladorAnualidades({ moneda }) {
         { label: "2. Qué se calcula", content: r.etiqueta },
         { label: "3. Tasa ingresada", content: descripcionTasa({ tasaPct: t, tipo: tasaIn.tipo, modalidad: tasaIn.modalidad, periodo: tasaIn.periodo, meses: tasaIn.meses }) },
         ...conv.pasos.slice(1).map((p, k) => ({ label: `4.${k + 1} Conversión — ${p.label}`, content: p.content })),
-        { label: "5. Tasa efectiva vencida final usada (i)", content: `i = ${formatPercentCO(i, 4)} efectiva ${perTxt} vencida (periodo de las cuotas)` },
+        { label: "5. Tasa efectiva vencida final usada (i)", content: `i = ${tasaExacta} efectiva ${perTxt} vencida (periodo de las cuotas).` },
+        { label: "5.1 Precisión del cálculo", content: `Para facilitar la lectura, la tasa puede verse redondeada como ${tasaLectura}. Sin embargo, Numeris calcula con la tasa completa: ${tasaExacta}. Por eso, si se repite el cálculo manualmente con la tasa redondeada, puede aparecer una pequeña diferencia numérica.` },
         { label: "Datos", content: `n = ${n} cuotas (${perTxt})${Number.isFinite(a) && muestraA ? ` · A = ${m(a)}` : ""}${muestraVP ? ` · VP = ${m(vp)}` : ""}${muestraVF ? ` · VF = ${m(vf)}` : ""}` },
         { label: "6. Fórmula usada", content: formulaVisible },
         { label: "7. Sustitución", content: sust },
-        { label: "8. Resultado", content: `${etiquetaRes} = ${m(r.valor)}` },
+        { label: "8. Resultado", content: `${etiquetaRes} = ${m4(r.valor)}` },
       ];
       r.trasl.forEach((e, k) => pasos.push({
         label: `10.${k + 1} Pago adicional ${k + 1} (${e.direccion})`,
@@ -3638,8 +3642,13 @@ function SimuladorAnualidades({ moneda }) {
           <Tarjeta>
             <div style={{ fontSize: 13, color: C.slate, marginBottom: 4 }}>Anualidad {modalidad} · interés compuesto</div>
             <Etiqueta>{res.r.etiqueta}</Etiqueta>
-            <div style={{ fontFamily: F_MONO, fontSize: 30, color: C.navy, fontWeight: 700, marginBottom: 6 }}>{formatCurrencyCO(res.r.valor, moneda)}</div>
-            <div style={{ fontSize: 13.5, color: C.ink, marginBottom: 8 }}>Tasa efectiva vencida usada: <strong>{formatPercentCO(res.i, 4)}</strong> por periodo de cuota.</div>
+            <div style={{ fontFamily: F_MONO, fontSize: 30, color: C.navy, fontWeight: 700, marginBottom: 6 }}>{formatCurrencyCO(res.r.valor, moneda, 4)}</div>
+            <div style={{ fontSize: 13.5, color: C.ink, marginBottom: 8 }}>
+              Tasa efectiva vencida usada: <strong>{formatPercentCO(res.i, 8)}</strong> por periodo de cuota.
+              <div style={{ fontSize: 12, color: C.slate, marginTop: 4 }}>
+                Para lectura puede verse redondeada como {formatPercentCO(res.i, 4)}, pero el cálculo usa la tasa completa.
+              </div>
+            </div>
             <div style={{ marginTop: 8, padding: 13, background: C.successBg, borderRadius: 8, color: C.navy, fontSize: 13.5 }}><strong>Interpretación:</strong> {res.interp}</div>
             <Verificacion ok={ok} residual={res.r.residual} />
             <Acordeon title="Ver procedimiento completo" defaultOpen><FichaProcedimiento pasos={res.pasos} /></Acordeon>
