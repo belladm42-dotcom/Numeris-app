@@ -3963,6 +3963,78 @@ Además, el campo decía “Meses (0–11)”, lo que obligaba al usuario a conv
     trazabilidad: `Esta interacción se refleja en Simulación, específicamente en el campo de tiempo del simulador básico. El campo de meses ahora puede aceptar valores como 12, 24 o 36 meses. Se refleja en el procedimiento paso a paso, porque Numeris puede mostrar la conversión del tiempo total a periodos. Por ejemplo: 0 años y 36 meses = 36 meses = 3 años y 0 meses.`,
     link: "https://claude.ai/share/430c6dc8-6cbf-408f-96d3-e30d3c66ca2a",
   }
+    {
+    n: 10,
+    titulo: "Error numérico detectado: tasa redondeada en anualidades",
+    esError: true,
+    prompt: `Estoy revisando la sección de anualidades de Numeris.
+
+En el simulador de anualidades, la herramienta convierte automáticamente la tasa ingresada al periodo correcto de las cuotas. Sin embargo, veo que en el procedimiento visible la tasa aparece redondeada, mientras que el cálculo interno puede estar usando más decimales.
+
+Quiero revisar si esto puede generar una diferencia numérica en el resultado cuando el usuario intenta repetir el cálculo con la tasa que ve en pantalla.
+
+Usa este caso:
+
+Modalidad: anualidad anticipada
+Tipo de cálculo: cuota desde VF
+VF = COP 150.000.000
+n = 36 pagos trimestrales
+Tasa = 30 % NAMA
+
+En la pantalla aparece que la tasa es 7.8912%
+
+Calcula:
+1. La cuota usando la tasa redondeada.
+2. La cuota usando la tasa exacta.
+3. La diferencia entre ambos resultados.
+4. Explica por qué esto puede ser un error de comunicación en la herramienta.
+5. Propón cómo corregirlo en Numeris.`,
+    respuesta: `La IA revisó el caso y confirmó que sí podía aparecer una diferencia numérica, aunque pequeña, entre calcular con la tasa redondeada visible y calcular con la tasa exacta utilizada internamente.
+
+Primero explicó que la tasa 30 % NAMA se convierte así:
+
+30 % / 12 = 2,5 % mensual anticipada.
+
+Luego se pasa de anticipada a vencida:
+
+i = 0,025 / (1 − 0,025)
+i = 0,0256410256 mensual vencida.
+
+Después se convierte a tasa efectiva trimestral vencida:
+
+i = (1 + 0,0256410256)^3 − 1
+i = 0,0789123215.
+
+La IA explicó que Numeris podía mostrar esa tasa como 7,8912 %, pero internamente podía calcular con más decimales.`,
+    problema: `El cálculo interno de Numeris podía estar correcto, pero el procedimiento visible podía inducir a una diferencia numérica.
+
+El problema estaba en que el usuario veía una tasa redondeada en pantalla y podía copiar exactamente ese valor para repetir el cálculo manualmente. Sin embargo, Numeris podía estar usando una tasa con más decimales para calcular.
+
+Esto podía hacer que el usuario pensara que la herramienta estaba calculando mal, cuando en realidad el problema era de comunicación numérica: la tasa mostrada para lectura no tenía la misma precisión que la tasa usada internamente en el cálculo.`,
+    valorIncorrecto: "A = COP 761.923,43 usando la tasa redondeada visible i = 0,078912",
+    valorCorrecto: "A = COP 761.917,56 usando la tasa exacta interna i = 0,0789123215",
+    razonError: `La diferencia aparece porque la fórmula de anualidad anticipada desde VF usa la tasa dentro de una potencia:
+
+A = VF × [ i / ((1 + i)^n − 1) ] / (1 + i)
+
+Como la tasa aparece en (1 + i)^n, incluso un redondeo pequeño puede generar una diferencia en el resultado final. En este caso, la diferencia fue de aproximadamente COP 5,86 por cuota.
+
+El error no estaba en la fórmula financiera, sino en mostrar una tasa redondeada sin aclarar que el cálculo interno usaba más decimales.`,
+    correccion: `Se corrigió la sección de anualidades para diferenciar entre la tasa redondeada para lectura y la tasa exacta usada en el cálculo.
+
+La mejora implementada fue mostrar con más precisión la tasa efectiva vencida usada y agregar una aclaración indicando que Numeris calcula con la tasa completa, aunque algunos valores visibles puedan aparecer redondeados para facilitar la lectura.
+
+Además, se ajustó la respuesta principal de anualidades para que se muestre con 4 decimales, aumentando la precisión visible del resultado.`,
+    resultado: `Numeris ahora comunica mejor la tasa utilizada en las anualidades. La herramienta conserva el cálculo con todos los decimales internos, pero deja claro que la tasa visible puede estar redondeada para lectura.
+
+Esto permite que el usuario entienda por qué puede aparecer una pequeña diferencia si repite manualmente el procedimiento usando solo la tasa redondeada que ve en pantalla.`,
+    trazabilidad: `Esta interacción se refleja en Simulación > Anualidades > Resultado, donde se muestra la tasa efectiva vencida usada con mayor precisión.
+
+También se refleja en Simulación > Anualidades > Ver procedimiento completo, donde aparece la aclaración sobre la precisión de la tasa y el uso de decimales internos.
+
+Además, la respuesta principal de anualidades ahora se presenta con 4 decimales.`,
+    link: "https://chatgpt.com/share/6ac2fbeb-8358-83e9-8321-4264610c170d",
+  },
 ];
 
 function BloqueInteraccion({ label, children }) {
