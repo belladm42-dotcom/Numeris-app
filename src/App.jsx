@@ -3904,7 +3904,10 @@ El error se evidenció con una inversión al 3 % bimestral: $4.000.000 hoy, un s
     trazabilidad: `Después de realizar un cálculo en Simulación aparece una tarjeta de “Verificación matemática”. Cuando corresponde, esta sección muestra el error residual de la operación y explica que una pequeña diferencia puede ser consecuencia de la precisión numérica utilizada internamente por el sistema.`,
     link: "https://chatgpt.com/share/e/6a91ed48-54c0-8012-a31d-ad9105eb4d9b",
   },
-
+/* ============================================================
+   SIMULAR — CALCULADORA DE TASAS Y SIMULADOR DE ANUALIDADES
+   Reutilizan el mismo motor de conversión (convertirTasa).
+   ============================================================ */
    {
     n: 6,
     titulo: "Diagnóstico de Numeris para el segundo corte",
