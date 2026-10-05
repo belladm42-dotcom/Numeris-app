@@ -3952,7 +3952,7 @@ Además, el campo decía “Meses (0–11)”, lo que obligaba al usuario a conv
     correccion: `La IA indicó que debía eliminarse la validación que bloqueaba meses mayores o iguales a 12. Antes, el código mostraba un error cuando el usuario escribía 12 meses o más. Recomendó cambiar el texto del campo de entrada de “Meses (0–11)” a simplemente “Meses”, para que el usuario entendiera que podía escribir cualquier cantidad de meses. Como mejora adicional, sugirió que el procedimiento mostrara la equivalencia. Por ejemplo, si el usuario escribe 0 años y 36 meses, el procedimiento puede mostrar que eso equivale a 36 meses, es decir, 3 años y 0 meses.`,
     resultado: `Después de la corrección, el simulador puede aceptar meses mayores a 11. Por ejemplo, el usuario puede escribir 0 años y 36 meses, y Numeris los interpreta correctamente como 36 meses o 3 años, dependiendo del tipo de cálculo.`,
     trazabilidad: `Esta interacción se refleja en Simulación, específicamente en el campo de tiempo del simulador básico. El campo de meses ahora puede aceptar valores como 12, 24 o 36 meses. Se refleja en el procedimiento paso a paso, porque Numeris puede mostrar la conversión del tiempo total a periodos. Por ejemplo: 0 años y 36 meses = 36 meses = 3 años y 0 meses.`,
-    link: "https://chatgpt.com/share/6ac29da2-c960-83e9-8f61-55e943f3151f",
+    link: "https://claude.ai/share/430c6dc8-6cbf-408f-96d3-e30d3c66ca2a",
   }
 ];
 
