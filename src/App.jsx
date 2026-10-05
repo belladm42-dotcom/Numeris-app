@@ -3962,7 +3962,7 @@ Además, el campo decía “Meses (0–11)”, lo que obligaba al usuario a conv
     resultado: `Después de la corrección, el simulador puede aceptar meses mayores a 11. Por ejemplo, el usuario puede escribir 0 años y 36 meses, y Numeris los interpreta correctamente como 36 meses o 3 años, dependiendo del tipo de cálculo.`,
     trazabilidad: `Esta interacción se refleja en Simulación, específicamente en el campo de tiempo del simulador básico. El campo de meses ahora puede aceptar valores como 12, 24 o 36 meses. Se refleja en el procedimiento paso a paso, porque Numeris puede mostrar la conversión del tiempo total a periodos. Por ejemplo: 0 años y 36 meses = 36 meses = 3 años y 0 meses.`,
     link: "https://claude.ai/share/430c6dc8-6cbf-408f-96d3-e30d3c66ca2a",
-  }
+  },
   {
     n: 10,
     titulo: "Error numérico detectado: tasa redondeada en anualidades",
