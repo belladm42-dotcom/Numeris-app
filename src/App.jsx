@@ -3365,7 +3365,7 @@ function EditorTasa({ titulo, valor, onChange, conValor = true, opcionesPeriodo 
   );
 }
 
-function CalculadoraTasas() {
+function CalculadoraTasas({ moneda, onGuardarHistorial }) {
   const [ent, setEnt] = useState({ tasa: "30", tipo: "nominal", modalidad: "anticipada", periodo: "mensual", meses: "5" });
   const [sal, setSal] = useState({ tipo: "efectiva", modalidad: "vencida", periodo: "mensual", meses: "5" });
   const [res, setRes] = useState(null);
@@ -3382,6 +3382,18 @@ function CalculadoraTasas() {
       });
       setRes({ ...r, entrada: descripcionTasa({ tasaPct: t, tipo: ent.tipo, modalidad: ent.modalidad, periodo: ent.periodo, meses: ent.meses }),
         salida: descripcionTasa({ tasaPct: r.resultadoPorcentaje, tipo: sal.tipo, modalidad: sal.modalidad, periodo: sal.periodo, meses: sal.meses }) });
+      if (onGuardarHistorial) {
+        onGuardarHistorial({
+          tipo: "tasas",
+          regimen: "conversión",
+          operacion: "conversión de tasas",
+          incognita: "tasa",
+          resultado: r.resultadoDecimal,
+          resultadoTipo: "tasa",
+          moneda,
+          fecha: new Date().toISOString(),
+        });
+      }
     } catch (e) { setError(e.message || "No fue posible convertir la tasa."); }
   }
   function ejemplo() {
@@ -3459,7 +3471,7 @@ function formulasAnualidad(mod, tipo) {
   return FORMULAS_ANUALIDADES[mod]?.[tipo] || "—";
 }
 
-function SimuladorAnualidades({ moneda }) {
+function SimuladorAnualidades({ moneda, onGuardarHistorial }) {
   const [modalidad, setModalidad] = useState("vencida");
   const [tipoCalculo, setTipoCalculo] = useState("A_desde_VP");
   const [baseObj, setBaseObj] = useState("VP");
@@ -3579,6 +3591,18 @@ function SimuladorAnualidades({ moneda }) {
       }));
       pasos.push({ label: "9. Interpretación", content: interp });
       setRes({ r, pasos, interp, i, etiquetaRes });
+      if (onGuardarHistorial) {
+        onGuardarHistorial({
+          tipo: "anualidad",
+          regimen: modalidad,
+          operacion: tipoCalculo,
+          incognita: etiquetaRes,
+          resultado: r.valor,
+          resultadoTipo: "moneda",
+          moneda,
+          fecha: new Date().toISOString(),
+        });
+      }
     } catch (e) { setError(e.message || "No fue posible calcular."); }
   }
 
@@ -3712,7 +3736,7 @@ function Simular({ moneda }) {
             <div style={{ display: "grid", gap: 8 }}>
               {historial.map((h) => (
                 <div key={h.id} style={{ fontSize: 12.5, color: C.ink, borderBottom: `1px solid ${C.line}`, paddingBottom: 6 }}>
-                  <span style={{ color: C.slate }}>{new Date(h.fecha).toLocaleString("es-CO")}</span> · {h.tipo === "avanzado" ? "Modo avanzado" : "Modo básico"} · {h.regimen} · <strong>{formatearResultadoHistorial(h)}</strong>
+                  <span style={{ color: C.slate }}>{new Date(h.fecha).toLocaleString("es-CO")}</span> · {h.tipo === "avanzado" ? "Modo avanzado" : h.tipo === "tasas" ? "Conversión de tasas" : h.tipo === "anualidad" ? "Anualidades" : "Modo básico"} · {h.regimen} · <strong>{formatearResultadoHistorial(h)}</strong>
                 </div>
               ))}
             </div>
@@ -3722,8 +3746,8 @@ function Simular({ moneda }) {
 
       {modo === "basico" && <SimularBasico moneda={moneda} onGuardarHistorial={guardar} />}
       {modo === "avanzado" && <SimularAvanzado moneda={moneda} onGuardarHistorial={guardar} />}
-      {modo === "tasas" && <CalculadoraTasas />}
-      {modo === "anualidades" && <SimuladorAnualidades moneda={moneda} />}
+      {modo === "tasas" && <CalculadoraTasas moneda={moneda} onGuardarHistorial={guardar} />}
+      {modo === "anualidades" && <SimuladorAnualidades moneda={moneda} onGuardarHistorial={guardar} />}
     </Section>
   );
 }
