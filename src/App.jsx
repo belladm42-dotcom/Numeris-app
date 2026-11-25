@@ -734,7 +734,7 @@ function Inicio({ ir }) {
       </div>
 
       <div style={{ marginTop: 30, fontSize: 11.5, color: C.slate, lineHeight: 1.7 }}>
-        Proyecto académico · Matemáticas Financieras · Segundo Corte 2026-2<br />
+        Proyecto académico · Matemáticas Financieras · Tercer Corte 2026-2<br />
         Desarrollado con asistencia de Replit Agent y herramientas de inteligencia artificial.
       </div>
     </Section>
@@ -5720,7 +5720,7 @@ export default function App() {
       {seccion === "interacciones" && <Interacciones />}
       <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 20 }}>
         <Section style={{ padding: "22px 20px", fontSize: 11.5, color: C.slate, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-          <span>Numeris · Proyecto académico · Matemáticas Financieras · Segundo Corte 2026-2</span>
+          <span>Numeris · Proyecto académico · Matemáticas Financieras · Tercer corte 2026-2</span>
           <span>Desarrollado con asistencia de Replit Agent, ChatGPT Business y Claude</span>
         </Section>
       </div>
