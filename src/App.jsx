@@ -5278,17 +5278,36 @@ function SimuladorGradientes({ moneda }) {
       const pagosExtra = extras.map((e, idx) => {
         const monto = parseNumCO(e.monto), momento = parseNumCO(e.momento);
         if (!(monto >= 0) || !Number.isFinite(momento) || momento < 0 || momento > n || !Number.isInteger(momento)) throw new Error(`Revisa el valor y el momento del pago adicional ${idx + 1}. El momento debe ser un periodo entero entre 0 y ${n}.`);
-        return { monto, momento, direccion: e.direccion, signo: e.direccion === "entrada" ? -1 : 1 };
+        return { id: e.id, monto, momento, direccion: e.direccion, signo: e.direccion === "entrada" ? -1 : 1, clase: "Pago único" };
       });
       if (usarAdicional) {
         const monto = parseNumCO(adicional.monto), cada = parseNumCO(adicional.cada), inicio = parseNumCO(adicional.inicio);
         if (!(monto >= 0) || !Number.isInteger(cada) || cada <= 0 || !Number.isInteger(inicio) || inicio < 1 || inicio > n) throw new Error("Revisa el valor adicional, cada cuántas cuotas se repite y su primer periodo.");
-        for (let t = inicio; t <= n; t += cada) pagosExtra.push({ monto, momento: t, direccion: "salida", signo: 1, constante: true });
+        for (let t = inicio; t <= n; t += cada) pagosExtra.push({ id: `adicional-${t}`, monto, momento: t, direccion: "salida", signo: 1, constante: true, clase: "Adicional constante" });
       }
-      const extrasDetalle = pagosExtra.map(e => ({ ...e, vp: e.signo * e.monto / Math.pow(1 + i, e.momento), vf: e.signo * e.monto * Math.pow(1 + i, n - e.momento) }));
+      const extrasDetalle = pagosExtra.map((e, idx) => ({
+        ...e,
+        id: e.id || `pago-extra-${idx + 1}`,
+        vp: e.signo * e.monto / Math.pow(1 + i, e.momento),
+        vf: e.signo * e.monto * Math.pow(1 + i, n - e.momento),
+      }));
       const vpCuotas = sumar(cuotas, "vp"), vfCuotas = sumar(cuotas, "vf");
       const vpExtras = sumar(extrasDetalle, "vp"), vfExtras = sumar(extrasDetalle, "vf");
       const vp = vpCuotas + vpExtras, vf = vfCuotas + vfExtras;
+      // Una sola tabla reúne las cuotas del gradiente y TODOS los pagos adicionales.
+      // Así, los totales visibles de la tabla coinciden con VP y VF del resultado.
+      const filasTabla = [
+        ...cuotas.map(x => ({
+          id: `cuota-${x.n}`, momento: x.n, concepto: "Cuota del gradiente",
+          valor: x.cuota, direccion: "salida", cambios: x.saltos,
+          vp: x.vp, vf: x.vf,
+        })),
+        ...extrasDetalle.map((x, idx) => ({
+          id: x.id || `extra-${idx}`, momento: x.momento,
+          concepto: x.clase || "Pago único", valor: x.monto,
+          direccion: x.direccion, cambios: "—", vp: x.vp, vf: x.vf,
+        })),
+      ].sort((x, y) => x.momento - y.momento || (x.concepto === "Cuota del gradiente" ? -1 : 1));
       const pasos = [
         { label: "1. Datos", content: `A₁ = ${formatMoneyLong(a, moneda)} · Gradiente ${tipo} = ${tipo === "aritmetico" ? formatMoneyLong(g, moneda) : formatPercentCO(g, 6)} · n = ${n} cuotas · Dirección: ${direccion}.` },
         ...agregarPasosConversion(conv),
@@ -5299,7 +5318,7 @@ function SimuladorGradientes({ moneda }) {
         { label: "6. Pagos adicionales", content: extrasDetalle.length ? extrasDetalle.map((e,k) => `Pago ${k+1}: ${e.signo < 0 ? "entrada" : "salida"} de ${formatMoneyLong(e.monto, moneda)} en el periodo ${e.momento}; VP = ${formatMoneyLong(e.vp, moneda)}; VF = ${formatMoneyLong(e.vf, moneda)}.`).join("\n") : "No se agregaron pagos únicos ni valores adicionales constantes." },
         { label: "7. Suma final", content: `VP = ${formatMoneyLong(vpCuotas, moneda)} ${vpExtras < 0 ? "−" : "+"} ${formatMoneyLong(Math.abs(vpExtras), moneda)} = ${formatMoneyLong(vp, moneda)}.\nVF = ${formatMoneyLong(vfCuotas, moneda)} ${vfExtras < 0 ? "−" : "+"} ${formatMoneyLong(Math.abs(vfExtras), moneda)} = ${formatMoneyLong(vf, moneda)}.` },
       ];
-      setRes({ cuotas, extras: extrasDetalle, vp, vf, vpCuotas, vfCuotas, vpExtras, vfExtras, i, iGrad, pasos, mc, mg, n });
+      setRes({ cuotas, extras: extrasDetalle, filasTabla, vp, vf, vpCuotas, vfCuotas, vpExtras, vfExtras, i, iGrad, pasos, mc, mg, n });
     } catch (e) { setError(e.message || "No fue posible realizar el cálculo."); }
   }
   return <div style={{ display:"grid", gridTemplateColumns:"minmax(290px,1fr) minmax(340px,1.25fr)", gap:20, alignItems:"start" }}>
@@ -5350,8 +5369,22 @@ function SimuladorGradientes({ moneda }) {
           <Acordeon title="Ver procedimiento completo"><FichaProcedimiento pasos={res.pasos}/></Acordeon>
         </Tarjeta>
         <Tarjeta>
-          <Etiqueta>Detalle de las cuotas</Etiqueta>
-          <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:520}}><thead><tr>{["n","Cuota","Cambios del gradiente","VP de la cuota","VF de la cuota"].map(h=><th key={h} style={{textAlign:"right",padding:8,borderBottom:`2px solid ${C.line}`,color:C.navy}}>{h}</th>)}</tr></thead><tbody>{res.cuotas.map(x=><tr key={x.n}><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{x.n}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{formatMoneyLong(x.cuota,moneda)}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{x.saltos}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{formatMoneyLong(x.vp,moneda)}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{formatMoneyLong(x.vf,moneda)}</td></tr>)}</tbody><tfoot><tr><th colSpan="3" style={{textAlign:"right",padding:8}}>Total cuotas</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vpCuotas,moneda)}</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vfCuotas,moneda)}</th></tr></tfoot></table></div>
+          <Etiqueta>Detalle de cuotas y pagos adicionales</Etiqueta>
+          <div style={{fontSize:12,color:C.slate,marginBottom:10}}>Esta tabla incluye las cuotas del gradiente, los pagos únicos y los valores constantes repetidos. Los valores de VP y VF ya tienen en cuenta si cada flujo es una entrada o una salida.</div>
+          <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:680}}>
+            <thead><tr>{["Periodo","Concepto","Valor","Dirección","Cambios del gradiente","VP trasladado","VF trasladado"].map(h=><th key={h} style={{textAlign:"right",padding:8,borderBottom:`2px solid ${C.line}`,color:C.navy,whiteSpace:"nowrap"}}>{h}</th>)}</tr></thead>
+            <tbody>{res.filasTabla.map(x=><tr key={x.id} style={{background:x.concepto==="Cuota del gradiente"?"transparent":C.paperDark}}>
+              <td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{x.momento}</td>
+              <td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"left",whiteSpace:"nowrap"}}>{x.concepto}</td>
+              <td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right",whiteSpace:"nowrap"}}>{formatMoneyLong(x.valor,moneda)}</td>
+              <td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{x.direccion}</td>
+              <td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{x.cambios}</td>
+              <td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right",whiteSpace:"nowrap"}}>{formatMoneyLong(x.vp,moneda)}</td>
+              <td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right",whiteSpace:"nowrap"}}>{formatMoneyLong(x.vf,moneda)}</td>
+            </tr>)}</tbody>
+            <tfoot><tr style={{background:C.successBg}}><th colSpan="5" style={{textAlign:"right",padding:9}}>TOTAL GENERAL (cuotas + adicionales)</th><th style={{textAlign:"right",padding:9,whiteSpace:"nowrap"}}>{formatMoneyLong(res.vp,moneda)}</th><th style={{textAlign:"right",padding:9,whiteSpace:"nowrap"}}>{formatMoneyLong(res.vf,moneda)}</th></tr></tfoot>
+          </table></div>
+          <div style={{fontSize:11.5,color:C.slate,marginTop:8}}>El total general de esta tabla debe coincidir con el VP y el VF que aparecen arriba.</div>
         </Tarjeta>
       </>}
     </div>
@@ -5370,6 +5403,8 @@ function SimuladorPerpetuidades({ moneda }) {
   const [tasaIn,setTasaIn]=useState({tasa:"11.35",tipo:"efectiva",modalidad:"vencida",periodo:"anual",meses:"5"});
   const [res,setRes]=useState(null);
   const [error,setError]=useState("");
+  const [paginaTabla,setPaginaTabla]=useState(0);
+  const filasPorPagina=50;
   function calcular(){
     setError("");setRes(null);
     try{
@@ -5410,8 +5445,24 @@ function SimuladorPerpetuidades({ moneda }) {
         formula=ciclo===1?"VP = A/(i−g)":"VP = VP del primer bloque/[1−(1+g)^d×q]";
         desarrollo=`El patrón de cuotas se repite cada ${ciclo} pagos y el gradiente avanza ${saltosPorCiclo} veces por ciclo.\nTasa efectiva del periodo del gradiente = (1+i)^(${formatNumberCO(mg/mc,8,8)})−1 = ${formatPercentCO(iGrad,8)}; debe ser mayor que g.\nq = 1/(1+i)^${ciclo} = ${formatNumberCO(q,12,12)}; factor de crecimiento del ciclo = (1+g)^${saltosPorCiclo}.\nVP del primer bloque = ${formatNumberCO(valorBloque,12,8)}. VP = VP del primer bloque/[1−(1+g)^d×q] = ${formatMoneyLong(vp,moneda)}.`;
       }
-      const pasos=[{label:"1. Datos",content:`A = ${formatMoneyLong(a,moneda)} · Tipo: ${tipo} · Periodicidad de cuota: ${mc} meses.${tipo!=="constante"?` Gradiente: ${formatNumberCO(g,8,10)} ${tipo==="aritmetico"?moneda:"(decimal)"}; intervalo: ${mg} meses.`:""}`},...agregarPasosConversion(conv),{label:"2. Tasa del cálculo",content:`i = ${formatPercentCO(i,10)} efectiva vencida del periodo de las cuotas.`},{label:"3. Fórmula",content:formula},{label:"4. Procedimiento",content:desarrollo},{label:"5. Resultado",content:`VP = ${formatMoneyLong(vp,moneda)}. La perpetuidad solo tiene valor presente; no se calcula valor futuro.`}];
-      setRes({vp,i,iGrad,formula,pasos,m:ciclo,bloque,q});
+      // La hoja de Excel de clase construye cada flujo, lo descuenta y suma la columna VP:
+      // 1.000 pagos para perpetuidad constante, 5.000 para gradiente aritmético
+      // y 15.000 para gradiente geométrico. Se replica esa tabla de flujos.
+      const numeroFilas = tipo === "constante" ? 1000 : tipo === "aritmetico" ? 5000 : 15000;
+      const tablaFlujos = [];
+      let vpAcumulado = 0;
+      for(let t=1;t<=numeroFilas;t++){
+        const saltos = tipo === "constante" ? 0 : Math.floor((((t-1)*mc)+1e-10)/mg);
+        const cuota = tipo === "constante" ? a : tipo === "aritmetico" ? a + saltos*g : a*Math.pow(1+g,saltos);
+        const factorDescuento = Math.pow(1+i,-t);
+        const vpFlujo = cuota*factorDescuento;
+        vpAcumulado += vpFlujo;
+        tablaFlujos.push({n:t,cuota,saltos,factorDescuento,vpFlujo,vpAcumulado});
+      }
+      const diferenciaTabla = vp - vpAcumulado;
+      const pasos=[{label:"1. Datos",content:`A = ${formatMoneyLong(a,moneda)} · Tipo: ${tipo} · Periodicidad de cuota: ${mc} meses.${tipo!=="constante"?` Gradiente: ${formatNumberCO(g,8,10)} ${tipo==="aritmetico"?moneda:"(decimal)"}; intervalo: ${mg} meses.`:""}`},...agregarPasosConversion(conv),{label:"2. Tasa del cálculo",content:`i = ${formatPercentCO(i,10)} efectiva vencida del periodo de las cuotas.`},{label:"3. Fórmula",content:formula},{label:"4. Procedimiento",content:desarrollo},{label:"5. Comprobación con flujos individuales",content:`Se construyeron ${formatNumberCO(numeroFilas,0,0)} pagos, se calculó el VP de cada uno y se sumaron como en el Excel de clase. Suma de la tabla = ${formatMoneyLong(vpAcumulado,moneda)}. Valor presente de la fórmula = ${formatMoneyLong(vp,moneda)}. Diferencia por truncar la serie en ${formatNumberCO(numeroFilas,0,0)} pagos = ${formatMoneyLong(diferenciaTabla,moneda)}.`},{label:"6. Resultado",content:`VP = ${formatMoneyLong(vp,moneda)}. La perpetuidad solo tiene valor presente; no se calcula valor futuro.`}];
+      setPaginaTabla(0);
+      setRes({vp,i,iGrad,formula,pasos,m:ciclo,bloque,q,tablaFlujos,vpAcumulado,numeroFilas,diferenciaTabla});
     }catch(e){setError(e.message||"No fue posible calcular la perpetuidad.");}
   }
   return <div style={{display:"grid",gridTemplateColumns:"minmax(290px,1fr) minmax(320px,1fr)",gap:20,alignItems:"start"}}>
@@ -5430,14 +5481,40 @@ function SimuladorPerpetuidades({ moneda }) {
     </Tarjeta>
     <div>
       {!res&&<Tarjeta style={{padding:30,textAlign:"center",color:C.slate}}>Completa los datos para conocer cuánto vale hoy esta perpetuidad.</Tarjeta>}
-      {res&&<Tarjeta>
-        <Etiqueta>Valor presente de la perpetuidad</Etiqueta>
-        <div style={{fontFamily:F_MONO,fontSize:28,fontWeight:700,color:C.navy}}>{formatMoneyLong(res.vp,moneda)}</div>
-        <div style={{fontSize:12.5,color:C.slate,marginTop:6}}>Tasa efectiva vencida por cuota: {formatPercentCO(res.i,8)}</div>
-        {tipo!=="constante"&&<div style={{fontSize:12.5,color:C.slate}}>Tasa efectiva del intervalo del gradiente: {formatPercentCO(res.iGrad,8)}</div>}
-        <div style={{marginTop:10,padding:12,background:C.successBg,borderRadius:8,fontSize:13,color:C.navy}}>Este resultado es el valor de hoy. La perpetuidad no tiene valor futuro.</div>
-        <Acordeon title="Ver procedimiento completo"><FichaProcedimiento pasos={res.pasos}/></Acordeon>
-      </Tarjeta>}
+      {res&&<>
+        <Tarjeta style={{marginBottom:12}}>
+          <Etiqueta>Valor presente de la perpetuidad</Etiqueta>
+          <div style={{fontFamily:F_MONO,fontSize:28,fontWeight:700,color:C.navy}}>{formatMoneyLong(res.vp,moneda)}</div>
+          <div style={{fontSize:12.5,color:C.slate,marginTop:6}}>Tasa efectiva vencida por cuota: {formatPercentCO(res.i,8)}</div>
+          {tipo!=="constante"&&<div style={{fontSize:12.5,color:C.slate}}>Tasa efectiva del intervalo del gradiente: {formatPercentCO(res.iGrad,8)}</div>}
+          <div style={{marginTop:10,padding:12,background:C.successBg,borderRadius:8,fontSize:13,color:C.navy}}>Este resultado es el valor de hoy. La perpetuidad no tiene valor futuro.</div>
+          <Acordeon title="Ver procedimiento completo"><FichaProcedimiento pasos={res.pasos}/></Acordeon>
+        </Tarjeta>
+        <Tarjeta>
+          <Etiqueta>Tabla de flujos de la perpetuidad</Etiqueta>
+          <div style={{fontSize:12,color:C.slate,lineHeight:1.5,marginBottom:10}}>Como la perpetuidad tiene infinitos pagos, la tabla desarrolla la cantidad de periodos usada en el Excel de clase: {formatNumberCO(res.numeroFilas,0,0)} pagos. Cada cuota se descuenta individualmente y se acumula en la columna VP.</div>
+          <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11.5,minWidth:600}}>
+            <thead><tr>{["n","Cuota (Aₙ)","Ajustes del gradiente","Factor de descuento","VP del flujo","VP acumulado"].map(h=><th key={h} style={{padding:8,textAlign:"right",whiteSpace:"nowrap",background:C.navy,color:C.white,position:"sticky",top:0}}>{h}</th>)}</tr></thead>
+            <tbody>{res.tablaFlujos.slice(paginaTabla*filasPorPagina,(paginaTabla+1)*filasPorPagina).map(x=><tr key={x.n}>
+              <td style={{padding:7,textAlign:"right",borderBottom:`1px solid ${C.line}`}}>{x.n}</td>
+              <td style={{padding:7,textAlign:"right",borderBottom:`1px solid ${C.line}`,whiteSpace:"nowrap"}}>{formatMoneyLong(x.cuota,moneda)}</td>
+              <td style={{padding:7,textAlign:"right",borderBottom:`1px solid ${C.line}`}}>{x.saltos}</td>
+              <td style={{padding:7,textAlign:"right",borderBottom:`1px solid ${C.line}`}}>{formatNumberCO(x.factorDescuento,10,12)}</td>
+              <td style={{padding:7,textAlign:"right",borderBottom:`1px solid ${C.line}`,whiteSpace:"nowrap"}}>{formatMoneyLong(x.vpFlujo,moneda)}</td>
+              <td style={{padding:7,textAlign:"right",borderBottom:`1px solid ${C.line}`,whiteSpace:"nowrap"}}>{formatMoneyLong(x.vpAcumulado,moneda)}</td>
+            </tr>)}</tbody>
+            <tfoot><tr style={{background:C.successBg}}><th colSpan="4" style={{padding:9,textAlign:"right"}}>Suma de VP de los {formatNumberCO(res.numeroFilas,0,0)} pagos mostrados en la tabla</th><th colSpan="2" style={{padding:9,textAlign:"right",whiteSpace:"nowrap"}}>{formatMoneyLong(res.vpAcumulado,moneda)}</th></tr></tfoot>
+          </table></div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,flexWrap:"wrap",marginTop:12}}>
+            <span style={{fontSize:11.5,color:C.slate}}>Filas {paginaTabla*filasPorPagina+1}–{Math.min((paginaTabla+1)*filasPorPagina,res.numeroFilas)} de {formatNumberCO(res.numeroFilas,0,0)}</span>
+            <div style={{display:"flex",gap:8}}>
+              <Boton small variant="outline" disabled={paginaTabla===0} onClick={()=>setPaginaTabla(p=>Math.max(0,p-1))}>Anterior</Boton>
+              <Boton small variant="outline" disabled={(paginaTabla+1)*filasPorPagina>=res.numeroFilas} onClick={()=>setPaginaTabla(p=>Math.min(Math.ceil(res.numeroFilas/filasPorPagina)-1,p+1))}>Siguiente</Boton>
+            </div>
+          </div>
+          <div style={{fontSize:11.5,color:C.slate,marginTop:8}}>La suma de la tabla es una aproximación de la serie infinita. El resultado principal se calcula con la fórmula de perpetuidad y debe coincidir con la comprobación teórica del Excel, salvo una diferencia mínima por truncar la tabla.</div>
+        </Tarjeta>
+      </>}
     </div>
   </div>;
 }
