@@ -716,7 +716,7 @@ function Inicio({ ir }) {
         <h2 style={{ fontFamily: F_DISPLAY, fontSize: 24, color: C.navy, marginBottom: 22 }}>¿Qué puedes hacer aquí?</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px,1fr))", gap: 16 }}>
           {[
-            { t: "Aprender", d: "Entiende los conceptos de matemáticas financieras con explicaciones sencillas y ejemplos prácticos. Aprende sobre interés simple, compuesto y continuo, conversión de tasas, tasas nominales y efectivas, tasas anticipadas y vencidas, y anualidades vencidas y anticipadas.", i: BookOpen },
+            { t: "Aprender", d: "Entiende los conceptos de matemáticas financieras con explicaciones sencillas y ejemplos prácticos. Aprende sobre interés simple, compuesto y continuo, conversión de tasas, tasas nominales y efectivas, tasas anticipadas y vencidas, anualidades vencidas y anticipadas, gradientes, perpetuidades, sistemas de amortización y más.", i: BookOpen },
             { t: "Simular", d: "Explora créditos, ahorros e inversiones mediante simulaciones interactivas. Convierte tasas, calcula cuotas y valores, y analiza pagos periódicos y extraordinarios en diferentes situaciones financieras", i: Calculator },
             { t: "Comparar", d: "Compara tasas, formas de pago y diferentes escenarios financieros para entender cómo cambian los resultados y reconocer qué opciones pueden ser equivalentes.", i: BarChart3 },
           ].map((it) => (
@@ -734,7 +734,7 @@ function Inicio({ ir }) {
       </div>
 
       <div style={{ marginTop: 30, fontSize: 11.5, color: C.slate, lineHeight: 1.7 }}>
-        Proyecto académico · Matemáticas Financieras · Segundo Corte 2026-2<br />
+        Proyecto académico · Matemáticas Financieras · Tercer Corte 2026-2<br />
         Desarrollado con asistencia de Replit Agent y herramientas de inteligencia artificial.
       </div>
     </Section>
@@ -5692,7 +5692,7 @@ function Interacciones() {
     <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
       <Etiqueta>Interacciones</Etiqueta>
 <h1 style={{ fontFamily: F_DISPLAY, fontSize: 30, color: C.navy, margin: "0 0 10px" }}>
-  Interacciones · segundo corte
+  Interacciones · Tercer corte
 </h1>
 <p style={{ fontSize: 13.5, color: C.slate, marginBottom: 24, maxWidth: 760 }}>
   Desde la interacción 11 se documentan las interacciones correspondientes al tercer corte. Estas muestran cómo se revisó y mejoró Numeris a partir de la rúbrica, especialmente en gradientes, perpetuidades y sistemas de amortización , claridad conceptual, funcionamiento del simulador y corrección de errores detectados durante el desarrollo.
@@ -5723,7 +5723,7 @@ export default function App() {
       {seccion === "interacciones" && <Interacciones />}
       <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 20 }}>
         <Section style={{ padding: "22px 20px", fontSize: 11.5, color: C.slate, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-          <span>Numeris · Proyecto académico · Matemáticas Financieras · Segundo Corte 2026-2</span>
+          <span>Numeris · Proyecto académico · Matemáticas Financieras · Tercer corte 2026-2</span>
           <span>Desarrollado con asistencia de Replit Agent, ChatGPT Business y Claude</span>
         </Section>
       </div>
