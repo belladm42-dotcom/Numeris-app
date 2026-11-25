@@ -716,7 +716,7 @@ function Inicio({ ir }) {
         <h2 style={{ fontFamily: F_DISPLAY, fontSize: 24, color: C.navy, marginBottom: 22 }}>¿Qué puedes hacer aquí?</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px,1fr))", gap: 16 }}>
           {[
-            { t: "Aprender", d: "Entiende los conceptos de matemáticas financieras con explicaciones sencillas y ejemplos prácticos. Aprende sobre interés simple, compuesto y continuo, conversión de tasas, tasas nominales y efectivas, tasas anticipadas y vencidas,  anualidades vencidas y anticipadas, gradientes, perpetuidades, sistemas de amortización y más", i: BookOpen },
+            { t: "Aprender", d: "Entiende los conceptos de matemáticas financieras con explicaciones sencillas y ejemplos prácticos. Aprende sobre interés simple, compuesto y continuo, conversión de tasas, tasas nominales y efectivas, tasas anticipadas y vencidas, y anualidades vencidas y anticipadas.", i: BookOpen },
             { t: "Simular", d: "Explora créditos, ahorros e inversiones mediante simulaciones interactivas. Convierte tasas, calcula cuotas y valores, y analiza pagos periódicos y extraordinarios en diferentes situaciones financieras", i: Calculator },
             { t: "Comparar", d: "Compara tasas, formas de pago y diferentes escenarios financieros para entender cómo cambian los resultados y reconocer qué opciones pueden ser equivalentes.", i: BarChart3 },
           ].map((it) => (
@@ -734,7 +734,7 @@ function Inicio({ ir }) {
       </div>
 
       <div style={{ marginTop: 30, fontSize: 11.5, color: C.slate, lineHeight: 1.7 }}>
-        Proyecto académico · Matemáticas Financieras · Tercer Corte 2026-2<br />
+        Proyecto académico · Matemáticas Financieras · Segundo Corte 2026-2<br />
         Desarrollado con asistencia de Replit Agent y herramientas de inteligencia artificial.
       </div>
     </Section>
@@ -2409,7 +2409,7 @@ function CierreRepaso({ intro, preguntas, respuestas, idea }) {
    VP y VF sumando cada cuota traída o llevada con interés compuesto.
    ============================================================ */
 function Gradientes() {
-  // Ejemplo  1 y 2: 1.000.000 mensuales, 12 meses, 16,2 % EA
+  // Serie de pagos mensuales con gradientes aritmetico y geometrico
   const iM = c3Tasa(0.162, 1);
   const a1 = c3Serie({ A1: 1000000, paso: 80000, tipo: "aritmetico", signo: 1, n: 12, i: iM });
   const a1n = c3Serie({ A1: 1000000, paso: 80000, tipo: "aritmetico", signo: -1, n: 12, i: iM });
@@ -2450,20 +2450,20 @@ function Gradientes() {
   return (
     <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
-      <NivelCinco titulo="🧸 Explicado con monedas">
-        {`Imagina que quieres guardar dinero para comprar una bicicleta. Cada mes pones una parte en tu alcancía.
+      <NivelCinco titulo="🧸 Nivel 5 años">
+        {`Imagina que tu mamá te da una mesada todos los meses.
 
-Si guardas siempre la misma cantidad, todos los pagos son iguales: eso se llama anualidad.
+Si siempre te da las MISMAS monedas, eso es una anualidad: una fila de galletas iguales.
 
-Pero si cada mes guardas una cantidad diferente siguiendo una regla, tienes un gradiente. Por ejemplo, puedes guardar COP 1.000.000 el primer mes y aumentar COP 80.000 cada mes.
+Pero un día te dice: "Este mes te doy 5 monedas, el próximo 6, el otro 7...". Cada mes te da un poquito más. Esa fila ya no es plana: es una ESCALERA. Eso se llama GRADIENTE.
 
-Hay dos formas de cambiar:
-— Aritmética: cada vez sumas o restas la misma cantidad de pesos.
-— Geométrica: cada vez sumas o restas el mismo porcentaje.
+Hay dos tipos de escalera:
+— Aritmética: cada escalón sube lo MISMO en pesos (siempre 1 moneda más).
+— Geométrica: cada escalón sube el MISMO porcentaje (siempre un poquito más, pero el poquito se hace más grande a medida que la mesada crece).
 
-Si los pagos aumentan, el gradiente es creciente. Si disminuyen, es decreciente.
+También puede ser una escalera que BAJA: cada mes te dan un poquito menos.
 
-También podemos preguntar cuánto valen hoy todos esos pagos (VP) o cuánto valdrán al terminar (VF). Para compararlos, llevamos cada pago a la misma fecha usando interés compuesto y después los sumamos.`}
+Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera HOY (VP)? ¿Y cuánto vale al FINAL (VF)? Para saberlo, traemos o llevamos cada escalón con interés compuesto y los sumamos todos.`}
       </NivelCinco>
 
       <ConexionesPrevias items={[
@@ -2489,7 +2489,7 @@ También podemos preguntar cuánto valen hoy todos esos pagos (VP) o cuánto val
           <TarjetaMini titulo="Vehículo para una empresa">Una empresa puede usar un vehículo y pagar cuotas por él. Según el acuerdo, los pagos pueden cambiar y al final puede tener la opción de comprarlo.</TarjetaMini>
         </FilaMini>
         <TarjetaMini titulo="Diferencia fácil con la anualidad" tono="azul">
-          Una anualidad es una fila de pagos iguales. Un gradiente es una fila en la que los pagos cambian. Si el cambio es cero, el gradiente se convierte en una anualidad.
+          Anualidad = fila de galletas iguales. Gradiente = escalera de galletas. Una anualidad es una escalera de escalón cero: por eso todo lo que sabes de anualidades tambien sirve aquí.
         </TarjetaMini>
         <Interpretacion>
           Si el gradiente es cero, la serie vuelve a ser una anualidad. Compruébalo: con cuota de COP 1.000.000 durante 12 meses al 16,2 % EA (i mensual = {m8(iM)}), una anualidad da un valor de hoy de COP {m2(anual0.VP)}.
@@ -2499,7 +2499,7 @@ También podemos preguntar cuánto valen hoy todos esos pagos (VP) o cuánto val
       {/* SECCIÓN 2 */}
       <Acordeon title="2 · Gradiente aritmético: sube o baja siempre lo mismo en pesos">
         <p><strong>¿Qué es?</strong> Es una serie de pagos en la que cada nuevo pago aumenta o disminuye siempre la misma cantidad de pesos.</p>
-        <TarjetaMini titulo="Para entenderlo fácil" tono="azul">Imagina que pones bloques uno encima de otro. Cada bloque nuevo tiene exactamente 80.000 pesos más que el anterior.</TarjetaMini>
+        <TarjetaMini titulo="Para entenderlo fácil" tono="azul">Es una escalera de escalones parejos: cada escalón sube exactamente 80.000 pesos. Ni más, ni menos.</TarjetaMini>
         <p style={{ marginTop: 12 }}><strong>¿Cómo funciona?</strong> Empiezas con el primer pago. Para encontrar el siguiente, sumas o restas la misma cantidad de pesos. Repites el paso para cada pago nuevo.</p>
         <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Fórmula de cada cuota</div>
         <BloqueFormula>Creciente: A(t) = A(1) + (t − 1) × G</BloqueFormula>
@@ -2528,7 +2528,7 @@ También podemos preguntar cuánto valen hoy todos esos pagos (VP) o cuánto val
       <Acordeon title="3 · Gradiente geométrico: sube o baja siempre el mismo porcentaje">
         <p><strong>¿Qué es?</strong> Es una serie de pagos en la que cada nuevo pago aumenta o disminuye siempre el mismo porcentaje.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
-          Imagina una torre de bloques que crece un 10 % cada vez. El porcentaje no cambia, pero como la torre es cada vez más alta, la cantidad que aumenta también es mayor.
+          Es como una planta que crece un 10 % cada semana: la primera semana crece poquito, pero como ya es más grande, la siguiente crece más centímetros. El porcentaje es el mismo; los centímetros (los pesos) cada vez son más.
         </TarjetaMini>
         <p style={{ marginTop: 12 }}><strong>¿Por qué importa?</strong> Puede servir cuando quieres que un ahorro aumente siguiendo un porcentaje. Por ejemplo, si los precios suben, puedes aumentar también la cantidad que guardas.</p>
         <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Fórmula de cada cuota</div>
@@ -2610,7 +2610,7 @@ También podemos preguntar cuánto valen hoy todos esos pagos (VP) o cuánto val
       <Acordeon title="6 · Valor presente y valor futuro de un gradiente">
         <p><strong>¿Qué es?</strong> El valor presente (VP) dice cuánto valen hoy todos los pagos. El valor futuro (VF) dice cuánto valdrán cuando llegue el último periodo.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
-          Imagina que recibes varios sobres con dinero: uno este mes, otro el próximo y otro después. No puedes sumarlos como si los recibieras el mismo día, porque el dinero puede ganar intereses mientras esperas. Para hallar el VP, traes cada sobre a hoy y lo haces más pequeño con la tasa. Para hallar el VF, llevas cada sobre hasta el último día y lo haces crecer con la tasa. Después sumas todos los sobres.
+          Es como traer cada galleta de la escalera a la mesa de hoy. Las galletas lejanas se encogen un poquito (se dividen); luego juntas todas las galletas encogidas. Para el valor del final, en vez de encoger, las agrandas y también las juntas.
         </TarjetaMini>
         <p style={{ marginTop: 12 }}><strong>¿Cómo funciona?</strong> Las fórmulas de anualidades no sirven directo, porque las cuotas no son iguales. Entonces hacemos lo mismo que con un pago único, pero con cada cuota: la movemos con interés compuesto y sumamos.</p>
         <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Fórmulas</div>
@@ -2704,7 +2704,7 @@ También podemos preguntar cuánto valen hoy todos esos pagos (VP) o cuánto val
       <Acordeon title="10 · Cuando el gradiente no cambia cada periodo">
         <p><strong>¿Qué pasa?</strong> A veces la cuota es mensual, pero el aumento ocurre solo una vez al año. Entonces durante 12 meses la cuota es igual y en el mes 13 salta.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
-          Imagina una escalera con un descanso largo: subes un escalón y te quedas allí durante 12 meses. Cuando empieza el mes 13, subes al siguiente escalón.
+          Es una escalera con descansos: te quedas 12 escalones en el mismo nivel y luego subes. Como tu cumpleaños: tu estatura "oficial" cambia una vez al año, aunque tú crezcas todos los días.
         </TarjetaMini>
         <TarjetaMini titulo="Regla importante" tono="alerta">
           Si no se indica cada cuánto cambia, cambia con cada pago. Si se indica que cambia cada año o cada 4 meses, espera ese tiempo para hacer el siguiente aumento o disminución.
@@ -2821,7 +2821,7 @@ function Perpetuidades() {
   // Gradiente geométrico infinito: 150.000, 11,35 % EA, g = 0,72 %
   const ge1 = 150000 / (mi - 0.0072);
   const ge2 = 284000 / (m2i - 0.011);
-  // Ejemplo de error 
+  // Comparacion de una perpetuidad geometrica valida y una no valida
   const okVP = 1000 / (0.03 - 0.015);
   const malVP = 1000 / (0.015 - 0.03);
 
@@ -2841,18 +2841,16 @@ function Perpetuidades() {
   return (
     <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
-      <NivelCinco titulo="🧸 Explicado con monedas">
-        {`Imagina que una alcancía especial puede darte dinero cada mes y que nunca deja de hacerlo. No hay un último mes ni un último pago.
+      <NivelCinco titulo="🧸 Nivel 5 años">
+        {`Imagina un árbol mágico que te regala una manzana todos los meses, para siempre. Nunca se acaba.
 
-Eso es una PERPETUIDAD: una fila de pagos que sigue para siempre.
+Alguien te pregunta: "¿cuánto pagarías HOY por ese árbol?". ¿Infinito? No. Porque una manzana que te van a dar dentro de 50 años hoy casi no vale nada: es como una manzana que de aquí a que llegue ya se volvió una semillita.
 
-Puede sonar como si valiera una cantidad infinita, pero no es así. El dinero que recibirás dentro de muchos años vale menos hoy que el dinero que recibirás pronto. Por eso, cuando traemos cada pago a hoy, los pagos lejanos se hacen cada vez más pequeños.
+Las manzanas cercanas valen mucho hoy. Las lejanas valen casi nada. Cuando juntas todas las manzanas encogidas, ¡la suma es un número normal, no infinito!
 
-Al sumar esos valores más pequeños, llegamos a una cantidad limitada.
+Y hay una forma fácil de comprobarlo: si pones una cantidad de plata en una alcancía que paga intereses, cada mes los intereses te los puedes gastar y la plata de la alcancía sigue intacta. Ese pago "para siempre" sale solo de los intereses.
 
-Es como tener una alcancía con dinero guardado que produce monedas nuevas. Si cada mes sacas solo las monedas que produjo y dejas quieto el dinero guardado, puede seguir produciendo más.
-
-Una perpetuidad se parece a una anualidad, pero tiene una diferencia: nunca llega el último pago.`}
+Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
       </NivelCinco>
 
       <ConexionesPrevias items={[
@@ -2867,7 +2865,7 @@ Una perpetuidad se parece a una anualidad, pero tiene una diferencia: nunca lleg
       <Acordeon title="1 · Una anualidad que nunca termina" defaultOpen>
         <p><strong>¿Qué es?</strong> Una perpetuidad es una serie de pagos que <strong>no termina</strong>. Siempre llega otro pago y no existe una última cuota.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
-          Una anualidad es una fila de pagos que termina. Una perpetuidad es una fila que sigue y sigue: no tiene último pago.
+          Una anualidad es una fila de galletas con un final. Una perpetuidad es una fila de galletas que nunca se acaba: siempre llega otra.
         </TarjetaMini>
         <p style={{ marginTop: 12 }}><strong>¿Por qué importa?</strong> Sirve para calcular cuánto vale hoy una inversión o un lugar que produce pagos durante muchísimo tiempo, incluso si se supone que nunca deja de hacerlo.</p>
         <div style={{ fontSize: 13, color: C.slate, margin: "10px 0 6px" }}>Ejemplos reales en Colombia</div>
@@ -2898,7 +2896,7 @@ Una perpetuidad se parece a una anualidad, pero tiene una diferencia: nunca lleg
             `COP ${m2(e.v)}`,
           ])}
         />
-        <p>El millón que llegará dentro de 50 años vale mucho menos hoy. Al traerlo al presente, se hace cada vez más pequeño. Por eso los pagos muy lejanos aportan cada vez menos a la suma.</p>
+        <p>El millón que llega dentro de 50 años hoy vale unos pocos pesos: el interés compuesto lo encoge hasta volverlo una moneda. Entonces los pagos lejanos casi no suman, y la suma total deja de crecer.</p>
         <p style={{ marginTop: 12 }}><strong>Segunda razón: se va acercando a un tope.</strong> Si sumamos el valor de hoy de cada vez más cuotas, el resultado se va acercando a un número y no pasa de ahí:</p>
         <TablaC3
           cols={["Número de pagos (n)", "Valor presente de n pagos de 1.000.000", "Tope (A / i)"]}
@@ -2992,7 +2990,7 @@ Una perpetuidad se parece a una anualidad, pero tiene una diferencia: nunca lleg
           <TarjetaMini titulo="i">La tasa efectiva vencida del mismo periodo en que se reciben los pagos.</TarjetaMini>
         </FilaMini>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
-          Imagina una fila de pagos que nunca termina: empieza en COP 150.000 y cada nuevo pago suma COP 5.000. Puedes pensarla como dos filas juntas: una fila que siempre paga COP 150.000 y otra que agrega los escalones de COP 5.000, COP 10.000, COP 15.000 y así sucesivamente. La fórmula reúne el valor de esas dos partes.
+          Son dos perpetuidades juntas: la perpetuidad "plana" de la cuota A (que vale A / i) y la perpetuidad de los escalones, que crecen sin parar y valen L / i².
         </TarjetaMini>
         <SubT>Ejemplo resuelto</SubT>
         <p>Imagina que una persona recibe dinero cada mes por una inversión. El primer pago es COP 150.000 y cada mes el pago aumenta COP 5.000: el segundo es COP 155.000, el tercero COP 160.000 y el cuarto COP 165.000. La regla sigue para siempre. La tasa es 11,35 % EA. ¿Cuánto valen hoy todos esos pagos? Como cada mes se agregan los mismos pesos, es una perpetuidad con gradiente aritmético.</p>
@@ -3029,7 +3027,7 @@ Una perpetuidad se parece a una anualidad, pero tiene una diferencia: nunca lleg
           Si el primer pago es COP 150.000 y aumenta 0,72 %, el siguiente pago se calcula aumentando ese porcentaje sobre COP 150.000. El pago que sigue vuelve a aumentar 0,72 %, pero ahora sobre el nuevo pago. Así, el porcentaje es el mismo, aunque la cantidad de pesos que se agrega puede cambiar.
         </TarjetaMini>
         <TarjetaMini titulo="La regla: la tasa i debe ser MAYOR que g" tono="alerta">
-          Cada pago crece un g %, pero al traerlo a hoy se encoge un i %. Si i es mayor que g, el encogimiento le gana al crecimiento: cada pago vale menos hoy que el anterior y la suma tiene tope. Si g es mayor o igual que i, el crecimiento le gana al encogimiento: cada pago vale MÁS hoy que el anterior, la suma no tiene tope y la fórmula no tiene sentido.
+          Cada pago crece un g %, pero al traerlo a hoy se encoge un i %. Si i es mayor que g, el encogimiento le gana al crecimiento: cada pago vale menos hoy que el anterior y la suma tiene tope. Si g es igual a i, cada pago, al traerlo a hoy, conserva el mismo valor y la suma tampoco tiene un tope. Si g es mayor que i, cada pago vale más hoy que el anterior y la suma crece sin límite. Por eso la fórmula solo se usa cuando i es mayor que g.
         </TarjetaMini>
         <SubT>El error común, con números</SubT>
         <FilaMini>
@@ -3161,7 +3159,7 @@ function SistemasAmortizacion() {
   const iTri = c3Tasa(nT2.EA, 3);
   const alT = c3Amort({ vp: 25000000, n: 36, sistema: "aleman", otros: 45000, iDe: () => iTri });
 
-  // ---------- Tarea americano: 35.000.000, 18,59 % NASA (septimestral = 7 meses), 48 meses
+  // ---------- Segundo escenario de credito americano
   const nT3 = c3NomAnticipada(0.1859, 7);
   const iMes3 = c3Tasa(nT3.EA, 1);
   const amT1 = c3Amort({ vp: 35000000, n: 48, sistema: "americano", pagaIntereses: false, iDe: () => iMes3 });
@@ -3217,17 +3215,22 @@ function SistemasAmortizacion() {
   return (
     <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
-      <NivelCinco titulo="🧸 Explicado con monedas">
-        {`Imagina que quieres comprar una bicicleta, pero no tienes todo el dinero. Alguien te presta las monedas y acuerdan que se las devolverás poco a poco.
+      <NivelCinco titulo="🧸 Nivel 5 años">
+        {`Imagina que un amigo te presta 10 dulces y tú se los devuelves poco a poco.
 
-Cada vez que pagas, tu dinero se reparte: una parte paga los intereses (el dinero extra por usar el préstamo), otra parte devuelve el dinero que te prestaron y, a veces, otra parte paga seguros u otros cobros.
+Pero no le devuelves solo los 10 dulces: también le das unos dulces de "gracias" por haberte prestado (esos son los INTERESES). Y a veces hay un cobro extra por usar la cajita donde te los guardó (los OTROS COSTOS, como un seguro).
 
-La tabla de amortización es como una lista de control: muestra cuánto pagas, a dónde va cada parte del pago y cuánto dinero todavía debes.
+Cada vez que le pagas, tu pago se parte en tres cajitas:
+— Cajita de gracias (interés): es el pago por usar los dulces del amigo.
+— Cajita de devolver (abono a capital): son los dulces prestados que de verdad le devuelves.
+— Cajita de extras (otros costos): seguros o cuotas de manejo.
 
-Hay tres formas de organizar los pagos:
-— Francés: la cuota total es igual cada vez.
-— Alemán: devuelves la misma parte del préstamo cada vez y la cuota va bajando.
-— Americano: devuelves el préstamo al final; durante el tiempo puedes pagar los intereses o dejarlos para el último pago.`}
+AMORTIZAR es ir devolviendo la deuda así, pedacito por pedacito, hasta que no debas nada. La TABLA DE AMORTIZACIÓN es la libreta donde anotas, en cada pago, a qué cajita fue cada peso y cuánto sigues debiendo.
+
+Hay tres formas de devolverlos:
+— Francés: pagas SIEMPRE lo mismo.
+— Alemán: devuelves SIEMPRE los mismos dulces prestados, pero los de "gracias" van bajando.
+— Americano: esperas y devuelves todo al final.`}
       </NivelCinco>
 
       <ConexionesPrevias items={[
@@ -3332,7 +3335,7 @@ Hay tres formas de organizar los pagos:
       <Acordeon title="4 · Sistema alemán: el abono fijo a capital">
         <p><strong>¿Qué es?</strong> En el sistema alemán devuelves la misma cantidad del préstamo en cada pago. Como cada vez debes menos, los intereses bajan y la cuota se hace más pequeña.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
-          Devuelves la misma cantidad de monedas prestadas en cada pago. Como cada vez debes menos monedas, también pagas menos intereses y tu cuota baja.
+          Devuelves siempre la misma cantidad de dulces prestados cada vez. Como cada vez debes menos dulces, los "gracias" también bajan, y tu pago total baja.
         </TarjetaMini>
         <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Fórmulas</div>
         <BloqueFormula>Abono a capital = Monto del préstamo / Periodos del crédito</BloqueFormula>
@@ -3389,7 +3392,7 @@ Hay tres formas de organizar los pagos:
           <TarjetaMini titulo="Pagando intereses cada periodo" tono="azul">Pagas los intereses cada mes o periodo. El dinero que te prestaron lo devuelves completo al final.</TarjetaMini>
         </FilaMini>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
-          Es como pedir monedas prestadas y devolverlas todas el último día. Si tampoco pagas los intereses durante ese tiempo, se van juntando con la deuda y al final tienes que pagar más.
+          Es como pedir los dulces prestados y no devolver nada hasta el último día. En la variante "sin pago", ni siquiera dices "gracias" cada mes: se acumula y al final pagas todo junto.
         </TarjetaMini>
         <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Fórmulas</div>
         <BloqueFormula>Sin pago de intereses: pago final = VP × (1 + i)^n</BloqueFormula>
@@ -3643,7 +3646,7 @@ Hay tres formas de organizar los pagos:
           <TarjetaMini titulo="Leasing operativo" tono="azul">Al terminar el acuerdo, normalmente devuelves el bien y no lo compras.</TarjetaMini>
         </FilaMini>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
-          Imagina que necesitas una bicicleta para ir al colegio, pero no quieres comprarla toda de una vez. Una empresa te permite usarla y tú pagas cuotas durante el tiempo acordado. Al final puedes tener dos caminos: pagar un valor adicional para quedártela o devolverla. Ese dinero adicional se llama opción de compra.
+          Alquilas una bicicleta por un tiempo. Pagas cuotas más pequeñas porque al final todavía queda un pedacito de la bicicleta por pagar: la opción de compra. Ese pedacito es el saldo final.
         </TarjetaMini>
         <TarjetaMini titulo="Ejemplo de una empresa" tono="azul">
           Una empresa necesita un vehículo para llevar sus productos a sus clientes. Puede usarlo mediante un leasing y pagar cuotas durante el tiempo acordado. Al final, según el tipo de leasing, puede pagar la opción de compra para quedarse con el vehículo o terminar el acuerdo y devolverlo.
@@ -5689,7 +5692,7 @@ function Interacciones() {
     <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
       <Etiqueta>Interacciones</Etiqueta>
 <h1 style={{ fontFamily: F_DISPLAY, fontSize: 30, color: C.navy, margin: "0 0 10px" }}>
-  Interacciones · tercer  corte
+  Interacciones · segundo corte
 </h1>
 <p style={{ fontSize: 13.5, color: C.slate, marginBottom: 24, maxWidth: 760 }}>
   Desde la interacción 11 se documentan las interacciones correspondientes al tercer corte. Estas muestran cómo se revisó y mejoró Numeris a partir de la rúbrica, especialmente en gradientes, perpetuidades y sistemas de amortización , claridad conceptual, funcionamiento del simulador y corrección de errores detectados durante el desarrollo.
@@ -5720,7 +5723,7 @@ export default function App() {
       {seccion === "interacciones" && <Interacciones />}
       <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 20 }}>
         <Section style={{ padding: "22px 20px", fontSize: 11.5, color: C.slate, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-          <span>Numeris · Proyecto académico · Matemáticas Financieras · Tercer corte 2026-2</span>
+          <span>Numeris · Proyecto académico · Matemáticas Financieras · Segundo Corte 2026-2</span>
           <span>Desarrollado con asistencia de Replit Agent, ChatGPT Business y Claude</span>
         </Section>
       </div>
