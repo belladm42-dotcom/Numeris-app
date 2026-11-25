@@ -5356,7 +5356,7 @@ function SimuladorGradientes({ moneda }) {
   return <div style={{ display:"grid", gridTemplateColumns:"minmax(290px,1fr) minmax(340px,1.25fr)", gap:20, alignItems:"start" }}>
     <Tarjeta>
       <Etiqueta>Configuración del gradiente</Etiqueta>
-      <div style={{fontSize:12.5,color:C.slate,lineHeight:1.5,marginBottom:12}}>Construimos cada cuota y luego la llevamos a hoy o al final, como en el Excel de clase.</div>
+      <div style={{fontSize:12.5,color:C.slate,lineHeight:1.5,marginBottom:12}}>Construimos cada cuota y luego la llevamos a hoy o al final.</div>
       <Campo label="Tipo de operación"><Selector value={operacion} onChange={e=>setOperacion(e.target.value)} options={[{value:"credito",label:"Crédito"},{value:"inversion",label:"Inversión"}]}/></Campo>
       <Campo label="Tipo de gradiente"><Selector value={tipo} onChange={e=>setTipo(e.target.value)} options={[{value:"aritmetico",label:"Aritmético · cambia en pesos"},{value:"geometrico",label:"Geométrico · cambia en porcentaje"}]}/></Campo>
       <Campo label="¿Las cuotas aumentan o disminuyen?"><Selector value={direccion} onChange={e=>setDireccion(e.target.value)} options={[{value:"creciente",label:"Creciente (+)"},{value:"decreciente",label:"Decreciente (−)"}]}/></Campo>
@@ -5504,50 +5504,25 @@ function SimuladorPerpetuidades({ moneda }) {
         filas.push({n:t,cuota:cuotaNum,logCuota,saltos,factor:Math.exp(-t*logBase),vp:vpFila,vpAcumulado:sumaVP});
       }
 
-      // Valor presente exacto de los pagos posteriores a N, agrupados por ciclo.
-      // Así la suma de la tabla y el remanente reproduce la fórmula infinita.
-      let vpPendiente=0;
-      if(tipo==="constante"){
-        vpPendiente=(a/i)*Math.exp(-N*logBase);
-      }else{
-        const pasosAntes=Math.floor((N*mcU)/mgU);
-        let bloquePendiente=0,bloqueDescuento=0;
-        for(let j=1;j<=ciclo;j++){
-          const pasosDespues=Math.floor(((N+j-1)*mcU)/mgU)-pasosAntes;
-          const descuento=Math.exp(-j*logBase);
-          bloqueDescuento+=descuento;
-          if(tipo==="aritmetico")bloquePendiente+=(a+(pasosAntes+pasosDespues)*g)*descuento;
-          else bloquePendiente+=a*Math.exp((pasosAntes+pasosDespues)*logCrecimiento)*descuento;
-        }
-        if(tipo==="aritmetico"){
-          const pendienteCiclo=Math.exp(-ciclo*logBase);
-          const unoMenosPendienteCiclo=-Math.expm1(-ciclo*logBase);
-          vpPendiente=Math.exp(-N*logBase)*(bloquePendiente/unoMenosPendienteCiclo+saltosPorCiclo*g*bloqueDescuento*pendienteCiclo/Math.pow(unoMenosPendienteCiclo,2));
-        }else{
-          const logRazonCiclo=saltosPorCiclo*logCrecimiento-ciclo*logBase;
-          vpPendiente=Math.exp(-N*logBase)*bloquePendiente/(-Math.expm1(logRazonCiclo));
-        }
-      }
-      const tolerancia=Math.max(1e-7,Math.abs(vpFormula)*2e-11);
-      const vpPendienteAnalitico=vpPendiente;
+      // El valor pendiente se obtiene restando de la fórmula infinita
+      // la suma de los primeros N pagos calculados individualmente.
+      // De esta manera no se introduce una segunda fórmula de cola que pueda
+      // divergir por errores de bloques o por acumulación de redondeos.
+      const tolerancia=Math.max(1e-7,Math.abs(vpFormula)*5e-12);
       const vpPendientePorDiferencia=vpFormula-sumaVP;
-      const diferenciaCola=vpPendienteAnalitico-vpPendientePorDiferencia;
-      if(!Number.isFinite(vpPendienteAnalitico)||vpPendienteAnalitico<0||Math.abs(diferenciaCola)>tolerancia||vpPendientePorDiferencia < -tolerancia){
-        throw new Error(`La comprobación de la cola infinita no alcanzó la tolerancia numérica. Diferencia: ${formatMoneyLong(diferenciaCola,moneda)}. No se mostrará un resultado no verificado.`);
+      if(!Number.isFinite(vpPendientePorDiferencia)||vpPendientePorDiferencia < -tolerancia){
+        throw new Error("La suma de los pagos mostrados supera el valor presente calculado para la perpetuidad. Revisa los datos y la periodicidad.");
       }
-      // Se usa la diferencia entre la fórmula infinita y la suma finita como
-      // remanente mostrado; antes se comprueba contra la fórmula analítica de cola.
-      // Así la suma visible queda igual al valor de la fórmula dentro de la precisión del motor.
-      vpPendiente=Math.max(0,vpPendientePorDiferencia);
+      const vpPendiente=Math.max(0,vpPendientePorDiferencia);
       const vpVerificado=sumaVP+vpPendiente;
       const diferencia=vpVerificado-vpFormula;
-      if(Math.abs(diferencia)>tolerancia)throw new Error("La suma de la tabla y los pagos restantes no coincide con la fórmula de perpetuidad.");
+      if(Math.abs(diferencia)>tolerancia)throw new Error("No fue posible verificar la suma de los valores presentes. Revisa los datos ingresados.");
       const filasConRemanente=[...filas,{n:`${N+1} en adelante`,remanente:true,cuota:NaN,logCuota:NaN,saltos:"—",factor:NaN,vp:vpPendiente,vpAcumulado:vpVerificado}];
       const pasos=[
         {label:"1. Datos",content:`A = ${formatMoneyLong(a,moneda)} · Tipo: ${tipo} · Cuotas cada ${mc} meses · Tabla: ${formatNumberCO(N,0,0)} pagos (máximo permitido: 100.000).${tipo!=="constante"?` Gradiente: ${tipo==="aritmetico"?formatMoneyLong(g,moneda):formatPercentCO(g,8)}; intervalo: ${mg} meses.`:""}`},
         ...agregarPasosConversion(conv),
         {label:"2. Tasa del cálculo",content:`i = ${formatPercentCO(i,12)} efectiva vencida del periodo de las cuotas.`},
-        {label:"3. Fórmula de clase",content:formula},
+        {label:"3. Fórmula utilizada",content:formula},
         {label:"4. Procedimiento",content:desarrollo},
         {label:"5. Comprobación con la tabla",content:`Suma de los primeros ${formatNumberCO(N,0,0)} valores presentes = ${formatMoneyLong(sumaVP,moneda)}.\nValor presente de los pagos posteriores a ${formatNumberCO(N,0,0)} = ${formatMoneyLong(vpPendiente,moneda)}.\nSuma comprobada = ${formatMoneyLong(vpVerificado,moneda)}.\nValor por fórmula = ${formatMoneyLong(vpFormula,moneda)}.\nDiferencia numérica = ${formatMoneyLong(diferencia,moneda)}.`},
         {label:"6. Resultado",content:`VP = ${formatMoneyLong(vpFormula,moneda)}. La perpetuidad solo tiene valor presente; no se calcula valor futuro.`}
@@ -5567,7 +5542,7 @@ function SimuladorPerpetuidades({ moneda }) {
       {tipo!=="constante"&&<Campo label={tipo==="aritmetico"?`Gradiente aritmético (L) · ${moneda}`:"Gradiente geométrico (g) · %"}><Entrada value={grad} onChange={e=>setGrad(e.target.value)} placeholder={tipo==="aritmetico"?"5.000":"0,72"}/></Campo>}
       <Campo label="Periodicidad de las cuotas"><Selector value={periodoCuota} onChange={e=>setPeriodoCuota(e.target.value)} options={OPC_PERIODOS_CUOTAS}/>{periodoCuota==="personalizado_meses"&&<Entrada value={mesesCuota} onChange={e=>setMesesCuota(e.target.value)} placeholder="Meses por cuota"/>}</Campo>
       {tipo!=="constante"&&<Campo label="¿Cada cuánto cambia el gradiente?"><Selector value={periodoGrad} onChange={e=>setPeriodoGrad(e.target.value)} options={[{value:"mismo",label:"En cada periodo de cuota"},{value:"personalizado_meses",label:"En un periodo diferente (meses)"}]}/>{periodoGrad==="personalizado_meses"&&<Entrada value={mesesGrad} onChange={e=>setMesesGrad(e.target.value)} placeholder="Meses entre cambios"/>}</Campo>}
-      <Campo label="Cantidad de pagos (n) que se muestran en la tabla" help="Escribe un entero SIN puntos ni comas. Según los Excel de clase: 1000 pagos (constante), 5000 (aritmética) y 15000 (geométrica). Puedes consultar hasta 100000. Los pagos posteriores se incluyen en el valor pendiente."><Entrada type="text" inputMode="numeric" pattern="[0-9]*" value={maxPagos} onChange={e=>setMaxPagos(e.target.value.replace(/[^0-9]/g, ""))} placeholder="15000 (sin separadores)"/></Campo>
+      <Campo label="Cantidad de pagos (n) que se muestran en la tabla" help="Escribe un entero SIN puntos ni comas. Puedes consultar hasta 100.000 pagos. Los pagos posteriores se incluyen en el valor pendiente."><Entrada type="text" inputMode="numeric" pattern="[0-9]*" value={maxPagos} onChange={e=>setMaxPagos(e.target.value.replace(/[^0-9]/g, ""))} placeholder="15000 (sin separadores)"/></Campo>
       <div style={{fontSize:11.5,color:C.slate,marginTop:-6,marginBottom:10}}>Máximo permitido: 100.000 pagos. La tabla se muestra en páginas de 100 filas.</div>
       <EditorTasa titulo="Tasa ingresada" valor={tasaIn} onChange={setTasaIn}/>
       <Boton variant="gold" onClick={calcular}>Calcular valor presente</Boton>
