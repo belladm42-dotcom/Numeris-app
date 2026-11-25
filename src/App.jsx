@@ -402,6 +402,10 @@ const GLOSARIO = [
   { t: "NAMA", d: "Tasa nominal anual que se divide en 12 partes y se cobra al inicio de cada mes." },
   { t: "NACA", d: "Tasa nominal anual que se divide en 3 partes y se cobra al inicio de cada cuatrimestre." },
   { t: "NATA", d: "Tasa nominal anual que se divide en 4 partes y se cobra al inicio de cada trimestre." },
+  { t: "NASA", d: "Tasa nominal anual que se capitaliza cada seis meses y se cobra al inicio de cada semestre." },
+  { t: "NAQA", d: "Tasa nominal anual que se capitaliza cada cinco meses y se cobra al inicio de cada periodo." },
+  { t: "EA", d: "Efectiva anual. Es el porcentaje que muestra cuánto crece o cuesta el dinero durante un año completo." },
+  { t: "PAGO", d: "Función de Excel que calcula cuánto debes pagar en cada periodo. Usa la tasa, el número de pagos, el valor del crédito y, si existe, el valor que queda pendiente al final." },
   { t: "Tasa efectiva vencida", d: "La tasa efectiva que se aplica al final de cada periodo. Para calcular anualidades, debe tener el mismo periodo que las cuotas." },
   { t: "Conversión automática de tasas", d: "El cambio de una tasa a otra equivalente para que tenga el mismo periodo y modalidad que necesita el cálculo." },
   { t: "Periodo de la operación", d: "El tiempo que se usa para hacer el cálculo, como un mes, un trimestre o un semestre." },
@@ -429,7 +433,7 @@ const GLOSARIO = [
   { t: "Sistema americano", d: "Una forma de pagar en la que el dinero prestado se devuelve al final. Durante el crédito puedes pagar los intereses o dejarlos acumularse para el último pago." },
   { t: "Balloon payment", d: "Un pago grande al final del crédito, en el que se devuelve el dinero prestado y, si corresponde, los intereses acumulados." },
   { t: "Otros costos", d: "Cobros adicionales del crédito, como seguros, cuota de manejo, estudio o emisión. Se suman al pago, pero no reducen la deuda." },
-  { t: "TIR", d: "Tasa interna de retorno. Es un porcentaje que se calcula con el dinero que recibes y todos los pagos que haces. Ayuda a conocer el costo del crédito." },
+  { t: "TIR", d: "Tasa interna de retorno. Es el porcentaje que se obtiene al comparar el dinero que recibes con todos los pagos que haces. Ayuda a saber cuánto cuesta realmente el crédito." },
   { t: "Costo efectivo anual real", d: "El costo del crédito expresado como porcentaje de un año, incluyendo intereses y cobros adicionales." },
   { t: "Compra de cartera", d: "Cuando un banco paga la deuda que tienes con otro banco y te ofrece nuevas condiciones, como una tasa diferente." },
   { t: "Abono extraordinario a capital", d: "Un pago adicional que se usa directamente para bajar la deuda. Puede ayudar a reducir la cuota o el tiempo que falta para terminar de pagar." },
@@ -3215,7 +3219,7 @@ Hay tres formas de pagar:
 
       <ConexionesPrevias items={[
         "La cuota del sistema francés es una anualidad vencida: es igual y se paga al final de cada periodo.",
-        "Cada periodo se calculan intereses sobre el dinero que todavía debes. Eso es interés compuesto.",
+        "En estos créditos se usa interés compuesto: cada periodo se calcula el interés sobre el dinero que todavía debes. Si no pagas esos intereses, pueden sumarse a la deuda y producir nuevos intereses. Por eso también se conoce como interés sobre interés.",
         "La tasa debe ser efectiva vencida y tener el mismo tiempo que la cuota. Si viene en otra forma, primero se convierte.",
         "En el sistema alemán, la cuota va bajando porque devuelves la misma cantidad del préstamo en cada periodo.",
         "En el sistema americano y en algunos leasing puede quedar un pago pendiente para el final. Por eso el saldo final puede ser distinto de cero.",
@@ -3457,10 +3461,10 @@ Hay tres formas de pagar:
           <li>Cuota variable (alemán) y tasa 18,3 % EA.</li>
           <li>Periodo de gracia de 11 meses y pago en el último mes, con 17,25 % EA.</li>
         </ol>
-        <p><strong>¿Cómo lo comparamos?</strong> Anotamos el dinero que recibes y todos los pagos que haces. Con esos datos calculamos la <strong>TIR</strong>, un porcentaje que nos ayuda a conocer el costo del crédito. Después lo convertimos a una tasa efectiva anual.</p>
+        <p><strong>¿Cómo lo comparamos?</strong> Anotamos el dinero que recibes y todos los pagos que haces. Con esos datos calculamos la <strong>TIR</strong>: es como buscar el porcentaje que permite comparar lo que te entregaron con todo lo que devuelves. Ese porcentaje muestra el costo del crédito por periodo. Después lo convertimos a una tasa efectiva anual.</p>
         <FilaMini>
           <TarjetaMini titulo="Dinero que entra y sale">El préstamo que recibes es dinero que entra. Las cuotas y los otros cobros son dinero que sale.</TarjetaMini>
-          <TarjetaMini titulo="TIR">Un porcentaje que se calcula con el dinero que recibes y los pagos que haces. Sirve para conocer el costo del crédito.</TarjetaMini>
+          <TarjetaMini titulo="TIR">Es el porcentaje que se obtiene al comparar el dinero que recibes con todos los pagos que haces. Ayuda a saber cuánto cuesta realmente el crédito.</TarjetaMini>
           <TarjetaMini titulo="EA">El costo expresado para todo un año.</TarjetaMini>
           <TarjetaMini titulo="¿Por qué aparece 12?">En el ejemplo siguiente los pagos son mensuales, así que hay 12 periodos en un año.</TarjetaMini>
         </FilaMini>
@@ -3643,7 +3647,7 @@ Hay tres formas de pagar:
         </FilaMini>
         <p>A diferencia de un crédito normal, en el leasing puede quedar un valor pendiente al final: la opción de compra. Si ese valor final es cero, no queda dinero pendiente por ese concepto.</p>
         <SubT>Ejemplo resuelto</SubT>
-        <p>Una empresa compra una oficina de COP 850.000.000 con un leasing financiero: 11,23 % EA, 15 años, pagos mensuales. La opción de compra es el 10 % del valor total. ¿Cuál es la cuota mensual?</p>
+        <p>Una empresa necesita un vehículo de carga especializado para transportar sus productos. Lo obtiene mediante un leasing financiero por COP 850.000.000, con una tasa del 11,23 % EA, pagos mensuales durante 15 años y una opción de compra del 10 % del valor. ¿Cuál es la cuota mensual?</p>
         <FichaProcedimiento pasos={[
           { label: "Paso 1 — Datos", content: "VP = 850.000.000 · n = 15 × 12 = 180 · VF = 10 % × 850.000.000 = 85.000.000" },
           { label: "Paso 2 — Tasa mensual", content: `i = (1 + 0,1123)^(1/12) − 1 = ${m8(li)}` },
@@ -3656,7 +3660,7 @@ Hay tres formas de pagar:
           <TablaAmort res={lea} ts={[1, 2, 3, 178, 179, 180]} />
         </Acordeon>
         <Interpretacion>
-          Con la opción de compra, la cuota es de COP {m2(lea.filas[0].cuota)}. Si no hubiera opción de compra (francés normal), la cuota sería COP {m2(leaSin)}. La diferencia está en los COP {m2(lea.filas[179].saldo)} que quedan sin pagar al final y que la empresa paga si decide quedarse con la oficina.
+          Con la opción de compra, la cuota es de COP {m2(lea.filas[0].cuota)}. Si no hubiera opción de compra (francés normal), la cuota sería COP {m2(leaSin)}. La diferencia está en los COP {m2(lea.filas[179].saldo)} que quedan pendientes al final y que la empresa paga si decide quedarse con el vehículo.
         </Interpretacion>
       </Acordeon>
 
