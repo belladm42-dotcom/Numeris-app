@@ -407,6 +407,40 @@ const GLOSARIO = [
   { t: "Periodo de la operación", d: "El tamaño del tiempo que usa la cuenta: mes, trimestre, semestre, etc." },
   { t: "Periodo de las cuotas", d: "Cada cuánto pagas una cuota." },
   { t: "Pago adicional desconocido", d: "Un pago extra que no sabemos cuánto vale y queremos encontrar." },
+  { t: "Gradiente", d: "Una fila de cuotas que cambia siguiendo una regla. Si todas las cuotas se quedan iguales, el gradiente es cero y tenemos una anualidad." },
+  { t: "Gradiente aritmético (G)", d: "Cuando cada cuota aumenta o disminuye siempre la misma cantidad de pesos. G es ese valor que se suma o se resta." },
+  { t: "Gradiente geométrico (g)", d: "Cuando cada cuota aumenta o disminuye siempre el mismo porcentaje. g es ese porcentaje." },
+  { t: "Gradiente creciente", d: "Un gradiente que hace que las cuotas vayan aumentando: se suma un valor en pesos o se aplica un porcentaje de aumento." },
+  { t: "Gradiente decreciente", d: "Un gradiente que hace que las cuotas vayan disminuyendo: se resta un valor en pesos o se aplica un porcentaje de disminución." },
+  { t: "A(t)", d: "La cuota que corresponde al periodo t. Por ejemplo, A(3) es la tercera cuota." },
+  { t: "Perpetuidad", d: "Una serie de pagos que se supone que continúa para siempre. No tiene una última cuota." },
+  { t: "Perpetuidad constante", d: "Una perpetuidad en la que todos los pagos tienen el mismo valor." },
+  { t: "Perpetuidad con gradiente aritmético", d: "Una perpetuidad en la que cada pago aumenta o disminuye siempre la misma cantidad de pesos." },
+  { t: "Perpetuidad con gradiente geométrico", d: "Una perpetuidad en la que cada pago aumenta o disminuye siempre el mismo porcentaje. Para la fórmula de clase, la tasa i debe ser mayor que el gradiente g." },
+  { t: "L", d: "El gradiente aritmético que aparece en la fórmula de la perpetuidad: es la cantidad de pesos que aumenta o disminuye cada pago." },
+  { t: "Amortizar", d: "Pagar poco a poco una deuda, devolviendo el dinero que prestaron y pagando los intereses que correspondan." },
+  { t: "Tabla de amortización", d: "Una tabla que muestra cada cuota, cuánto se paga de interés, cuánto baja la deuda, qué otros costos se cobran y cuánto queda debiendo la persona." },
+  { t: "Saldo", d: "El dinero que todavía falta por pagar después de una cuota." },
+  { t: "Abono a capital", d: "La parte de la cuota que sí se usa para devolver el dinero que prestaron y bajar la deuda." },
+  { t: "Sistema francés", d: "Forma de pagar un crédito con cuotas iguales. Al principio una parte mayor de la cuota son intereses; después, una parte mayor baja la deuda." },
+  { t: "Sistema alemán", d: "Forma de pagar un crédito en la que se devuelve la misma cantidad de capital en cada periodo. Como la deuda baja, también bajan los intereses y la cuota." },
+  { t: "Sistema americano", d: "Forma de amortización en la que el capital se paga al final. Puede pagarse los intereses en cada periodo o dejar que se acumulen hasta el último pago." },
+  { t: "Balloon payment", d: "Nombre que aparece en clase para el método americano: el pago grande del capital se hace al final del crédito." },
+  { t: "Otros costos", d: "Cobros adicionales que se suman a la cuota, como seguros, cuota de manejo, costos de emisión o estudio del crédito. No son abonos a capital." },
+  { t: "TIR", d: "Tasa interna de retorno. En el ejercicio de clase se obtiene con la función =TIR() aplicada a los flujos de dinero y representa el costo efectivo de cada periodo." },
+  { t: "Costo efectivo anual real", d: "El costo del crédito expresado para todo un año después de incluir los otros cobros y convertir la TIR periódica a efectiva anual." },
+  { t: "Compra de cartera", d: "Cuando otro banco paga la deuda que tienes con el banco anterior y te ofrece nuevas condiciones, por ejemplo una tasa diferente." },
+  { t: "Abono extraordinario a capital", d: "Un pago adicional que haces para bajar directamente la deuda. Puede ayudar a reducir la cuota o el tiempo que falta para terminar de pagar." },
+  { t: "Periodo de gracia", d: "Un tiempo al inicio o durante el crédito en el que no se paga capital. Según el acuerdo, se puede no pagar nada o pagar solamente los intereses." },
+  { t: "Leasing", d: "Acuerdo para utilizar un bien pagando cuotas y tener, según el tipo de leasing, la posibilidad de comprarlo al final." },
+  { t: "Leasing financiero", d: "Tipo de leasing en el que normalmente se pacta una opción de compra al final y suele ejercerse para quedarse con el bien." },
+  { t: "Leasing operativo", d: "Tipo de leasing en el que normalmente no se ejerce la opción de compra y el uso del bien termina al finalizar el acuerdo." },
+  { t: "Opción de compra", d: "El valor que se puede pagar al final del leasing para quedarse con el bien." },
+  { t: "Interés compuesto", d: "Forma de calcular intereses en la que los intereses se suman al dinero inicial y después también pueden producir intereses." },
+  { t: "Inflación", d: "Cuando los precios suben y con la misma cantidad de dinero puedes comprar menos cosas." },
+  { t: "Arriendo", d: "Dinero que una persona paga para usar una casa, un local u otro bien que pertenece a otra persona." },
+  { t: "Rendimientos", d: "Dinero adicional que produce una inversión." },
+  { t: "Periodo de cambio del gradiente", d: "Cada cuánto cambia la cuota. Si el ejercicio no indica otro ritmo, cambia en cada periodo de la cuota." },
 ];
 
 const EJEMPLOS = {
@@ -2413,19 +2447,19 @@ function Gradientes() {
     <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
       <NivelCinco titulo="🧸 Nivel 5 años">
-        {`Imagina que tu mamá te da una mesada todos los meses.
+        {`Imagina que cada mes recibes una bolsita con monedas.
 
-Si siempre te da las MISMAS monedas, eso es una anualidad: una fila de galletas iguales.
+Si todas las bolsitas traen la misma cantidad, tienes una anualidad: una fila de pagos iguales.
 
-Pero un día te dice: "Este mes te doy 5 monedas, el próximo 6, el otro 7...". Cada mes te da un poquito más. Esa fila ya no es plana: es una ESCALERA. Eso se llama GRADIENTE.
+Pero si cada bolsita trae un poquito más o un poquito menos que la anterior, tienes un GRADIENTE: una fila de pagos que cambia siguiendo una regla.
 
-Hay dos tipos de escalera:
-— Aritmética: cada escalón sube lo MISMO en pesos (siempre 1 moneda más).
-— Geométrica: cada escalón sube el MISMO porcentaje (siempre un poquito más, pero el poquito se hace más grande a medida que la mesada crece).
+Hay dos reglas:
+— Aritmética: cada vez agregas o quitas la misma cantidad de pesos.
+— Geométrica: cada vez aumentas o disminuyes el mismo porcentaje.
 
-También puede ser una escalera que BAJA: cada mes te dan un poquito menos.
+También puede ser creciente (cada cuota aumenta) o decreciente (cada cuota baja).
 
-Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera HOY (VP)? ¿Y cuánto vale al FINAL (VF)? Para saberlo, traemos o llevamos cada escalón con interés compuesto y los sumamos todos.`}
+Después podemos preguntar cuánto vale toda esa fila HOY (VP) o cuánto vale al FINAL (VF). Para responder, movemos cada cuota con interés compuesto y luego sumamos.`}
       </NivelCinco>
 
       <ConexionesPrevias items={[
@@ -2442,13 +2476,13 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
           <TarjetaMini titulo="Anualidad: la fila plana" tono="azul">Todas las cuotas valen lo mismo, como una mesada fija. El cambio entre una cuota y otra es cero.</TarjetaMini>
           <TarjetaMini titulo="Gradiente: la escalera" tono="azul">Cada cuota cambia con una regla: sube (o baja) el mismo valor en pesos, o el mismo porcentaje.</TarjetaMini>
         </FilaMini>
-        <p><strong>¿Por qué es importante?</strong> Porque en la vida real casi nada se queda quieto: el sueldo sube, el arriendo se ajusta, los precios suben con la inflación. Si tu ahorro no sube, la inflación le va quitando valor.</p>
+        <p><strong>¿Por qué es importante?</strong> Porque algunos pagos o ahorros cambian con el tiempo. Por ejemplo, los precios pueden subir: eso se llama <strong>inflación</strong>. Significa que, con la misma cantidad de dinero, después puedes comprar menos cosas. Un ahorro que aumenta cada año puede ayudar a que tus aportes también crezcan.</p>
         <div style={{ fontSize: 13, color: C.slate, margin: "10px 0 6px" }}>Ejemplos reales en Colombia</div>
         <FilaMini>
           <TarjetaMini titulo="Ahorro programado que sube cada año">Hoy ahorras COP 500.000 al mes y cada año subes el aporte un 6 % para que la inflación no le quite valor.</TarjetaMini>
           <TarjetaMini titulo="Crédito de vivienda con cuota que se ajusta">La cuota empieza más baja y va subiendo con el tiempo, o empieza alta y va bajando.</TarjetaMini>
-          <TarjetaMini titulo="Arriendo con aumento anual">Pagas lo mismo todo el año y en enero te lo suben un porcentaje.</TarjetaMini>
-          <TarjetaMini titulo="Leasing de un vehículo para una empresa">La empresa paga cuotas que suben o bajan según un acuerdo con el banco.</TarjetaMini>
+          <TarjetaMini titulo="Arriendo con aumento anual">El arriendo es el dinero que pagas por usar una casa o un local de otra persona. Puedes pagar lo mismo todo el año y que en enero suba un porcentaje.</TarjetaMini>
+          <TarjetaMini titulo="Leasing de un vehículo para una empresa">Una empresa usa un vehículo pagando cuotas. Según el acuerdo, esas cuotas pueden subir o bajar y al final puede existir una opción para comprarlo.</TarjetaMini>
         </FilaMini>
         <TarjetaMini titulo="Diferencia fácil con la anualidad" tono="azul">
           Anualidad = fila de galletas iguales. Gradiente = escalera de galletas. Una anualidad es una escalera de escalón cero: por eso todo lo que sabías de anualidades sirve aquí.
@@ -2472,7 +2506,8 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
           <TarjetaMini titulo="G">El gradiente aritmético: los pesos que sube o baja cada periodo.</TarjetaMini>
           <TarjetaMini titulo="t">El número del periodo (1, 2, 3... n).</TarjetaMini>
         </FilaMini>
-        <p>En la presentación de clase se escribe igual, paso a paso: A2 = A1 + G, A3 = A2 + G, y así hasta la última.</p>
+        <p><strong>Así aparece en la presentación de clase:</strong> A2 = A1 + G; A3 = A2 + G; y cada cuota nueva se obtiene sumando G a la cuota anterior. La expresión A(t) resume esa misma regla para cualquier periodo.</p>
+        <BloqueFormula>A2 = A1 + G · A3 = A2 + G · A(t) = A(t−1) + G</BloqueFormula>
         <p style={{ marginTop: 10 }}><strong>Ejemplo:</strong> primera cuota de COP 1.000.000 y gradiente de COP 80.000 (creciente):</p>
         <p style={{ fontFamily: F_MONO, fontSize: 13.5 }}>
           A(1) = {m2(a1.filas[0].cuota)} · A(2) = {m2(a1.filas[1].cuota)} · A(3) = {m2(a1.filas[2].cuota)} · ... · A(12) = {m2(a1.ultima)}
@@ -2498,7 +2533,8 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
           <TarjetaMini titulo="g">El gradiente geométrico: el porcentaje que sube o baja cada periodo (1,5 % = 0,015).</TarjetaMini>
           <TarjetaMini titulo="t − 1">Cuántas veces ha cambiado la cuota desde la primera.</TarjetaMini>
         </FilaMini>
-        <p>En clase: A2 = A1 × (1 + g), A3 = A2 × (1 + g), etc. Multiplicar por (1 + g) tantas veces da la potencia (t − 1).</p>
+        <p><strong>Así aparece en la presentación de clase:</strong> A2 = A1 × (1 + g); A3 = A2 × (1 + g); y cada cuota nueva se obtiene multiplicando la anterior por (1 + g). La expresión A(t) resume esa misma regla para cualquier periodo.</p>
+        <BloqueFormula>A2 = A1 × (1 + g) · A3 = A2 × (1 + g) · A(t) = A(t−1) × (1 + g)</BloqueFormula>
         <p><strong>Ejemplo:</strong> primera cuota de COP 1.000.000 que sube 1,5 % cada mes:</p>
         <p style={{ fontFamily: F_MONO, fontSize: 13.5 }}>
           A(1) = {m2(g1.filas[0].cuota)} · A(2) = {m2(g1.filas[1].cuota)} · A(3) = {m2(g1.filas[2].cuota)} · ... · A(12) = {m2(g1.ultima)}
@@ -2660,7 +2696,7 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
         <TarjetaMini titulo="Regla importante" tono="alerta">
           Si el ejercicio NO dice cada cuánto cambia el gradiente, el gradiente tiene el mismo periodo de la cuota (cambia en cada cuota). Si dice "cada año" o "cada 4 meses", solo cambia en esos momentos.
         </TarjetaMini>
-        <p style={{ marginTop: 12 }}><strong>Ojo con la tasa:</strong> la tasa i sigue siendo la del periodo de la <em>cuota</em> (mensual). El gradiente anual NO cambia esa tasa: solo dice cuándo salta la cuota.</p>
+        <p style={{ marginTop: 12 }}><strong>Ojo con la tasa:</strong> la tasa i sigue siendo la del periodo de la <em>cuota</em> (mensual). El gradiente anual NO cambia esa tasa: solo dice cuándo salta la cuota. Si los precios suben, eso es inflación; por eso el ejemplo muestra aportes que se ajustan cada año.</p>
         <p><strong>Ejemplo (ahorro programado que sube cada año):</strong> ahorras COP 500.000 al mes durante el primer año. Cada año el aporte sube un 6 % (por inflación) durante 3 años. El fondo da 12 % EA. ¿Cuánto vale hoy y cuánto vale al final tu ahorro?</p>
         <FichaProcedimiento pasos={[
           { label: "Paso 1 — Datos", content: "Cuota mensual inicial 500.000 · sube 6 % cada 12 meses · 3 años = 36 cuotas · tasa 12 % EA" },
@@ -2793,15 +2829,17 @@ function Perpetuidades() {
     <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
       <NivelCinco titulo="🧸 Nivel 5 años">
-        {`Imagina un árbol mágico que te regala una manzana todos los meses, para siempre. Nunca se acaba.
+        {`Imagina una máquina que te entrega una moneda cada mes y nunca deja de hacerlo. No hay una última moneda: siempre llega otra.
 
-Alguien te pregunta: "¿cuánto pagarías HOY por ese árbol?". ¿Infinito? No. Porque una manzana que te van a dar dentro de 50 años hoy casi no vale nada: es como una manzana que de aquí a que llegue ya se volvió una semillita.
+Eso se parece a una PERPETUIDAD: una fila de pagos que no termina.
 
-Las manzanas cercanas valen mucho hoy. Las lejanas valen casi nada. Cuando juntas todas las manzanas encogidas, ¡la suma es un número normal, no infinito!
+Ahora imagina que alguien te pregunta cuánto vale hoy recibir esas monedas para siempre. No sumamos todas como si llegaran hoy. La moneda que recibes dentro de muchos años vale menos hoy que la que recibes el próximo mes.
 
-Y hay una forma fácil de comprobarlo: si pones una cantidad de plata en una alcancía que paga intereses, cada mes los intereses te los puedes gastar y la plata de la alcancía sigue intacta. Ese pago "para siempre" sale solo de los intereses.
+Por eso, cuando traemos cada pago a hoy, los pagos lejanos se hacen cada vez más pequeños. Al sumarlos, podemos llegar a un valor presente que sí es un número limitado.
 
-Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
+Una forma de imaginarlo: guardas dinero en una alcancía que produce intereses. Si cada periodo retiras solamente esos intereses, el dinero que guardaste puede quedarse allí y seguir produciéndolos.
+
+Una perpetuidad es como una anualidad que nunca tiene una última cuota.`}
       </NivelCinco>
 
       <ConexionesPrevias items={[
@@ -2821,9 +2859,9 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
         <p style={{ marginTop: 12 }}><strong>¿Por qué importa?</strong> Porque así se valoran cosas que duran muy, muy largo plazo: un negocio, una inversión que reparte rendimientos o un fondo que da becas para siempre.</p>
         <div style={{ fontSize: 13, color: C.slate, margin: "10px 0 6px" }}>Ejemplos reales en Colombia</div>
         <FilaMini>
-          <TarjetaMini titulo="Un local que genera arriendo">Te pagan arriendo todos los meses y el local sigue ahí. Mientras exista, sigue pagando.</TarjetaMini>
-          <TarjetaMini titulo="Un fondo de dotación">Una universidad recibe una donación y con los rendimientos paga becas cada semestre, sin gastar el capital.</TarjetaMini>
-          <TarjetaMini titulo="Una inversión que reparte rendimientos">Una inversión que paga una renta periódica de forma indefinida.</TarjetaMini>
+          <TarjetaMini titulo="Un local que genera arriendo">El arriendo es el dinero que una persona paga para usar un local que pertenece a otra. Si el local sigue ocupado y se mantiene el acuerdo, puede recibir ese pago cada mes.</TarjetaMini>
+          <TarjetaMini titulo="Un fondo de dotación">Es dinero que una universidad recibe como donación y guarda. Los intereses que produce ese dinero pueden ayudar a pagar becas sin gastar el dinero guardado.</TarjetaMini>
+          <TarjetaMini titulo="Una inversión que reparte rendimientos">Los rendimientos son el dinero adicional que produce una inversión. En este ejemplo, se entregan pagos de forma indefinida.</TarjetaMini>
         </FilaMini>
         <TarjetaMini titulo="Diferencia con la anualidad" tono="azul">
           La anualidad tiene n cuotas (un número conocido). La perpetuidad no tiene n: no hay última cuota. Por eso no se puede pedir "cuánto pagas en total": siempre sería infinito. Solo tiene sentido preguntar cuánto vale hoy.
@@ -2837,7 +2875,7 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
       <Acordeon title="2 · ¿Cómo puede valer algo finito una serie infinita de pagos?">
         <p>Esto es contraintuitivo, así que vamos despacio.</p>
         <TarjetaMini titulo="La pregunta" tono="azul">
-          Imagina que tienes un local que te paga COP 1.000.000 de arriendo cada mes, para siempre. ¿Cuánto vale hoy? No vale infinito.
+          Imagina que tienes un local y otra persona te paga COP 1.000.000 cada mes para poder usarlo. Ese pago se llama arriendo. Si lo recibes para siempre, ¿cuánto vale hoy? No vale infinito.
         </TarjetaMini>
         <p style={{ marginTop: 12 }}><strong>Primera razón: el dinero lejano se encoge.</strong> Con interés compuesto, un millón que vas a recibir más adelante vale cada vez menos hoy. Con una tasa de 1 % efectivo mensual:</p>
         <TablaC3
@@ -2869,6 +2907,7 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
           <TarjetaMini titulo="VP">El valor de hoy de todos los pagos de la perpetuidad.</TarjetaMini>
           <TarjetaMini titulo="A">La cuota: lo que se paga en cada periodo.</TarjetaMini>
           <TarjetaMini titulo="i">La tasa efectiva vencida del periodo de la cuota, en decimal (1 % = 0,01).</TarjetaMini>
+          <TarjetaMini titulo="n">El número de pagos de la anualidad antes de que la serie continúe sin terminar. En la perpetuidad, n crece sin límite.</TarjetaMini>
         </FilaMini>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
           Es la alcancía al revés: si la cuota es lo que da de intereses cada periodo, la alcancía debe tener VP tal que VP × i = A. Despejando: VP = A / i.
@@ -3163,21 +3202,21 @@ function SistemasAmortizacion() {
     <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
       <NivelCinco titulo="🧸 Nivel 5 años">
-        {`Imagina que un amigo te presta 10 dulces y tú se los devuelves poco a poco.
+        {`Imagina que un amigo te presta 10 dulces y acuerdan que se los vas a devolver poco a poco.
 
-Pero no le devuelves solo los 10 dulces: también le das unos dulces de "gracias" por haberte prestado (esos son los INTERESES). Y a veces hay un cobro extra por usar la cajita donde te los guardó (los OTROS COSTOS, como un seguro).
+Por prestártelos, también le das unos dulces extra: esos son los INTERESES. A veces, además, hay otros cobros, como un seguro o una cuota de manejo.
 
-Cada vez que le pagas, tu pago se parte en tres cajitas:
-— Cajita de gracias (interés): es el pago por usar los dulces del amigo.
-— Cajita de devolver (abono a capital): son los dulces prestados que de verdad le devuelves.
-— Cajita de extras (otros costos): seguros o cuotas de manejo.
+Cada pago puede tener tres partes:
+— Interés: lo que pagas por usar el dinero prestado.
+— Abono a capital: la parte que devuelve el dinero que te prestaron y hace que debas menos.
+— Otros costos: cobros adicionales, como seguros o cuotas de manejo.
 
-AMORTIZAR es ir devolviendo la deuda así, pedacito por pedacito, hasta que no debas nada. La TABLA DE AMORTIZACIÓN es la libreta donde anotas, en cada pago, a qué cajita fue cada peso y cuánto sigues debiendo.
+AMORTIZAR significa devolver una deuda poco a poco. La TABLA DE AMORTIZACIÓN es la libreta que muestra cuánto pagas, cuánto baja la deuda y cuánto te falta por pagar.
 
-Hay tres formas de devolverlos:
-— Francés: pagas SIEMPRE lo mismo.
-— Alemán: devuelves SIEMPRE los mismos dulces prestados, pero los de "gracias" van bajando.
-— Americano: esperas y devuelves todo al final.`}
+Hay tres formas que vamos a aprender:
+— Francés: todas las cuotas son iguales.
+— Alemán: devuelves la misma cantidad de capital en cada periodo y la cuota va bajando.
+— Americano: el capital se paga al final; durante el camino puedes pagar los intereses o dejarlos para el último pago.`}
       </NivelCinco>
 
       <ConexionesPrevias items={[
@@ -3194,8 +3233,8 @@ Hay tres formas de devolverlos:
         <FilaMini>
           <TarjetaMini titulo="Cuota" tono="azul">Lo que pagas cada periodo. Incluye interés + abono a capital + otros costos (seguros, cuota de manejo, costos adicionales).</TarjetaMini>
           <TarjetaMini titulo="Interés" tono="azul">El costo de usar la plata prestada. Se calcula como saldo del periodo anterior × tasa de interés del periodo.</TarjetaMini>
-          <TarjetaMini titulo="Abono a capital" tono="azul">La parte de la cuota que de verdad baja la deuda. Es cuota − interés − otros.</TarjetaMini>
-          <TarjetaMini titulo="Saldo" tono="azul">Cuánto se debe después de pagar: saldo anterior − abono a capital.</TarjetaMini>
+          <TarjetaMini titulo="Abono a capital" tono="azul">La parte de la cuota que devuelve el dinero prestado y hace que la deuda baje. Se calcula: cuota − interés − otros.</TarjetaMini>
+          <TarjetaMini titulo="Saldo" tono="azul">El dinero que todavía debes después de pagar: saldo anterior − abono a capital.</TarjetaMini>
         </FilaMini>
         <p><strong>¿Por qué importa?</strong> Porque dos créditos con la misma cuota pueden costar muy diferente. La tabla te muestra cuánto de tu plata paga la deuda y cuánto se va en intereses.</p>
         <TablaC3
@@ -3291,6 +3330,9 @@ Hay tres formas de devolverlos:
           <TarjetaMini titulo="Abono a capital">Igual en todos los periodos: VP / n.</TarjetaMini>
           <TarjetaMini titulo="Interés">Saldo anterior × i. Baja cada periodo porque el saldo baja.</TarjetaMini>
           <TarjetaMini titulo="Otros">Seguros o cuotas de manejo. Se suman a la cuota por fuera de la fórmula.</TarjetaMini>
+          <TarjetaMini titulo="VP">El monto del préstamo, es decir, el dinero que te prestaron al comienzo.</TarjetaMini>
+          <TarjetaMini titulo="n">El número total de periodos o cuotas del crédito.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa efectiva vencida del mismo periodo de la cuota.</TarjetaMini>
         </FilaMini>
         <TarjetaMini titulo="Diferencia con el francés" tono="azul">
           En el francés la cuota es fija y el abono crece. En el alemán el abono es fijo y la cuota baja.
@@ -3341,6 +3383,12 @@ Hay tres formas de devolverlos:
         <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Fórmulas</div>
         <BloqueFormula>Sin pago de intereses: pago final = VP × (1 + i)^n</BloqueFormula>
         <BloqueFormula>Con pago de intereses: cuota = VP × i (periodos 1 a n − 1) y último pago = VP × i + VP</BloqueFormula>
+        <FilaMini>
+          <TarjetaMini titulo="VP">El dinero que te prestaron al comienzo.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa efectiva vencida del periodo del crédito.</TarjetaMini>
+          <TarjetaMini titulo="n">El número de periodos hasta el pago final.</TarjetaMini>
+          <TarjetaMini titulo="VP × i">Los intereses que se pagan en cada periodo cuando se elige la variante con pago periódico.</TarjetaMini>
+        </FilaMini>
         <TarjetaMini titulo="¿Qué implicación tiene no pagar los intereses hasta el final?" tono="alerta">
           Los intereses no pagados se suman a la deuda y empiezan a generar más intereses (interés sobre interés). La deuda crece cada mes en vez de bajar, y el pago final es enorme.
         </TarjetaMini>
@@ -3415,7 +3463,13 @@ Hay tres formas de devolverlos:
           <li>Cuota variable (alemán) y tasa 18,3 % EA.</li>
           <li>Periodo de gracia de 11 meses y pago en el último mes, con 17,25 % EA.</li>
         </ol>
-        <p><strong>Método:</strong> armamos el flujo de cada crédito (el desembolso positivo y cada cuota negativa), calculamos la TIR (costo efectivo del periodo) y la pasamos a efectivo anual.</p>
+        <p><strong>Método:</strong> armamos el flujo de cada crédito: el dinero que recibes al comienzo va positivo y cada cuota que pagas va negativa. Después usamos <strong>=TIR()</strong> para encontrar el costo efectivo de cada periodo y lo pasamos a efectivo anual.</p>
+        <FilaMini>
+          <TarjetaMini titulo="Flujo de dinero">Cada entrada o salida de dinero. El préstamo que recibes entra; las cuotas que pagas salen.</TarjetaMini>
+          <TarjetaMini titulo="TIR">El porcentaje por periodo que se obtiene al aplicar la función =TIR() a todos los flujos del crédito.</TarjetaMini>
+          <TarjetaMini titulo="EA">El costo expresado para todo un año.</TarjetaMini>
+          <TarjetaMini titulo="¿Por qué aparece 12?">En el ejemplo siguiente los pagos son mensuales, así que hay 12 periodos en un año.</TarjetaMini>
+        </FilaMini>
         <TablaC3
           cols={["Crédito", "Primera cuota", "Total de intereses + otros", "Costo efectivo anual (TIR)"]}
           filas={[
@@ -3439,6 +3493,13 @@ Hay tres formas de devolverlos:
         <TarjetaMini titulo="Cómo se incluyen en la tabla" tono="azul">
           Se suman a la cuota por fuera de la fórmula de la anualidad, y se restan al calcular el abono a capital: abono = cuota − interés − otros. No bajan la deuda: son plata que sale de tu bolsillo sin pagar capital.
         </TarjetaMini>
+        <BloqueFormula>Abono a capital = Cuota − Interés − Otros</BloqueFormula>
+        <FilaMini>
+          <TarjetaMini titulo="Cuota">El pago total que haces en ese periodo.</TarjetaMini>
+          <TarjetaMini titulo="Interés">Saldo anterior × i.</TarjetaMini>
+          <TarjetaMini titulo="Otros">Seguros, cuota de manejo, emisión o estudio del crédito.</TarjetaMini>
+          <TarjetaMini titulo="Abono a capital">La parte que sí reduce el saldo de la deuda.</TarjetaMini>
+        </FilaMini>
         <p style={{ marginTop: 12 }}><strong>¿Por qué encarecen el crédito?</strong> Porque recibes la misma plata pero pagas más. Esa diferencia hace que el costo real sea mayor que la tasa que te dijeron.</p>
         <FilaMini>
           <TarjetaMini titulo="Paso 1" tono="azul">Armar la tabla de amortización con la columna "Otros".</TarjetaMini>
@@ -3474,6 +3535,13 @@ Hay tres formas de devolverlos:
 
         <SubT>9.1 · Compra de cartera: cambio de tasa</SubT>
         <p>Es cuando un banco le compra la deuda a otro (le paga todo lo que debes) y te da una tasa mejor. Si el interés baja, la cuota baja.</p>
+        <BloqueFormula>Nueva cuota = Saldo pendiente / factor de VP de anualidad</BloqueFormula>
+        <FilaMini>
+          <TarjetaMini titulo="Saldo pendiente">Lo que todavía debes cuando empieza la nueva condición.</TarjetaMini>
+          <TarjetaMini titulo="i">La nueva tasa efectiva vencida del periodo de las cuotas.</TarjetaMini>
+          <TarjetaMini titulo="n">El número de cuotas que faltan por pagar.</TarjetaMini>
+          <TarjetaMini titulo="Nueva cuota">El pago que se calcula con el saldo pendiente, la nueva tasa y las cuotas restantes.</TarjetaMini>
+        </FilaMini>
         <p>Una persona compra COP 2.800.000 a 36 cuotas mensuales con la tarjeta del banco X, a 22,89 % EA. Desde la cuota 16 (incluyéndola), el banco Y le ofrece 21,31 % EA. Sistema francés.</p>
         <FichaProcedimiento pasos={[
           { label: "Paso 1 — Tasas mensuales", content: `Banco X: (1 + 0,2289)^(1/12) − 1 = ${m8(xi)} · Banco Y: (1 + 0,2131)^(1/12) − 1 = ${m8(yi)}` },
@@ -3499,6 +3567,14 @@ Hay tres formas de devolverlos:
 
         <SubT>9.2 · Abono extraordinario a capital</SubT>
         <p>Si pagas un valor adicional a la cuota (de forma esporádica o en cada cuota), bajas la deuda y pagas menos intereses. Tiene dos efectos: <strong>reducir la cuota</strong> o <strong>reducir el tiempo</strong>. En estos ejemplos mantenemos el plazo igual, así que baja la cuota.</p>
+        <BloqueFormula>Nuevo saldo = Saldo pendiente − Abono extraordinario</BloqueFormula>
+        <BloqueFormula>Nueva cuota = Nuevo saldo / factor de VP de anualidad</BloqueFormula>
+        <FilaMini>
+          <TarjetaMini titulo="Saldo pendiente">Lo que debes después de pagar la cuota normal.</TarjetaMini>
+          <TarjetaMini titulo="Abono extraordinario">El dinero adicional que se usa directamente para bajar la deuda.</TarjetaMini>
+          <TarjetaMini titulo="Nuevo saldo">Lo que queda debiendo después de restar el abono.</TarjetaMini>
+          <TarjetaMini titulo="i y n">La tasa efectiva vencida del periodo de las cuotas y el número de cuotas que faltan.</TarjetaMini>
+        </FilaMini>
         <p>Compra de COP 2.800.000 a 36 cuotas mensuales, 22,89 % EA. Hace un abono de COP 500.000 en el periodo 14.</p>
         <FichaProcedimiento pasos={[
           { label: "Paso 1 — Cuota original", content: `A = COP ${m2(ab0.filas[0].cuota)} (i = ${m8(xi)}, n = 36)` },
@@ -3519,6 +3595,14 @@ Hay tres formas de devolverlos:
 
         <SubT>9.3 · Periodo de gracia al inicio del crédito</SubT>
         <p>Los periodos de gracia son periodos en los que no se paga ningún valor o solo los intereses, pero no se abona capital. Se usan como estrategia comercial (para no pagar de inmediato) y en casos de insolvencia (para dar un respiro).</p>
+        <BloqueFormula>Sin pagar intereses: Saldo al final = VP × (1 + i)^n</BloqueFormula>
+        <BloqueFormula>Pagando intereses: Interés de cada periodo = Saldo × i</BloqueFormula>
+        <FilaMini>
+          <TarjetaMini titulo="VP">La deuda al comenzar el periodo de gracia.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa efectiva vencida del periodo.</TarjetaMini>
+          <TarjetaMini titulo="n">La cantidad de periodos de gracia.</TarjetaMini>
+          <TarjetaMini titulo="Saldo">Si no pagas intereses, estos se suman a la deuda. Si pagas solo intereses, el saldo no baja durante la gracia.</TarjetaMini>
+        </FilaMini>
         <p><strong>Caso 1: sin pagar nada.</strong> Una familia compra un apartamento de COP 560.000.000 con un crédito por el total. Tiene 2 años de gracia en los que no pagan nada. Luego pagan 20 años con cuotas mensuales a 13,56 % EA.</p>
         <FichaProcedimiento pasos={[
           { label: "Paso 1 — Tasa mensual", content: `i = (1 + 0,1356)^(1/12) − 1 = ${m8(gi)}` },
@@ -3546,18 +3630,22 @@ Hay tres formas de devolverlos:
           <TarjetaMini titulo="Leasing operativo" tono="azul">Lo más usual es que no se ejerza la opción de compra: al terminar el tiempo se acaba el arrendamiento.</TarjetaMini>
         </FilaMini>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
-          Alquilas una bicicleta por un tiempo. Pagas cuotas más pequeñas porque al final todavía queda un pedacito de la bicicleta por pagar: la opción de compra. Ese pedacito es el saldo final.
+          Alquilas una bicicleta por un tiempo. Pagas cuotas y al final puedes pagar un valor adicional para quedártela. Ese valor final es la opción de compra.
         </TarjetaMini>
-        <p style={{ marginTop: 12 }}><strong>¿Por qué el saldo final no es cero?</strong> Porque las cuotas no alcanzan a pagar toda la deuda: dejan sin pagar el valor de la opción de compra. Si la persona la ejerce, paga ese valor al final y el bien es suyo.</p>
-        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Fórmula (Excel: =PAGO(i; n; −VP; VF))</div>
-        <BloqueFormula>A = [ VP − VF / (1 + i)^n ] / [ ((1 + i)^n − 1) / (i × (1 + i)^n) ]</BloqueFormula>
+        <TarjetaMini titulo="Ejemplo de una empresa" tono="azul">
+          Una empresa necesita un vehículo para llevar sus productos a sus clientes. Puede usarlo mediante un leasing y pagar cuotas durante el tiempo acordado. Al final, según el tipo de leasing, puede pagar la opción de compra para quedarse con el vehículo o terminar el acuerdo y devolverlo.
+        </TarjetaMini>
+        <p style={{ marginTop: 12 }}><strong>¿Por qué el saldo final no es cero?</strong> Porque las cuotas no alcanzan a pagar todo el valor del bien: dejan pendiente el valor de la opción de compra. Si la empresa decide ejercerla, paga ese valor al final y se queda con el vehículo o el bien.</p>
+        <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 4px" }}>Fórmula trabajada en clase (Excel)</div>
+        <BloqueFormula>=PAGO(i; n; −VP; VF)</BloqueFormula>
         <FilaMini>
-          <TarjetaMini titulo="A">La cuota del leasing.</TarjetaMini>
+          <TarjetaMini titulo="PAGO">La función de Excel que calcula la cuota.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa efectiva vencida del periodo de la cuota.</TarjetaMini>
+          <TarjetaMini titulo="n">El número total de cuotas.</TarjetaMini>
           <TarjetaMini titulo="VP">El valor del bien financiado.</TarjetaMini>
-          <TarjetaMini titulo="VF">El valor de la opción de compra: lo que se debe al final.</TarjetaMini>
-          <TarjetaMini titulo="i, n">La tasa efectiva vencida del periodo de la cuota y el número de cuotas.</TarjetaMini>
+          <TarjetaMini titulo="VF">El valor de la opción de compra que queda pendiente al final.</TarjetaMini>
         </FilaMini>
-        <p>Es la fórmula del sistema francés, pero al VP se le resta el valor presente de la opción de compra. Con VF = 0 vuelve a ser el francés normal.</p>
+        <p>La diferencia frente al francés normal es que aquí se deja un valor pendiente al final: la opción de compra. Si VF es cero, no queda ese valor pendiente.</p>
         <SubT>Ejemplo resuelto (de la clase)</SubT>
         <p>Una empresa compra una oficina de COP 850.000.000 con un leasing financiero: 11,23 % EA, 15 años, pagos mensuales. La opción de compra es el 10 % del valor total. ¿Cuál es la cuota mensual?</p>
         <FichaProcedimiento pasos={[
