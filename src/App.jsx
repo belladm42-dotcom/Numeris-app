@@ -530,7 +530,7 @@ async function borrarHistorial() {
 }
 
 function formatearResultadoHistorial(h) {
-  if (!Number.isFinite(h.resultado)) return "";
+  if (!Number.isFinite(h.resultado)) return h.resumen || "";
 
   if (h.resultadoTipo === "tasa") {
     return formatPercentCO(h.resultado, 4);
@@ -5321,6 +5321,10 @@ function calcularGradienteCore({ a, g, tipo, direccion, n, i, mc, mg, pagosExtra
   const base = 1 + i, logBase = Math.log1p(i);
   const geom = tipo === "geometrico";
   if (geom && !(1 + signo * g > 0)) throw new Error("Un gradiente geométrico decreciente debe ser menor que 100 %.");
+  const iGradiente = Math.expm1(logBase * (mg / mc));
+  if (geom && !(iGradiente > g)) {
+    throw new Error(`La tasa efectiva del periodo del gradiente (${formatPercentCO(iGradiente, 8)}) debe ser mayor que el gradiente (${formatPercentCO(g, 8)}).`);
+  }
   const saltosDe = (t) => Math.floor(((t - 1) * mcU) / mgU);
   if (!geom && signo < 0 && !(a - saltosDe(n) * g > 0)) {
     throw new Error(`La cuota del periodo ${n} sería cero o negativa. Reduce el gradiente o el número de cuotas.`);
@@ -5389,7 +5393,7 @@ function vpGradienteFormula({ a, g, tipo, signo, n, i }) {
   return (a * -Math.expm1(x)) / (i - gs);
 }
 
-function SimuladorGradientes({ moneda }) {
+function SimuladorGradientes({ moneda, onGuardarHistorial }) {
   const [operacion, setOperacion] = useState("credito");
   const [tipo, setTipo] = useState("aritmetico");
   const [direccion, setDireccion] = useState("creciente");
@@ -5459,6 +5463,16 @@ function SimuladorGradientes({ moneda }) {
       }
       setPaginaTabla(1);
       setRes({ cuotas, extras: extrasDetalle, vp, vf: vfTotal, vpCuotas, vfCuotas, vpExtras, vfExtras, i, iGrad, pasos, mc, mg, n, verif, vfEnEscalaLog: core.vfEnEscalaLog });
+      if (onGuardarHistorial) {
+        const resultadoHistorial = objetivo === "VP" ? vp : vfTotal.valor;
+        onGuardarHistorial({
+          tipo: "gradiente", modulo: "Gradientes", regimen: tipo, operacion,
+          incognita: objetivo, resultado: Number.isFinite(resultadoHistorial) ? resultadoHistorial : NaN,
+          resultadoTipo: "moneda", moneda, fecha: new Date().toISOString(),
+          resumen: `${objetivo}: ${objetivo === "VP" ? formatMoneyGrande(vp, undefined, moneda) : fmt(vfTotal)} · n = ${formatNumberCO(n, 0, 0)} · ${direccion} · ${tipo}`,
+          detalle: `Primera cuota: ${formatMoneyLong(a, moneda)} · Gradiente: ${tipo === "aritmetico" ? formatMoneyLong(g, moneda) : formatPercentCO(g, 6)} · Tasa por cuota: ${formatPercentCO(i, 8)}`,
+        });
+      }
     } catch (e) { setError(e.message || "No fue posible realizar el cálculo."); }
   }
   const filasGradiente = useMemo(() => res ? [
@@ -5597,7 +5611,7 @@ function calcularPerpetuidadCore({ a, g, tipo, mc, mg, i, N }) {
   return { vpFormula, formula, filas, sumaVP, vpPendiente, vpVerificado, diferencia, tolerancia, ciclo, saltosPorCiclo, q, bloque, valorBloque, iGrad, logBase, mcU, mgU };
 }
 
-function SimuladorPerpetuidades({ moneda }) {
+function SimuladorPerpetuidades({ moneda, onGuardarHistorial }) {
   const [operacion,setOperacion]=useState("inversion");
   const [tipo,setTipo]=useState("constante");
   const [A,setA]=useState("150000");
@@ -5646,6 +5660,15 @@ function SimuladorPerpetuidades({ moneda }) {
       ];
       setPaginaTabla(1);
       setRes({vp:vpFormula,i,iGrad,formula,pasos,filas:filasConRemanente,vpTabla:sumaVP,vpPendiente,vpVerificado,diferencia,tolerancia,N,ciclo,bloque});
+      if (onGuardarHistorial) {
+        onGuardarHistorial({
+          tipo: "perpetuidad", modulo: "Perpetuidades", regimen: tipo, operacion,
+          incognita: "VP", resultado: vpFormula, resultadoTipo: "moneda", moneda,
+          fecha: new Date().toISOString(),
+          resumen: `VP: ${formatMoneyLong(vpFormula, moneda)} · ${tipo} · tabla de ${formatNumberCO(N, 0, 0)} pagos`,
+          detalle: `Cuota inicial: ${formatMoneyLong(a, moneda)} · Tasa por cuota: ${formatPercentCO(i, 8)}${tipo !== "constante" ? ` · Gradiente: ${tipo === "aritmetico" ? formatMoneyLong(g, moneda) : formatPercentCO(g, 6)}` : ""}`,
+        });
+      }
     }catch(e){setError(e.message||"No fue posible calcular la perpetuidad.");}
   }
   const filasPagina=res?res.filas.slice((paginaTabla-1)*FILAS_POR_PAGINA,paginaTabla*FILAS_POR_PAGINA):[];
@@ -5807,7 +5830,7 @@ function generarTablaAmortizacion(cfg){
   return {filas,totalInteres,totalOtros,totalAbonos,totalPagado:filas.reduce((s,x)=>s+x.cuota+x.abonoAdicional,0)+(leasing?opcion:0),saldoFinal:saldo,tir,ea,cuotaInicial:filas.find(x=>x.n>0)?.cuota||0,opcion};
 }
 
-function SimuladorAmortizaciones({moneda}){
+function SimuladorAmortizaciones({moneda,onGuardarHistorial}){
   const [sistema,setSistema]=useState("frances");
   const [monto,setMonto]=useState("1000000");
   const [nTxt,setNTxt]=useState("24");
@@ -5861,6 +5884,15 @@ function SimuladorAmortizaciones({moneda}){
       pasos.push({label:"11. Comprobación",content:`Saldo final = ${formatMoneyLong(r.saldoFinal,moneda)}${leasing?` (opción de compra: ${formatMoneyLong(residual,moneda)})`:" (debe ser cero)"}.`});
       setPaginaTabla(1);
       setRes({...r,i,conv,pasos,config:{...cfg,periodoCuota,mesesCuota},leasing});
+      if (onGuardarHistorial) {
+        onGuardarHistorial({
+          tipo: "amortizacion", modulo: "Sistemas de amortización", regimen: sistema, operacion: leasing ? "leasing" : "crédito",
+          incognita: "tabla", resultado: r.totalPagado, resultadoTipo: "moneda", moneda,
+          fecha: new Date().toISOString(),
+          resumen: `Total pagado: ${formatMoneyLong(r.totalPagado, moneda)} · Primera cuota: ${formatMoneyLong(r.cuotaInicial, moneda)} · EA real: ${formatPercentCO(r.ea, 6)} · n = ${formatNumberCO(n, 0, 0)}`,
+          detalle: `Intereses: ${formatMoneyLong(r.totalInteres, moneda)} · Saldo final: ${formatMoneyLong(r.saldoFinal, moneda)}${leasing ? ` · Opción de compra: ${formatMoneyLong(residual, moneda)}` : ""}`,
+        });
+      }
     }catch(e){setError(e.message||"No fue posible construir la tabla.");}
   }
   function comparar(){
@@ -5881,6 +5913,10 @@ function SimuladorAmortizaciones({moneda}){
       ];
       if(filasComparacion.every(x=>x.error))throw new Error(filasComparacion[0].error);
       setComparacion(filasComparacion);
+      if (onGuardarHistorial) {
+        const resumenComparacion = filasComparacion.map(x => x.error ? `${x.nombre}: no calculado` : `${x.nombre}: primera cuota ${formatMoneyLong(x.r.cuotaInicial, moneda)}, intereses ${formatMoneyLong(x.r.totalInteres, moneda)}, total ${formatMoneyLong(x.r.totalPagado, moneda)}`).join(" · ");
+        onGuardarHistorial({ tipo: "amortizacion", modulo: "Comparación de amortizaciones", regimen: "comparación", operacion: "comparación de sistemas", resultado: NaN, resultadoTipo: "texto", moneda, fecha: new Date().toISOString(), resumen: resumenComparacion, detalle: `Monto: ${formatMoneyLong(vp, moneda)} · n = ${formatNumberCO(n, 0, 0)} · tasa por cuota: ${formatPercentCO(i, 8)}` });
+      }
     }catch(e){setError(e.message||"No se pudo comparar.");}
   }
   const tabla=res?.filas||[];
@@ -6018,7 +6054,8 @@ function Simular({ moneda }) {
             <div style={{ display: "grid", gap: 8 }}>
               {historial.map((h) => (
                 <div key={h.id} style={{ fontSize: 12.5, color: C.ink, borderBottom: `1px solid ${C.line}`, paddingBottom: 6 }}>
-                  <span style={{ color: C.slate }}>{new Date(h.fecha).toLocaleString("es-CO")}</span> · {h.tipo === "avanzado" ? "Modo avanzado" : h.tipo === "tasas" ? "Conversión de tasas" : h.tipo === "anualidad" ? "Anualidades" : "Modo básico"} · {h.regimen} · <strong>{formatearResultadoHistorial(h)}</strong>
+                  <span style={{ color: C.slate }}>{new Date(h.fecha).toLocaleString("es-CO")}</span> · <strong>{h.modulo || (h.tipo === "avanzado" ? "Flujos múltiples" : h.tipo === "tasas" ? "Calculadora de tasas" : h.tipo === "anualidad" ? "Anualidades" : h.tipo === "gradiente" ? "Gradientes" : h.tipo === "perpetuidad" ? "Perpetuidades" : h.tipo === "amortizacion" ? "Sistemas de amortización" : "Interés básico")}</strong> · {h.regimen || ""} · {h.resumen || formatearResultadoHistorial(h)}
+                  {h.detalle && <div style={{ color: C.slate, marginTop: 3, paddingLeft: 2 }}>{h.detalle}</div>}
                 </div>
               ))}
             </div>
@@ -6030,9 +6067,9 @@ function Simular({ moneda }) {
       {modo === "avanzado" && <SimularAvanzado moneda={moneda} onGuardarHistorial={guardar} />}
       {modo === "tasas" && <CalculadoraTasas moneda={moneda} onGuardarHistorial={guardar} />}
       {modo === "anualidades" && <SimuladorAnualidades moneda={moneda} onGuardarHistorial={guardar} />}
-      {modo === "gradientes" && <SimuladorGradientes moneda={moneda} />}
-      {modo === "perpetuidades" && <SimuladorPerpetuidades moneda={moneda} />}
-      {modo === "amortizaciones" && <SimuladorAmortizaciones moneda={moneda} />}
+      {modo === "gradientes" && <SimuladorGradientes moneda={moneda} onGuardarHistorial={guardar} />}
+      {modo === "perpetuidades" && <SimuladorPerpetuidades moneda={moneda} onGuardarHistorial={guardar} />}
+      {modo === "amortizaciones" && <SimuladorAmortizaciones moneda={moneda} onGuardarHistorial={guardar} />}
     </Section>
   );
 }
