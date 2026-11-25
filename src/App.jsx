@@ -660,7 +660,7 @@ function Inicio({ ir }) {
   return (
     <Section style={{ paddingTop: 56, paddingBottom: 60 }}>
       <div style={{ maxWidth: 660 }}>
-        <Etiqueta>Caso aplicado · Matemáticas Financieras · Segundo corte 2026-2</Etiqueta>
+        <Etiqueta>Caso aplicado · Matemáticas Financieras · Tercer corte 2026-2</Etiqueta>
         <h1 style={{ fontFamily: F_DISPLAY, fontSize: 44, lineHeight: 1.1, color: C.navy, margin: "0 0 18px" }}>
           Entiende tu dinero antes de decidir.
         </h1>
@@ -5591,7 +5591,7 @@ function Interacciones() {
   Interacciones · segundo corte
 </h1>
 <p style={{ fontSize: 13.5, color: C.slate, marginBottom: 24, maxWidth: 760 }}>
-  Desde la interacción 6 se documentan las interacciones correspondientes al segundo corte. Estas muestran cómo se revisó y mejoró Numeris a partir de la rúbrica, especialmente en conversión de tasas, anualidades vencidas, anualidades anticipadas, claridad conceptual, funcionamiento del simulador y corrección de errores detectados durante el desarrollo.
+  Desde la interacción 11 se documentan las interacciones correspondientes al tercer corte. Estas muestran cómo se revisó y mejoró Numeris a partir de la rúbrica, especialmente en gradientes, perpetuidades y sistemas de amortización , claridad conceptual, funcionamiento del simulador y corrección de errores detectados durante el desarrollo.
 </p>
 
       {INTERACCIONES_DATA.map((item) => (
