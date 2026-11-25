@@ -373,6 +373,7 @@ const GLOSARIO = [
   { t: "t", d: "Tiempo en años. Por ejemplo, 2 años y medio." },
   { t: "Capital", d: "La plata inicial con la que empieza la operación." },
   { t: "Interés", d: "La plata adicional que pagas o ganas por usar dinero durante un tiempo." },
+  { t: "Interés compuesto", d: "Es cuando los intereses se pegan a la plata inicial y después también producen más intereses. En las anualidades sirve para llevar todas las cuotas a una misma fecha." },
   { t: "Periodo", d: "Intervalo de tiempo entre dos momentos de la operación: un mes, un trimestre, un semestre, etc." },
   { t: "Periodicidad", d: "Cada cuánto pasa algo. Por ejemplo: cada mes." },
   { t: "Flujo", d: "Una plata que entra o sale." },
@@ -386,15 +387,15 @@ const GLOSARIO = [
   { t: "Descuento", d: "Traer una plata del futuro hacia hoy." },
   { t: "Tasa nominal", d: "Tasa anual expresada con una frecuencia de capitalización. Por ejemplo, nominal anual capitalizable mensual." },
   { t: "Tasa efectiva", d: "Tasa que muestra el crecimiento o costo de un periodo específico, teniendo en cuenta la capitalización." },
-  { t: "Anualidad", d: "Una fila de pagos iguales. Como muchas galletas del mismo tamaño." },
-  { t: "Anualidad vencida", d: "Pagos iguales que se hacen al final. Primero pasa el tiempo y después pagas." },
+  { t: "Anualidad", d: "Una fila de pagos iguales. Como muchas galletas del mismo tamaño. Para juntar las cuotas en una misma fecha y saber cuánto valen hoy o al final, usamos interés compuesto." },
+  { t: "Anualidad vencida", d: "Pagos iguales que se hacen al final. Primero pasa el tiempo y después pagas. Para calcular cuánto valen hoy o al final, usamos interés compuesto." },
   { t: "Cuota (A)", d: "La plata igual que pagas cada vez." },
   { t: "Pago periódico", d: "Un pago que se repite. Por ejemplo, todos los meses." },
   { t: "Valor presente de una anualidad", d: "La foto de HOY de todas las cuotas juntas." },
   { t: "Valor futuro de una anualidad", d: "La foto del FINAL de todas las cuotas juntas." },
   { t: "Pago extra", d: "Un pago diferente a las cuotas. Es una galleta aparte." },
   { t: "Pago extraordinario", d: "Otro nombre para pago extra." },
-  { t: "Anualidad anticipada", d: "Pagos iguales que se hacen al inicio. Primero pagas y después pasa el tiempo." },
+  { t: "Anualidad anticipada", d: "Pagos iguales que se hacen al inicio. Primero pagas y después pasa el tiempo. También usamos interés compuesto para calcular cuánto valen hoy o al final." },
   { t: "Tasa anticipada", d: "Tasa donde el interés del periodo se descuenta o se paga al inicio del periodo." },
   { t: "Cuota anticipada", d: "Una cuota que pagas al comienzo." },
   { t: "Valor presente de una anualidad anticipada", d: "La foto de HOY de cuotas que se pagan al inicio." },
@@ -890,7 +891,7 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
         <p><strong>NA:</strong> la torta entera (todo el año). <strong>nc:</strong> en cuántos pedacitos la cortas (12 si es por mes, 4 si es cada tres meses). <strong>ip:</strong> lo que le toca a cada pedacito.</p>
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
-          <p>María pide un crédito y el banco le dice: "24% NAM". Eso quiere decir 24% en todo el año, pero cobrado cada mes. Como el crédito se cobra mes a mes, necesitamos saber cuánto es "el pedacito" de cada mes.</p>
+          <p>María pide un crédito de COP 10.000.000 y el banco le dice: "24% NAM". Eso quiere decir 24% en todo el año, pero cobrado cada mes. Como el crédito se cobra mes a mes, necesitamos saber cuánto es "el pedacito" de cada mes.</p>
           <Acordeon title="Ver procedimiento completo">
             <FichaProcedimiento pasos={[
               { label: "Datos", content: "NA = 24 % (todo el año) · nc = 12 (se reparte en 12 meses)" },
@@ -910,7 +911,7 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
         <p><strong>ip:</strong> el pedacito (por ejemplo, de un mes). <strong>nc:</strong> cuántos pedacitos hay en el año. <strong>NA:</strong> la torta completa del año.</p>
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
-          <p>Una cuenta de ahorros te da un pedacito de 1% cada mes.</p>
+          <p>Una cuenta de ahorros en Colombia te da un pedacito de 1% cada mes.</p>
           <Acordeon title="Ver procedimiento completo">
             <FichaProcedimiento pasos={[
               { label: "Datos", content: "ip = 1 % cada mes · nc = 12 meses en el año" },
@@ -926,10 +927,12 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
       {/* SECCIÓN 5 */}
       <Acordeon title="5 · ¿Qué es una tasa efectiva?">
         <p><strong>¿Qué es?</strong> La tasa efectiva muestra cuánto crece o cuesta el dinero en un periodo determinado, teniendo en cuenta la capitalización de los intereses.</p>
+        <p><strong>¿Cómo funciona?</strong> Es como mirar cuánto creció la plata en un pedacito de tiempo. Si quieres mirar otro pedacito, conviertes la tasa para que las dos hablen del mismo tiempo.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 10 }}>
           <TarjetaMini titulo="Nominal">Es una tasa anual expresada con una frecuencia de capitalización.</TarjetaMini>
-          <TarjetaMini titulo="Efectiva">Muestra el crecimiento o costo para un periodo específico.</TarjetaMini>
+          <TarjetaMini titulo="Efectiva">Muestra cuánto crece o cuesta la plata en ese pedacito de tiempo.</TarjetaMini>
         </div>
+        <TarjetaMini titulo="Diferencia con la tasa nominal" tono="azul">La nominal cuenta la tasa de todo el año y dice en cuántos pedacitos se reparte. La efectiva muestra cuánto crece o cuesta la plata en uno de esos pedacitos. Por eso, antes de compararlas, las ponemos en el mismo tiempo.</TarjetaMini>
       </Acordeon>
 
       {/* SECCIÓN 6 */}
@@ -939,7 +942,7 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
         <p><strong>iy:</strong> la tasa que ya tienes. <strong>ny:</strong> cuántas veces cabe esa tasa en un año. <strong>ix:</strong> la tasa nueva que buscas. <strong>nx:</strong> cuántas veces cabe la tasa nueva en un año.</p>
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
-          <p>Tienes 2% mensual y quieres saber cuánto es eso en un año completo (efectiva anual).</p>
+          <p>Tienes una cuenta de ahorros en Colombia que te da un pedacito de 2% mensual y quieres saber cuánto es eso en un año completo (efectiva anual).</p>
           <Acordeon title="Ver procedimiento completo">
             <FichaProcedimiento pasos={[
               { label: "Datos", content: "iy = 2 % · ny = 12 (se cobra 12 veces al año) · nx = 1 (queremos el tamaño 'año')" },
@@ -990,7 +993,7 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
         <p><strong>iv:</strong> la tasa vencida (se paga al final). <strong>ia:</strong> la tasa anticipada (se paga al principio).</p>
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Ejemplo práctico</div>
-          <p>Te prestan $10.000.000 con una tasa del 5%. Mira cómo cambia todo según CUÁNDO se cobre el interés:</p>
+          <p>Te prestan COP 10.000.000 con una tasa del 5%. Mira cómo cambia todo según CUÁNDO se cobre el interés:</p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "10px 0" }}>
             <TarjetaMini titulo="Vencida">
               Te dan $10.000.000 completos. Al final devuelves $10.500.000. El interés real fue 5 %.
@@ -999,6 +1002,13 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
               Te descuentan el interés al inicio: de $10.000.000 descuentan $500.000, así que recibes $9.500.000. Como recibiste menos y devuelves $10.000.000, esa tasa anticipada no equivale a una vencida del 5 %.
             </TarjetaMini>
           </div>
+          <FichaProcedimiento pasos={[
+            { label: "Datos", content: "Tasa anticipada = 5 % = 0,05" },
+            { label: "Fórmula para pasar de anticipada a vencida", content: "iv = ia / (1 − ia)" },
+            { label: "Sustitución", content: "iv = 0,05 / (1 − 0,05) = 0,05 / 0,95" },
+            { label: "Resultado", content: "iv = 0,05263158 = 5,2632 % vencida" },
+            { label: "Interpretación", content: "El 5 % anticipado equivale a 5,2632 % vencido. La tasa cambia porque al principio recibes menos plata, pero al final devuelves los COP 10.000.000 completos." },
+          ]} />
           <p style={{ color: C.slate }}>La tasa equivalente cambia porque cambia el momento en que se descuenta o se paga el interés: al inicio o al final.</p>
         </div>
       </Acordeon>
@@ -1101,7 +1111,7 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
       </NivelCinco>
 
       <div style={{ padding: 14, background: C.paperDark, borderRadius: 8, fontSize: 13.5, color: C.slate, marginBottom: 14 }}>
-        <strong style={{ color: C.navy }}>Dos ideas clave:</strong> (1) las anualidades usan interés <strong>compuesto</strong>, porque cada cuota cae en un día diferente. (2) La tasa debe hablar el mismo idioma que las cuotas: si las cuotas son mensuales, la tasa también debe ser mensual.
+        <strong style={{ color: C.navy }}>Dos ideas clave:</strong> (1) las anualidades vencidas se calculan con interés <strong>compuesto</strong> (interés sobre interés), porque cada cuota cae en un día diferente. Para compararlas, las llevamos a una misma fecha. (2) La tasa debe hablar el mismo idioma que las cuotas: si las cuotas son mensuales, usamos una tasa efectiva vencida mensual.
       </div>
 
       {/* SECCIÓN 1 */}
@@ -1179,6 +1189,7 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
       {/* SECCIÓN 3 */}
       <Acordeon title="3 · ¿Qué significa vencida?">
         <p><strong>¿Qué es?</strong> En una anualidad vencida pagas <strong>al final</strong>. Primero pasa el mes, el bimestre o el pedacito de tiempo, y después pagas.</p>
+        <p><strong>¿Cómo funciona?</strong> La primera cuota llega cuando termina el primer pedacito de tiempo. Después pagas otra al final de cada pedacito.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
           <TarjetaMini titulo="Como el restaurante" tono="azul">Primero comes el almuerzo y al final pagas. Primero pasa el mes y al final pagas la cuota.</TarjetaMini>
           <TarjetaMini titulo="Plata prestada" tono="azul">Te dan la plata hoy y pagas el primer pedacito cuando termina el mes.</TarjetaMini>
@@ -1187,7 +1198,7 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
         <TarjetaMini titulo="Ojo: vencida NO es atrasada" tono="alerta">
           "Vencida" no quiere decir que te atrasaste. Solo quiere decir que pagas al final.
         </TarjetaMini>
-        <p style={{ color: C.slate, marginTop: 12 }}><strong>Más adelante:</strong> la anualidad anticipada es lo contrario. Es como el cine: primero pagas la boleta y después ves la película.</p>
+        <p style={{ color: C.slate, marginTop: 12 }}><strong>Diferencia con la anticipada:</strong> en la vencida primero pasa el tiempo y después pagas; en la anticipada pagas primero y después pasa el tiempo. Es como el cine: primero pagas la boleta y después ves la película.</p>
         <Interpretacion>
           En una anualidad vencida nunca hay una cuota en el momento 0 (hoy). La primera cuota aparece cuando termina el primer pedacito de tiempo.
         </Interpretacion>
@@ -1207,7 +1218,7 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
         <div style={{ fontSize: 13, color: C.slate, marginBottom: 6 }}>Las letras que vamos a usar</div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <TarjetaMini titulo="A">La cuota: lo que pagas cada vez. Siempre es el mismo valor.</TarjetaMini>
-          <TarjetaMini titulo="i">La tasa del pedacito de tiempo: el "pedacito" de interés de cada mes (o de cada pedacito de tiempo).</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa del pedacito de tiempo: el "pedacito" de interés de cada mes (o de cada pedacito de tiempo). Para la fórmula usamos una tasa efectiva vencida de ese mismo pedacito.</TarjetaMini>
           <TarjetaMini titulo="n">Cuántos pedacitos de tiempo hay, que es lo mismo que cuántas cuotas hay.</TarjetaMini>
           <TarjetaMini titulo="VP">Valor de hoy: cuánto valen todas las cuotas hoy.</TarjetaMini>
           <TarjetaMini titulo="VF">Valor del final: cuánto valen todas las cuotas al final.</TarjetaMini>
@@ -1236,7 +1247,7 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "8px 0" }}>
           <TarjetaMini titulo="VP">El valor de todas las cuotas hoy.</TarjetaMini>
           <TarjetaMini titulo="A">La cuota.</TarjetaMini>
-          <TarjetaMini titulo="i">La tasa del pedacito de tiempo.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa del pedacito de tiempo. Para la fórmula debe ser efectiva vencida y del mismo tiempo que las cuotas.</TarjetaMini>
           <TarjetaMini titulo="n">El número de pagos.</TarjetaMini>
         </div>
         <p style={{ color: C.slate }}>Esta fórmula hace el trabajo de sumar muchas cuotas de una sola vez.</p>
@@ -1840,7 +1851,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
             No confundas tasa anticipada con anualidad anticipada. La tasa habla del interés. La anualidad habla de la cuota. Primero se arregla la tasa y después se usa la fórmula correcta.
           </div>
         </div>
-        <p style={{ marginTop: 14 }}><strong>¿Entonces qué tasa se usa?</strong> Siempre usamos una <strong>tasa periódica efectiva</strong>, es decir, una tasa lista para usar porque ya está en el mismo periodo de las cuotas. Si la tasa llega anticipada, primero se convierte.</p>
+        <p style={{ marginTop: 14 }}><strong>¿Entonces qué tasa se usa?</strong> Siempre usamos una <strong>tasa efectiva vencida</strong> del mismo pedacito de tiempo de las cuotas. Dicho fácil: si las cuotas son mensuales, la tasa también debe ser mensual. Aunque pagues al inicio, la tasa que entra a la fórmula va vencida. Si llega anticipada, primero la cambiamos a vencida.</p>
         <TarjetaMini titulo="Primero se traduce la tasa" tono="azul">Si la tasa viene anticipada, primero se convierte con la sección de conversión de tasas y luego entra a la fórmula de anualidades.</TarjetaMini>
         <div style={{ fontSize: 13, color: C.slate, margin: "12px 0 8px" }}>Las cuatro combinaciones que pueden aparecer</div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -1857,7 +1868,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
       {/* SECCIÓN 4 */}
       <Acordeon title="4 · Conexión con interés compuesto y conversión de tasas">
         <TarjetaMini titulo="Dicho claramente" tono="azul">
-          Las anualidades usan <strong>interés compuesto</strong> (interés sobre interés). No se calculan con interés simple.
+          Las anualidades vencidas y anticipadas usan <strong>interés compuesto</strong> (interés sobre interés). No se calculan con interés simple.
         </TarjetaMini>
         <p style={{ marginTop: 12 }}><strong>¿Por qué?</strong> Porque cada cuota cae en una fecha diferente. Para compararlas, hay que moverlas a una misma fecha usando interés compuesto.</p>
 
@@ -1874,7 +1885,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         </div>
         <div style={{ marginTop: 12 }}>
           <TarjetaMini titulo="Advertencia" tono="alerta">
-            Si la tasa viene nominal o anticipada, primero se debe convertir a una tasa periódica efectiva del tamaño correcto. Solo después entra a la fórmula.
+            Si la tasa viene nominal o anticipada, primero la cambiamos a una tasa efectiva vencida del mismo pedacito de tiempo de las cuotas. Después sí entra a la fórmula.
           </TarjetaMini>
         </div>
         <div style={{ fontSize: 13, color: C.slate, margin: "14px 0 6px" }}>El camino completo de la tasa</div>
@@ -1938,7 +1949,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "8px 0" }}>
           <TarjetaMini titulo="VP">El valor de todas las cuotas hoy.</TarjetaMini>
           <TarjetaMini titulo="A">La cuota o anualidad.</TarjetaMini>
-          <TarjetaMini titulo="i">La tasa periódica efectiva del periodo de las cuotas.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa efectiva vencida del mismo pedacito de tiempo de las cuotas. Aunque pagues al inicio, la tasa va vencida.</TarjetaMini>
           <TarjetaMini titulo="n">El número de pagos.</TarjetaMini>
         </div>
         <p style={{ color: C.slate }}>El (1 + i) aparece porque cada cuota se paga antes.</p>
@@ -1978,7 +1989,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "8px 0" }}>
           <TarjetaMini titulo="VF">El valor de todas las cuotas al final.</TarjetaMini>
           <TarjetaMini titulo="A">La cuota o anualidad.</TarjetaMini>
-          <TarjetaMini titulo="i">La tasa periódica efectiva del periodo de las cuotas.</TarjetaMini>
+          <TarjetaMini titulo="i">La tasa efectiva vencida del mismo pedacito de tiempo de las cuotas. Aunque pagues al inicio, la tasa va vencida.</TarjetaMini>
           <TarjetaMini titulo="n">El número de pagos.</TarjetaMini>
         </div>
         <p style={{ color: C.slate }}><strong>Diferencia con la vencida:</strong> en la anticipada cada pago se hace al inicio del pedacito de tiempo, por eso el valor del final cambia.</p>
@@ -3860,15 +3871,12 @@ const INTERACCIONES_DATA = [
 También especificó las principales capacidades financieras requeridas: interés simple, compuesto y continuo; selección entre crédito e inversión; COP, USD y EUR; cálculo de VP, VF, tasa y tiempo; múltiples flujos de dinero; coeficientes; momento de un flujo desconocido; periodicidades configurables; conversión del tiempo a períodos; ganancia neta; ecuaciones de valor; procedimientos paso a paso; formato numérico colombiano y requisitos técnicos.
 
 La IA señaló además que Numeris no debía limitarse a una calculadora básica y debía poder resolver ejercicios similares a los trabajados durante el primer corte.`,
-    problema: `Al probar en Emergent la primera versión de Numeris, identificamos que la periodicidad de la tasa no era suficientemente clara; no se distinguían adecuadamente n y t; la interfaz de interés continuo se parecía demasiado a la de simple y compuesto; y las explicaciones de los ejercicios eran demasiado básicas.
-Además, al intentar incorporar todas las mejoras que necesitábamos, encontramos limitaciones en la versión gratuita de Emergent, que no nos permitía completar e integrar los cambios que teníamos planeados. Por esta razón, decidimos buscar otra forma de continuar con el desarrollo de la herramienta.`,
-    correccion: `Se envió un video de la primera versión de Numeris a la IA para que analizara visualmente la herramienta y se utilizó un nuevo prompt especificando los problemas detectados. Sin embargo, debido a las limitaciones que encontramos en Emergent, decidimos comenzar nuevamente el desarrollo de Numeris con ayuda de ChatGPT Business y Claude.
-Elegimos estas herramientas porque nos permitían trabajar con mayor flexibilidad tanto en la parte financiera como en la programación. ChatGPT Business nos ayudó a revisar las indicaciones del proyecto, organizar las mejoras, comprobar procedimientos y mejorar las explicaciones. Por su parte, Claude nos permitió trabajar directamente sobre el código, revisar archivos extensos, identificar errores y realizar ajustes en la aplicación.
-A partir de este proceso se retomaron los problemas identificados en la primera versión y se comenzó a construir una herramienta que respondiera mejor a las necesidades del proyecto.`,
+    problema: `Al probar en Emergent la primera versión construida a partir de este prompt, identificamos que la periodicidad de la tasa no era suficientemente clara; no se distinguían adecuadamente n y t; la interfaz de interés continuo se parecía demasiado a la de simple y compuesto; y las explicaciones de los ejercicios eran demasiado básicas.`,
+    correccion: `Se envió un video de la primera versión de Numeris a la IA para que analizara visualmente la herramienta y se utilizó un nuevo prompt especificando los problemas detectados. A partir de esa revisión se reforzó la diferenciación entre los tres regímenes, el manejo de las periodicidades, las variables utilizadas y la explicación paso a paso de los ejercicios.`,
     resultado: `Numeris pasó a diferenciar de manera mucho más clara los tres regímenes de interés y a explicar cómo se relacionan la tasa, el tiempo y los períodos. En interés simple y compuesto utiliza i y n, mientras que en interés continuo utiliza r y t, expresando siempre t en años. También se mejoró la selección de periodicidades y se incorporó una explicación más completa de los procedimientos.`,
     trazabilidad: `En Simulación, al seleccionar interés continuo, las variables disponibles cambian automáticamente: el tiempo se expresa mediante t y la tasa continua mediante r. En interés simple y compuesto se utilizan i y n. También es posible seleccionar claramente la periodicidad y, después de calcular, aparece el botón “Ver procedimiento completo”. En interés continuo, el procedimiento aclara que t siempre se expresa en años.`,
     link: "https://chatgpt.com/share/e/6a91ed48-54c0-8012-a31d-ad9105eb4d9b",
-      },
+  },
   {
     n: 2,
     titulo: "Crédito, inversión, entradas, salidas y ganancia neta I",
