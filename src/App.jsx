@@ -185,14 +185,16 @@ function parseNumCO(v) {
 
 // n siempre representa un número entero de periodos. Para evitar que "100,000"
 // se interprete como 100 (decimal colombiano), se exige escribirlo sin separadores.
-function parseEnteroPeriodos(v, etiqueta = "n", maximo = MAX_FILAS_SIMULADOR) {
-  const txt = String(v ?? "").trim();
+function parseEnteroPeriodos(v, etiqueta = "n", maximo = 100000) {
+  // n es un conteo, no una cantidad monetaria: solo admite dígitos enteros.
+  // Se usa el límite literal para evitar dependencias de inicialización entre módulos.
+  const txt = String(v ?? "").trim().replace(/\s/g, "");
   if (!/^\d+$/.test(txt)) {
-    throw new Error(`${etiqueta} debe ser un número entero, sin puntos ni comas. Escribe 15000 o 100000, no 15.000 ni 100,000.`);
+    throw new Error(`${etiqueta} debe ser un número entero, sin puntos ni comas. Ejemplo: 20000. Máximo: 100000.`);
   }
   const n = Number(txt);
   if (!Number.isSafeInteger(n) || n < 1 || n > maximo) {
-    throw new Error(`${etiqueta} debe estar entre 1 y ${formatNumberCO(maximo, 0, 0)} periodos.`);
+    throw new Error(`${etiqueta} debe estar entre 1 y ${maximo} periodos.`);
   }
   return n;
 }
@@ -5209,7 +5211,7 @@ function SimuladorAnualidades({ moneda, onGuardarHistorial }) {
 }
 
 /* ============================================================
-   TERCER CORTE — GRADIENTES, PERPETUIDADES Y AMORTIZACIÓN
+   SIMULADORES — GRADIENTES, PERPETUIDADES Y AMORTIZACIÓN
    Se integra dentro de Simular. Usa el motor convertirTasa existente.
    ============================================================ */
 
@@ -5362,7 +5364,7 @@ function SimuladorGradientes({ moneda }) {
       <Campo label="¿Las cuotas aumentan o disminuyen?"><Selector value={direccion} onChange={e=>setDireccion(e.target.value)} options={[{value:"creciente",label:"Creciente (+)"},{value:"decreciente",label:"Decreciente (−)"}]}/></Campo>
       <Campo label={`Primera cuota (A₁) · ${moneda}`}><Entrada value={A1} onChange={e=>setA1(e.target.value)} placeholder="800.000"/></Campo>
       <Campo label={tipo === "aritmetico" ? `Gradiente (G) · ${moneda}` : "Gradiente geométrico (g) · %"}><Entrada value={gradiente} onChange={e=>setGradiente(e.target.value)} placeholder={tipo === "aritmetico" ? "30.000" : "0,5"}/></Campo>
-      <Campo label="Número de cuotas (n)" help="n debe ser entero y se escribe SIN puntos ni comas. Ejemplo: 15000. Máximo permitido: 100000. La tabla se muestra por páginas de 100 filas."><Entrada type="text" inputMode="numeric" pattern="[0-9]*" value={nTxt} onChange={e=>setNTxt(e.target.value.replace(/[^0-9]/g, ""))} placeholder="15000 (sin separadores)"/></Campo>
+      <Campo label="Número de cuotas (n)" help="n debe ser entero y se escribe SIN puntos ni comas. Ejemplo: 15000. Máximo permitido: 100000. La tabla se muestra por páginas de 100 filas."><Entrada type="text" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={nTxt} onChange={e=>setNTxt(e.target.value.replace(/[^0-9]/g, "").slice(0,6))} placeholder="20000 (sin separadores)"/></Campo>
       <Campo label="Periodicidad de las cuotas"><Selector value={periodoCuota} onChange={e=>setPeriodoCuota(e.target.value)} options={OPC_PERIODOS_CUOTAS}/>{periodoCuota === "personalizado_meses" && <Entrada value={mesesCuota} onChange={e=>setMesesCuota(e.target.value)} placeholder="Meses por cuota"/>}</Campo>
       <Campo label="¿Cada cuánto cambia el gradiente?"><Selector value={periodoGrad} onChange={e=>setPeriodoGrad(e.target.value)} options={[{value:"mismo",label:"En cada periodo de cuota"},{value:"personalizado_meses",label:"En un periodo diferente (meses)"}]}/>{periodoGrad === "personalizado_meses" && <Entrada value={mesesGrad} onChange={e=>setMesesGrad(e.target.value)} placeholder="Meses entre cambios"/>}</Campo>
       <Campo label="¿Qué deseas calcular?"><Selector value={objetivo} onChange={e=>setObjetivo(e.target.value)} options={[{value:"VP",label:"Valor presente (VP)"},{value:"VF",label:"Valor futuro (VF)"}]}/></Campo>
@@ -5508,15 +5510,20 @@ function SimuladorPerpetuidades({ moneda }) {
       // la suma de los primeros N pagos calculados individualmente.
       // De esta manera no se introduce una segunda fórmula de cola que pueda
       // divergir por errores de bloques o por acumulación de redondeos.
-      const tolerancia=Math.max(1e-7,Math.abs(vpFormula)*5e-12);
+      const tolerancia=Math.max(1e-7,Math.abs(vpFormula)*1e-10);
       const vpPendientePorDiferencia=vpFormula-sumaVP;
-      if(!Number.isFinite(vpPendientePorDiferencia)||vpPendientePorDiferencia < -tolerancia){
-        throw new Error("La suma de los pagos mostrados supera el valor presente calculado para la perpetuidad. Revisa los datos y la periodicidad.");
+      if(!Number.isFinite(vpPendientePorDiferencia)){
+        throw new Error("No fue posible representar el valor de los pagos restantes. Revisa la tasa y el gradiente.");
       }
-      const vpPendiente=Math.max(0,vpPendientePorDiferencia);
+      // La diferencia puede ser levemente negativa por redondeo binario cuando
+      // N ya captura prácticamente toda la perpetuidad. En ese caso se toma 0.
+      if(vpPendientePorDiferencia < -tolerancia){
+        throw new Error(`La suma de los primeros ${N} pagos (${formatMoneyLong(sumaVP,moneda)}) supera el valor de la fórmula (${formatMoneyLong(vpFormula,moneda)}). Revisa el tipo de gradiente y sus periodos.`);
+      }
+      const vpPendiente=vpPendientePorDiferencia>0?vpPendientePorDiferencia:0;
       const vpVerificado=sumaVP+vpPendiente;
       const diferencia=vpVerificado-vpFormula;
-      if(Math.abs(diferencia)>tolerancia)throw new Error("No fue posible verificar la suma de los valores presentes. Revisa los datos ingresados.");
+      if(Math.abs(diferencia)>tolerancia)throw new Error(`La diferencia numérica de la comprobación es ${formatMoneyLong(diferencia,moneda)}. Reduce n o revisa los datos.`);
       const filasConRemanente=[...filas,{n:`${N+1} en adelante`,remanente:true,cuota:NaN,logCuota:NaN,saltos:"—",factor:NaN,vp:vpPendiente,vpAcumulado:vpVerificado}];
       const pasos=[
         {label:"1. Datos",content:`A = ${formatMoneyLong(a,moneda)} · Tipo: ${tipo} · Cuotas cada ${mc} meses · Tabla: ${formatNumberCO(N,0,0)} pagos (máximo permitido: 100.000).${tipo!=="constante"?` Gradiente: ${tipo==="aritmetico"?formatMoneyLong(g,moneda):formatPercentCO(g,8)}; intervalo: ${mg} meses.`:""}`},
@@ -5542,7 +5549,7 @@ function SimuladorPerpetuidades({ moneda }) {
       {tipo!=="constante"&&<Campo label={tipo==="aritmetico"?`Gradiente aritmético (L) · ${moneda}`:"Gradiente geométrico (g) · %"}><Entrada value={grad} onChange={e=>setGrad(e.target.value)} placeholder={tipo==="aritmetico"?"5.000":"0,72"}/></Campo>}
       <Campo label="Periodicidad de las cuotas"><Selector value={periodoCuota} onChange={e=>setPeriodoCuota(e.target.value)} options={OPC_PERIODOS_CUOTAS}/>{periodoCuota==="personalizado_meses"&&<Entrada value={mesesCuota} onChange={e=>setMesesCuota(e.target.value)} placeholder="Meses por cuota"/>}</Campo>
       {tipo!=="constante"&&<Campo label="¿Cada cuánto cambia el gradiente?"><Selector value={periodoGrad} onChange={e=>setPeriodoGrad(e.target.value)} options={[{value:"mismo",label:"En cada periodo de cuota"},{value:"personalizado_meses",label:"En un periodo diferente (meses)"}]}/>{periodoGrad==="personalizado_meses"&&<Entrada value={mesesGrad} onChange={e=>setMesesGrad(e.target.value)} placeholder="Meses entre cambios"/>}</Campo>}
-      <Campo label="Cantidad de pagos (n) que se muestran en la tabla" help="Escribe un entero SIN puntos ni comas. Puedes consultar hasta 100.000 pagos. Los pagos posteriores se incluyen en el valor pendiente."><Entrada type="text" inputMode="numeric" pattern="[0-9]*" value={maxPagos} onChange={e=>setMaxPagos(e.target.value.replace(/[^0-9]/g, ""))} placeholder="15000 (sin separadores)"/></Campo>
+      <Campo label="Cantidad de pagos (n) que se muestran en la tabla" help="Escribe un entero SIN puntos ni comas. Puedes consultar hasta 100.000 pagos. Los pagos posteriores se incluyen en el valor pendiente."><Entrada type="text" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={maxPagos} onChange={e=>setMaxPagos(e.target.value.replace(/[^0-9]/g, "").slice(0,6))} placeholder="20000 (sin separadores)"/></Campo>
       <div style={{fontSize:11.5,color:C.slate,marginTop:-6,marginBottom:10}}>Máximo permitido: 100.000 pagos. La tabla se muestra en páginas de 100 filas.</div>
       <EditorTasa titulo="Tasa ingresada" valor={tasaIn} onChange={setTasaIn}/>
       <Boton variant="gold" onClick={calcular}>Calcular valor presente</Boton>
