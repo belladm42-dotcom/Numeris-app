@@ -5196,6 +5196,495 @@ function SimuladorAnualidades({ moneda, onGuardarHistorial }) {
 }
 
 /* ============================================================
+   TERCER CORTE — GRADIENTES, PERPETUIDADES Y AMORTIZACIÓN
+   Se integra dentro de Simular. Usa el motor convertirTasa existente.
+   ============================================================ */
+
+const MESES_POR_PERIODO = {
+  diario: 12 / 365, semanal: 12 / 52, quincenal: 0.5,
+  mensual: 1, bimestral: 2, trimestral: 3, cuatrimestral: 4,
+  quintumestral: 5, semestral: 6, anual: 12,
+};
+function mesesDelPeriodo(periodo, mesesPersonalizados) {
+  if (periodo === "personalizado_meses") {
+    const m = parseNumCO(mesesPersonalizados);
+    if (!(m > 0)) throw new Error("Escribe un número de meses mayor que cero.");
+    return m;
+  }
+  const m = MESES_POR_PERIODO[periodo];
+  if (!(m > 0)) throw new Error("El periodo seleccionado no es válido.");
+  return m;
+}
+function tasaParaCuota(tasaIn, periodoCuota, mesesCuota) {
+  const t = parseNumCO(tasaIn.tasa);
+  if (!Number.isFinite(t) || t < 0) throw new Error("Ingresa una tasa válida, igual o mayor que cero.");
+  const conv = convertirTasaAPeriodoOperacion({
+    tasaPct: t, tipoEntrada: tasaIn.tipo, modalidadEntrada: tasaIn.modalidad,
+    periodoEntrada: tasaIn.periodo, mesesEntradaPersonalizados: parseNumCO(tasaIn.meses),
+    periodoOperacion: periodoCuota, mesesOperacionPersonalizados: mesesCuota,
+  });
+  return { i: conv.iEfectivaVencida, conv, tasaOriginal: t };
+}
+function agregarPasosConversion(conv) {
+  return (conv.pasos || []).map((p, k) => ({ label: `Conversión ${k + 1} · ${p.label}`, content: p.content }));
+}
+function sumar(arr, key) { return arr.reduce((s, x) => s + (Number(x[key]) || 0), 0); }
+function formatMoneyLong(v, moneda) { return formatCurrencyCO(v, moneda, 4); }
+
+function SimuladorGradientes({ moneda }) {
+  const [operacion, setOperacion] = useState("credito");
+  const [tipo, setTipo] = useState("aritmetico");
+  const [direccion, setDireccion] = useState("creciente");
+  const [A1, setA1] = useState("800000");
+  const [gradiente, setGradiente] = useState("30000");
+  const [nTxt, setNTxt] = useState("20");
+  const [periodoCuota, setPeriodoCuota] = useState("trimestral");
+  const [mesesCuota, setMesesCuota] = useState("3");
+  const [periodoGrad, setPeriodoGrad] = useState("mismo");
+  const [mesesGrad, setMesesGrad] = useState("3");
+  const [objetivo, setObjetivo] = useState("VP");
+  const [tasaIn, setTasaIn] = useState({ tasa: "17.85", tipo: "efectiva", modalidad: "vencida", periodo: "anual", meses: "5" });
+  const [extras, setExtras] = useState([]);
+  const [adicional, setAdicional] = useState({ monto: "100000", cada: "2", inicio: "2" });
+  const [usarAdicional, setUsarAdicional] = useState(false);
+  const [res, setRes] = useState(null);
+  const [error, setError] = useState("");
+  const nuevaExtra = () => ({ id: `${Date.now()}-${Math.random()}`, monto: "", momento: "0", direccion: "salida" });
+  const setExtra = (id, patch) => setExtras(xs => xs.map(x => x.id === id ? { ...x, ...patch } : x));
+
+  function calcular() {
+    setError(""); setRes(null);
+    try {
+      const a = parseNumCO(A1), gEntrada = parseNumCO(gradiente), n = parseNumCO(nTxt);
+      const g = tipo === "geometrico" ? gEntrada / 100 : gEntrada;
+      if (!(a > 0)) throw new Error("La primera cuota debe ser mayor que cero.");
+      if (!(g >= 0)) throw new Error("El valor del gradiente debe ser cero o positivo. Usa el selector para elegir si crece o disminuye.");
+      if (!Number.isInteger(n) || n <= 0 || n > 2000) throw new Error("El número de cuotas debe ser un entero entre 1 y 2.000.");
+      const mc = mesesDelPeriodo(periodoCuota, mesesCuota);
+      const mg = periodoGrad === "mismo" ? mc : mesesDelPeriodo(periodoGrad, mesesGrad);
+      if (!(mg > 0)) throw new Error("El periodo del gradiente debe ser mayor que cero.");
+      const { i, conv } = tasaParaCuota(tasaIn, periodoCuota, mesesCuota);
+      const factorGrad = Math.pow(1 + i, mg / mc);
+      const iGrad = factorGrad - 1;
+      if (tipo === "geometrico" && iGrad <= g) throw new Error(`La tasa efectiva del periodo del gradiente (${formatPercentCO(iGrad, 6)}) debe ser mayor que el gradiente (${formatPercentCO(g, 6)}).`);
+      const cuotas = [];
+      for (let t = 1; t <= n; t++) {
+        const saltos = Math.floor((((t - 1) * mc) + 1e-10) / mg);
+        const signo = direccion === "creciente" ? 1 : -1;
+        const valor = tipo === "aritmetico" ? a + signo * saltos * g : a * Math.pow(1 + signo * g, saltos);
+        if (!(valor > 0) || !Number.isFinite(valor)) throw new Error(`La cuota del periodo ${t} sería cero o negativa. Reduce el gradiente o cambia su dirección.`);
+        cuotas.push({ n: t, cuota: valor, saltos, vp: valor / Math.pow(1 + i, t), vf: valor * Math.pow(1 + i, n - t) });
+      }
+      const pagosExtra = extras.map((e, idx) => {
+        const monto = parseNumCO(e.monto), momento = parseNumCO(e.momento);
+        if (!(monto >= 0) || !Number.isFinite(momento) || momento < 0 || momento > n || !Number.isInteger(momento)) throw new Error(`Revisa el valor y el momento del pago adicional ${idx + 1}. El momento debe ser un periodo entero entre 0 y ${n}.`);
+        return { monto, momento, direccion: e.direccion, signo: e.direccion === "entrada" ? -1 : 1 };
+      });
+      if (usarAdicional) {
+        const monto = parseNumCO(adicional.monto), cada = parseNumCO(adicional.cada), inicio = parseNumCO(adicional.inicio);
+        if (!(monto >= 0) || !Number.isInteger(cada) || cada <= 0 || !Number.isInteger(inicio) || inicio < 1 || inicio > n) throw new Error("Revisa el valor adicional, cada cuántas cuotas se repite y su primer periodo.");
+        for (let t = inicio; t <= n; t += cada) pagosExtra.push({ monto, momento: t, direccion: "salida", signo: 1, constante: true });
+      }
+      const extrasDetalle = pagosExtra.map(e => ({ ...e, vp: e.signo * e.monto / Math.pow(1 + i, e.momento), vf: e.signo * e.monto * Math.pow(1 + i, n - e.momento) }));
+      const vpCuotas = sumar(cuotas, "vp"), vfCuotas = sumar(cuotas, "vf");
+      const vpExtras = sumar(extrasDetalle, "vp"), vfExtras = sumar(extrasDetalle, "vf");
+      const vp = vpCuotas + vpExtras, vf = vfCuotas + vfExtras;
+      const pasos = [
+        { label: "1. Datos", content: `A₁ = ${formatMoneyLong(a, moneda)} · Gradiente ${tipo} = ${tipo === "aritmetico" ? formatMoneyLong(g, moneda) : formatPercentCO(g, 6)} · n = ${n} cuotas · Dirección: ${direccion}.` },
+        ...agregarPasosConversion(conv),
+        { label: "2. Tasa que entra al cálculo", content: `i = ${formatPercentCO(i, 10)} efectiva vencida del periodo de las cuotas.` },
+        { label: "3. Periodo del gradiente", content: `La cuota ocurre cada ${mc} meses y el gradiente cambia cada ${mg} meses. El primer cambio ocurre después de completar ese intervalo. La tasa efectiva equivalente del intervalo es ${formatPercentCO(iGrad, 8)}.` },
+        { label: "4. Construcción de cada cuota", content: tipo === "aritmetico" ? "Aₜ = A₁ + (número de incrementos) × G, si crece; Aₜ = A₁ − (número de incrementos) × G, si decrece." : "Aₜ = A₁ × (1 + g)^(número de incrementos), si crece; Aₜ = A₁ × (1 − g)^(número de incrementos), si decrece." },
+        { label: "5. Traslado de las cuotas", content: `VP de cada cuota: Aₜ/(1+i)^t. VF de cada cuota: Aₜ×(1+i)^(n−t). Se calculan todas las cuotas por separado y después se suman.` },
+        { label: "6. Pagos adicionales", content: extrasDetalle.length ? extrasDetalle.map((e,k) => `Pago ${k+1}: ${e.signo < 0 ? "entrada" : "salida"} de ${formatMoneyLong(e.monto, moneda)} en el periodo ${e.momento}; VP = ${formatMoneyLong(e.vp, moneda)}; VF = ${formatMoneyLong(e.vf, moneda)}.`).join("\n") : "No se agregaron pagos únicos ni valores adicionales constantes." },
+        { label: "7. Suma final", content: `VP = ${formatMoneyLong(vpCuotas, moneda)} ${vpExtras < 0 ? "−" : "+"} ${formatMoneyLong(Math.abs(vpExtras), moneda)} = ${formatMoneyLong(vp, moneda)}.\nVF = ${formatMoneyLong(vfCuotas, moneda)} ${vfExtras < 0 ? "−" : "+"} ${formatMoneyLong(Math.abs(vfExtras), moneda)} = ${formatMoneyLong(vf, moneda)}.` },
+      ];
+      setRes({ cuotas, extras: extrasDetalle, vp, vf, vpCuotas, vfCuotas, vpExtras, vfExtras, i, iGrad, pasos, mc, mg, n });
+    } catch (e) { setError(e.message || "No fue posible realizar el cálculo."); }
+  }
+  return <div style={{ display:"grid", gridTemplateColumns:"minmax(290px,1fr) minmax(340px,1.25fr)", gap:20, alignItems:"start" }}>
+    <Tarjeta>
+      <Etiqueta>Configuración del gradiente</Etiqueta>
+      <div style={{fontSize:12.5,color:C.slate,lineHeight:1.5,marginBottom:12}}>Construimos cada cuota y luego la llevamos a hoy o al final, como en el Excel de clase.</div>
+      <Campo label="Tipo de operación"><Selector value={operacion} onChange={e=>setOperacion(e.target.value)} options={[{value:"credito",label:"Crédito"},{value:"inversion",label:"Inversión"}]}/></Campo>
+      <Campo label="Tipo de gradiente"><Selector value={tipo} onChange={e=>setTipo(e.target.value)} options={[{value:"aritmetico",label:"Aritmético · cambia en pesos"},{value:"geometrico",label:"Geométrico · cambia en porcentaje"}]}/></Campo>
+      <Campo label="¿Las cuotas aumentan o disminuyen?"><Selector value={direccion} onChange={e=>setDireccion(e.target.value)} options={[{value:"creciente",label:"Creciente (+)"},{value:"decreciente",label:"Decreciente (−)"}]}/></Campo>
+      <Campo label={`Primera cuota (A₁) · ${moneda}`}><Entrada value={A1} onChange={e=>setA1(e.target.value)} placeholder="800.000"/></Campo>
+      <Campo label={tipo === "aritmetico" ? `Gradiente (G) · ${moneda}` : "Gradiente geométrico (g) · %"}><Entrada value={gradiente} onChange={e=>setGradiente(e.target.value)} placeholder={tipo === "aritmetico" ? "30.000" : "0,5"}/></Campo>
+      <Campo label="Número de cuotas (n)"><Entrada value={nTxt} onChange={e=>setNTxt(e.target.value)} placeholder="20"/></Campo>
+      <Campo label="Periodicidad de las cuotas"><Selector value={periodoCuota} onChange={e=>setPeriodoCuota(e.target.value)} options={OPC_PERIODOS_CUOTAS}/>{periodoCuota === "personalizado_meses" && <Entrada value={mesesCuota} onChange={e=>setMesesCuota(e.target.value)} placeholder="Meses por cuota"/>}</Campo>
+      <Campo label="¿Cada cuánto cambia el gradiente?"><Selector value={periodoGrad} onChange={e=>setPeriodoGrad(e.target.value)} options={[{value:"mismo",label:"En cada periodo de cuota"},{value:"personalizado_meses",label:"En un periodo diferente (meses)"}]}/>{periodoGrad === "personalizado_meses" && <Entrada value={mesesGrad} onChange={e=>setMesesGrad(e.target.value)} placeholder="Meses entre cambios"/>}</Campo>
+      <Campo label="¿Qué deseas calcular?"><Selector value={objetivo} onChange={e=>setObjetivo(e.target.value)} options={[{value:"VP",label:"Valor presente (VP)"},{value:"VF",label:"Valor futuro (VF)"}]}/></Campo>
+      <EditorTasa titulo="Tasa ingresada" valor={tasaIn} onChange={setTasaIn}/>
+      <div style={{borderTop:`1px solid ${C.line}`,paddingTop:12,marginTop:8}}>
+        <Etiqueta>Pagos únicos adicionales</Etiqueta>
+        {extras.map((e,k)=><div key={e.id} style={{border:`1px solid ${C.line}`,borderRadius:8,padding:10,marginBottom:8}}>
+          <strong style={{fontSize:12,color:C.navy}}>Pago adicional {k+1}</strong>
+          <Campo label={`Valor · ${moneda}`}><Entrada value={e.monto} onChange={ev=>setExtra(e.id,{monto:ev.target.value})}/></Campo>
+          <Campo label="Momento (0 = hoy)"><Entrada value={e.momento} onChange={ev=>setExtra(e.id,{momento:ev.target.value})}/></Campo>
+          <Campo label="Tipo de flujo"><Selector value={e.direccion} onChange={ev=>setExtra(e.id,{direccion:ev.target.value})} options={[{value:"salida",label:"Salida de dinero"},{value:"entrada",label:"Entrada de dinero"}]}/></Campo>
+          <Boton small variant="danger" onClick={()=>setExtras(xs=>xs.filter(x=>x.id!==e.id))}><Trash2 size={13}/> Quitar</Boton>
+        </div>)}
+        <Boton small variant="outline" onClick={()=>setExtras(xs=>[...xs,nuevaExtra()])}><Plus size={13}/> Agregar pago único</Boton>
+      </div>
+      <div style={{borderTop:`1px solid ${C.line}`,paddingTop:12,marginTop:12}}>
+        <label style={{display:"flex",gap:8,alignItems:"center",fontSize:13,fontWeight:700,color:C.navy}}><input type="checkbox" checked={usarAdicional} onChange={e=>setUsarAdicional(e.target.checked)}/> Agregar valores constantes cada cierto número de cuotas</label>
+        {usarAdicional && <div style={{marginTop:8}}>
+          <Campo label={`Valor adicional · ${moneda}`}><Entrada value={adicional.monto} onChange={e=>setAdicional({...adicional,monto:e.target.value})}/></Campo>
+          <Campo label="Se repite cada cuántas cuotas"><Entrada value={adicional.cada} onChange={e=>setAdicional({...adicional,cada:e.target.value})}/></Campo>
+          <Campo label="Primera cuota en la que aparece"><Entrada value={adicional.inicio} onChange={e=>setAdicional({...adicional,inicio:e.target.value})}/></Campo>
+        </div>}
+      </div>
+      <Boton variant="gold" onClick={calcular}>Calcular {objetivo}</Boton>
+      {error && <div style={{color:C.danger,fontSize:13,marginTop:10}}>{error}</div>}
+    </Tarjeta>
+    <div>
+      {!res && <Tarjeta style={{padding:30,textAlign:"center",color:C.slate}}>Completa los datos y presiona Calcular para ver las cuotas, su traslado y el resultado.</Tarjeta>}
+      {res && <>
+        <Tarjeta style={{marginBottom:12}}>
+          <Etiqueta>Resultado · {operacion === "credito" ? "Crédito" : "Inversión"}</Etiqueta>
+          <div style={{fontSize:12,color:C.slate}}>Valor {objetivo === "VP" ? "presente" : "futuro"}</div>
+          <div style={{fontFamily:F_MONO,fontSize:27,color:C.navy,fontWeight:700}}>{formatMoneyLong(objetivo === "VP" ? res.vp : res.vf,moneda)}</div>
+          <div style={{fontSize:12.5,color:C.slate,marginTop:6}}>Tasa efectiva vencida por cuota: {formatPercentCO(res.i,8)}</div>
+          <div style={{fontSize:12,color:C.slate}}>VP: {formatMoneyLong(res.vp,moneda)} · VF: {formatMoneyLong(res.vf,moneda)}</div>
+          <Acordeon title="Ver procedimiento completo"><FichaProcedimiento pasos={res.pasos}/></Acordeon>
+        </Tarjeta>
+        <Tarjeta>
+          <Etiqueta>Detalle de las cuotas</Etiqueta>
+          <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:520}}><thead><tr>{["n","Cuota","Cambios del gradiente","VP de la cuota","VF de la cuota"].map(h=><th key={h} style={{textAlign:"right",padding:8,borderBottom:`2px solid ${C.line}`,color:C.navy}}>{h}</th>)}</tr></thead><tbody>{res.cuotas.map(x=><tr key={x.n}><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{x.n}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{formatMoneyLong(x.cuota,moneda)}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{x.saltos}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{formatMoneyLong(x.vp,moneda)}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{formatMoneyLong(x.vf,moneda)}</td></tr>)}</tbody><tfoot><tr><th colSpan="3" style={{textAlign:"right",padding:8}}>Total cuotas</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vpCuotas,moneda)}</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vfCuotas,moneda)}</th></tr></tfoot></table></div>
+        </Tarjeta>
+      </>}
+    </div>
+  </div>;
+}
+
+function SimuladorPerpetuidades({ moneda }) {
+  const [operacion,setOperacion]=useState("inversion");
+  const [tipo,setTipo]=useState("constante");
+  const [A,setA]=useState("150000");
+  const [grad,setGrad]=useState("5000");
+  const [periodoCuota,setPeriodoCuota]=useState("mensual");
+  const [mesesCuota,setMesesCuota]=useState("5");
+  const [periodoGrad,setPeriodoGrad]=useState("mismo");
+  const [mesesGrad,setMesesGrad]=useState("1");
+  const [tasaIn,setTasaIn]=useState({tasa:"11.35",tipo:"efectiva",modalidad:"vencida",periodo:"anual",meses:"5"});
+  const [res,setRes]=useState(null);
+  const [error,setError]=useState("");
+  function calcular(){
+    setError("");setRes(null);
+    try{
+      const a=parseNumCO(A),gEntrada=parseNumCO(grad);
+      const g=tipo==="geometrico"?gEntrada/100:gEntrada;
+      if(!(a>0))throw new Error("La primera cuota debe ser mayor que cero.");
+      if(tipo!=="constante"&&!(g>0))throw new Error("El gradiente de una perpetuidad debe ser positivo.");
+      const mc=mesesDelPeriodo(periodoCuota,mesesCuota);
+      const mg=tipo==="constante"?mc:(periodoGrad==="mismo"?mc:mesesDelPeriodo(periodoGrad,mesesGrad));
+      const escalaMeses=1000;
+      const mcU=Math.round(mc*escalaMeses), mgU=Math.round(mg*escalaMeses);
+      if(Math.abs(mcU/escalaMeses-mc)>1e-7||Math.abs(mgU/escalaMeses-mg)>1e-7)throw new Error("Para esta perpetuidad, ingresa periodos de cuota y de gradiente expresables en milésimas de mes o menos.");
+      const mcd=(x,y)=>y===0?x:mcd(y,x%y);
+      const divisor=mcd(mcU,mgU), ciclo=mgU/divisor, saltosPorCiclo=mcU/divisor;
+      if(ciclo<1||ciclo>5000||saltosPorCiclo>5000)throw new Error("La combinación de periodos es demasiado extensa para construir el ciclo de cálculo.");
+      const {i,conv}=tasaParaCuota(tasaIn,periodoCuota,mesesCuota);
+      if(!(i>0))throw new Error("La tasa efectiva vencida debe ser mayor que cero para calcular una perpetuidad.");
+      const q=Math.pow(1+i,-ciclo);
+      const factores=Array.from({length:ciclo},(_,r)=>1/Math.pow(1+i,r+1));
+      const bloque=factores.reduce((s,x)=>s+x,0);
+      const pasosGrad=Array.from({length:ciclo},(_,r)=>Math.floor((r*mcU)/mgU));
+      const iGrad=Math.pow(1+i,mg/mc)-1;
+      let vp,formula,desarrollo;
+      if(tipo==="constante"){
+        vp=a/i;formula="VP = A / i";desarrollo=`VP = ${formatMoneyLong(a,moneda)} / ${formatNumberCO(i,12,12)} = ${formatMoneyLong(vp,moneda)}`;
+      }else if(tipo==="aritmetico"){
+        // Se agrupan los pagos hasta que se repite el patrón de aplicación del gradiente.
+        // Cuando los periodos coinciden, se reduce a VP=A/i + L/i² (fórmula de clase).
+        const valorBloque=factores.reduce((s,w,k)=>s+(a+pasosGrad[k]*g)*w,0);
+        vp=valorBloque/(1-q)+saltosPorCiclo*g*bloque*q/Math.pow(1-q,2);
+        formula=ciclo===1?"VP = A/i + L/i²":"VP = VP del primer bloque/(1−q) + incremento por ciclo × C × q/(1−q)²";
+        desarrollo=`El patrón de cuotas se repite cada ${ciclo} pagos y en cada ciclo completo el gradiente avanza ${saltosPorCiclo} veces.\nq = 1/(1+i)^${ciclo} = ${formatNumberCO(q,12,12)}. C = suma de los factores de descuento del bloque = ${formatNumberCO(bloque,12,12)}.\nVP del primer bloque = ${formatNumberCO(valorBloque,12,8)}.\nVP = VP del primer bloque/(1−q) + ${saltosPorCiclo}×L×C×q/(1−q)² = ${formatMoneyLong(vp,moneda)}.`;
+      }else{
+        if(!(iGrad>g))throw new Error(`La tasa efectiva del periodo del gradiente (${formatPercentCO(iGrad,8)}) debe ser mayor que el gradiente (${formatPercentCO(g,8)}).`);
+        const valorBloque=factores.reduce((s,w,k)=>s+a*Math.pow(1+g,pasosGrad[k])*w,0);
+        const qCiclo=Math.pow(1+g,saltosPorCiclo)*q;
+        vp=valorBloque/(1-qCiclo);
+        formula=ciclo===1?"VP = A/(i−g)":"VP = VP del primer bloque/[1−(1+g)^d×q]";
+        desarrollo=`El patrón de cuotas se repite cada ${ciclo} pagos y el gradiente avanza ${saltosPorCiclo} veces por ciclo.\nTasa efectiva del periodo del gradiente = (1+i)^(${formatNumberCO(mg/mc,8,8)})−1 = ${formatPercentCO(iGrad,8)}; debe ser mayor que g.\nq = 1/(1+i)^${ciclo} = ${formatNumberCO(q,12,12)}; factor de crecimiento del ciclo = (1+g)^${saltosPorCiclo}.\nVP del primer bloque = ${formatNumberCO(valorBloque,12,8)}. VP = VP del primer bloque/[1−(1+g)^d×q] = ${formatMoneyLong(vp,moneda)}.`;
+      }
+      const pasos=[{label:"1. Datos",content:`A = ${formatMoneyLong(a,moneda)} · Tipo: ${tipo} · Periodicidad de cuota: ${mc} meses.${tipo!=="constante"?` Gradiente: ${formatNumberCO(g,8,10)} ${tipo==="aritmetico"?moneda:"(decimal)"}; intervalo: ${mg} meses.`:""}`},...agregarPasosConversion(conv),{label:"2. Tasa del cálculo",content:`i = ${formatPercentCO(i,10)} efectiva vencida del periodo de las cuotas.`},{label:"3. Fórmula",content:formula},{label:"4. Procedimiento",content:desarrollo},{label:"5. Resultado",content:`VP = ${formatMoneyLong(vp,moneda)}. La perpetuidad solo tiene valor presente; no se calcula valor futuro.`}];
+      setRes({vp,i,iGrad,formula,pasos,m:ciclo,bloque,q});
+    }catch(e){setError(e.message||"No fue posible calcular la perpetuidad.");}
+  }
+  return <div style={{display:"grid",gridTemplateColumns:"minmax(290px,1fr) minmax(320px,1fr)",gap:20,alignItems:"start"}}>
+    <Tarjeta>
+      <Etiqueta>Configuración de la perpetuidad</Etiqueta>
+      <div style={{fontSize:12.5,color:C.slate,lineHeight:1.5,marginBottom:12}}>Una perpetuidad es una serie de pagos que no termina. Por eso calculamos cuánto vale hoy; no tiene valor futuro.</div>
+      <Campo label="Tipo de operación"><Selector value={operacion} onChange={e=>setOperacion(e.target.value)} options={[{value:"credito",label:"Crédito"},{value:"inversion",label:"Inversión"}]}/></Campo>
+      <Campo label="Tipo de perpetuidad"><Selector value={tipo} onChange={e=>setTipo(e.target.value)} options={[{value:"constante",label:"Constante"},{value:"aritmetico",label:"Con gradiente aritmético"},{value:"geometrico",label:"Con gradiente geométrico"}]}/></Campo>
+      <Campo label={`Valor de la cuota (A) · ${moneda}`}><Entrada value={A} onChange={e=>setA(e.target.value)} placeholder="150.000"/></Campo>
+      {tipo!=="constante"&&<Campo label={tipo==="aritmetico"?`Gradiente aritmético (L) · ${moneda}`:"Gradiente geométrico (g) · %"}><Entrada value={grad} onChange={e=>setGrad(e.target.value)} placeholder={tipo==="aritmetico"?"5.000":"0,72"}/></Campo>}
+      <Campo label="Periodicidad de las cuotas"><Selector value={periodoCuota} onChange={e=>setPeriodoCuota(e.target.value)} options={OPC_PERIODOS_CUOTAS}/>{periodoCuota==="personalizado_meses"&&<Entrada value={mesesCuota} onChange={e=>setMesesCuota(e.target.value)} placeholder="Meses por cuota"/>}</Campo>
+      {tipo!=="constante"&&<Campo label="¿Cada cuánto cambia el gradiente?"><Selector value={periodoGrad} onChange={e=>setPeriodoGrad(e.target.value)} options={[{value:"mismo",label:"En cada periodo de cuota"},{value:"personalizado_meses",label:"En un periodo diferente (meses)"}]}/>{periodoGrad==="personalizado_meses"&&<Entrada value={mesesGrad} onChange={e=>setMesesGrad(e.target.value)} placeholder="Meses entre cambios"/>}</Campo>}
+      <EditorTasa titulo="Tasa ingresada" valor={tasaIn} onChange={setTasaIn}/>
+      <Boton variant="gold" onClick={calcular}>Calcular valor presente</Boton>
+      {error&&<div style={{color:C.danger,fontSize:13,marginTop:10}}>{error}</div>}
+    </Tarjeta>
+    <div>
+      {!res&&<Tarjeta style={{padding:30,textAlign:"center",color:C.slate}}>Completa los datos para conocer cuánto vale hoy esta perpetuidad.</Tarjeta>}
+      {res&&<Tarjeta>
+        <Etiqueta>Valor presente de la perpetuidad</Etiqueta>
+        <div style={{fontFamily:F_MONO,fontSize:28,fontWeight:700,color:C.navy}}>{formatMoneyLong(res.vp,moneda)}</div>
+        <div style={{fontSize:12.5,color:C.slate,marginTop:6}}>Tasa efectiva vencida por cuota: {formatPercentCO(res.i,8)}</div>
+        {tipo!=="constante"&&<div style={{fontSize:12.5,color:C.slate}}>Tasa efectiva del intervalo del gradiente: {formatPercentCO(res.iGrad,8)}</div>}
+        <div style={{marginTop:10,padding:12,background:C.successBg,borderRadius:8,fontSize:13,color:C.navy}}>Este resultado es el valor de hoy. La perpetuidad no tiene valor futuro.</div>
+        <Acordeon title="Ver procedimiento completo"><FichaProcedimiento pasos={res.pasos}/></Acordeon>
+      </Tarjeta>}
+    </div>
+  </div>;
+}
+
+function calcularTIRFlujos(flujos) {
+  const f = r => flujos.reduce((s, cf, k) => s + cf / Math.pow(1 + r, k), 0);
+  const f0 = f(0);
+  if (!Number.isFinite(f0)) return NaN;
+  if (Math.abs(f0) < 1e-10) return 0;
+  let lo, hi, flo, fhi;
+  if (f0 < 0) {
+    lo = 0; flo = f0; hi = 0.1; fhi = f(hi);
+    let intentos = 0;
+    while (fhi < 0 && hi < 1e8 && intentos < 100) { hi = hi * 2 + 0.1; fhi = f(hi); intentos++; }
+  } else {
+    hi = 0; fhi = f0; lo = -0.05; flo = f(lo);
+    let intentos = 0;
+    while (flo > 0 && lo > -0.999 && intentos < 100) { lo = 1.5 * lo - 0.05; flo = f(lo); intentos++; }
+  }
+  if (Number.isNaN(flo) || Number.isNaN(fhi) || flo * fhi > 0) return NaN;
+  for (let k = 0; k < 300; k++) {
+    const mid = (lo + hi) / 2, fm = f(mid);
+    if (Number.isNaN(fm)) return NaN;
+    if (Math.abs(fm) < 1e-8 || hi - lo < 1e-13) return mid;
+    if (flo * fm <= 0) { hi = mid; fhi = fm; } else { lo = mid; flo = fm; }
+  }
+  return (lo + hi) / 2;
+}
+function cuotaFrancesa(vp,i,n,vf=0){
+  if(!(n>0))throw new Error("El plazo restante debe ser mayor que cero.");
+  if(Math.abs(i)<1e-12)return (vp-vf)/n;
+  const factor=(1-Math.pow(1+i,-n))/i;
+  return (vp-vf/Math.pow(1+i,n))/factor;
+}
+function generarTablaAmortizacion(cfg){
+  const {monto,n,i,sistema,otros,gracia=0,tipoGracia="ninguna",leasing=false,opcion=0,abono=null,compra=null,americano="sin_intereses"}=cfg;
+  if(!(monto>0)||!Number.isInteger(n)||n<=0||n>1200||!(i>=0)||otros<0)throw new Error("Revisa el monto, plazo, tasa y otros costos.");
+  if(gracia<0||!Number.isInteger(gracia)||gracia>=n)throw new Error("El periodo de gracia debe ser un entero menor que el plazo total.");
+  if(leasing && (!(opcion>=0)||opcion>=monto))throw new Error("La opción de compra debe ser positiva y menor que el valor inicial del bien.");
+  let saldo=monto; const filas=[{n:0,cuota:0,interes:0,otros:0,abonoCapital:0,abonoAdicional:0,saldo:monto,flujo:monto}];
+  let cuotaBase=0, tasaActual=i, otrosActual=otros, abonoFijo=null;
+  const finalObj=leasing?opcion:0;
+  let totalInteres=0,totalOtros=0,totalAbonos=0;
+  const periodoCambio=compra?compra.periodo:null;
+  const extraPeriodo=abono?abono.periodo:null;
+  for(let p=1;p<=n;p++){
+    if(compra && p===periodoCambio){
+      tasaActual=compra.i; otrosActual=compra.otros;
+      const restantes=n-p+1;
+      if(p>gracia && (sistema==="frances"||leasing)) cuotaBase=cuotaFrancesa(saldo,tasaActual,restantes,finalObj);
+      if(p>gracia && sistema==="aleman") abonoFijo=saldo/restantes;
+    }
+    const interes=saldo*tasaActual;
+    let otrosP=otrosActual, cuota=0, abonoCapital=0, abonoExtra=0;
+    if(p<=gracia && tipoGracia!=="ninguna"){
+      if(tipoGracia==="sin_intereses"){
+        // No hay pago durante la gracia: el interés se capitaliza.
+        saldo+=interes; cuota=0; abonoCapital=-interes; otrosP=0;
+      }else{
+        // Se pagan los intereses, sin abonar a capital.
+        cuota=interes+otrosP; abonoCapital=0;
+      }
+    }else if(sistema==="americano"){
+      if(americano==="sin_intereses"){
+        if(p<n){saldo+=interes;abonoCapital=-interes;cuota=otrosP;}
+        else{cuota=saldo+interes+otrosP;abonoCapital=saldo;saldo=0;}
+      }else{
+        abonoCapital=p===n?saldo:0;cuota=interes+abonoCapital+otrosP;saldo-=abonoCapital;
+      }
+    }else if(sistema==="aleman"){
+      if(abonoFijo===null)abonoFijo=(monto-finalObj)/(n-gracia);
+      abonoCapital=Math.min(saldo-finalObj,abonoFijo);cuota=interes+abonoCapital+otrosP;saldo-=abonoCapital;
+    }else{
+      if(cuotaBase===0)cuotaBase=cuotaFrancesa(saldo,tasaActual,n-gracia,finalObj);
+      const abonoRegular=Math.max(0,cuotaBase-interes);
+      abonoCapital=Math.min(saldo-finalObj,abonoRegular);
+      cuota=interes+abonoCapital+otrosP;
+      saldo-=abonoCapital;
+    }
+    if(abono && p===extraPeriodo){
+      abonoExtra=parseNumCO(abono.valor);
+      if(!(abonoExtra>=0)||abonoExtra>saldo-finalObj+1e-7)throw new Error("El abono extraordinario no puede superar el saldo disponible por encima de la opción de compra.");
+      saldo-=abonoExtra;
+      if(p>gracia && p<n && (sistema==="frances"||leasing)) cuotaBase=cuotaFrancesa(saldo,tasaActual,n-p,finalObj);
+    }
+    // Ajuste de centavos únicamente en el último pago de créditos sin saldo residual pactado.
+    if(p===n && !leasing && sistema!=="americano" && Math.abs(saldo)<0.02) saldo=0;
+    if(p===n && !leasing && sistema!=="americano" && saldo>0.02){
+      const ajuste=saldo; abonoCapital+=ajuste;cuota+=ajuste;saldo=0;
+    }
+    if(saldo<0 && saldo>-0.02)saldo=0;
+    if(saldo < -0.02)throw new Error(`El saldo quedó negativo en el periodo ${p}. Revisa los abonos o las condiciones del crédito.`);
+    totalInteres+=interes;totalOtros+=otrosP;totalAbonos+=abonoCapital+abonoExtra;
+    filas.push({n:p,cuota,interes,otros:otrosP,abonoCapital,abonoAdicional:abonoExtra,saldo,flujo:-(cuota+abonoExtra)});
+  }
+  const flujos=filas.map(x=>x.flujo);
+  if(leasing && opcion>0) flujos[flujos.length-1]-=opcion;
+  const tir=calcularTIRFlujos(flujos);
+  const ea=Number.isFinite(tir)?Math.pow(1+tir,12/mesesDelPeriodo(cfg.periodoCuota,cfg.mesesCuota))-1:NaN;
+  return {filas,totalInteres,totalOtros,totalAbonos,totalPagado:filas.reduce((s,x)=>s+x.cuota+x.abonoAdicional,0),saldoFinal:saldo,tir,ea,cuotaInicial:filas.find(x=>x.n>0)?.cuota||0,opcion};
+}
+
+function SimuladorAmortizaciones({moneda}){
+  const [sistema,setSistema]=useState("frances");
+  const [monto,setMonto]=useState("1000000");
+  const [nTxt,setNTxt]=useState("24");
+  const [periodoCuota,setPeriodoCuota]=useState("mensual");
+  const [mesesCuota,setMesesCuota]=useState("5");
+  const [tasaIn,setTasaIn]=useState({tasa:"16.72",tipo:"nominal",modalidad:"anticipada",periodo:"cuatrimestral",meses:"5"});
+  const [otros,setOtros]=useState("0");
+  const [americano,setAmericano]=useState("sin_intereses");
+  const [gracia,setGracia]=useState("0");
+  const [tipoGracia,setTipoGracia]=useState("sin_intereses");
+  const [leasing,setLeasing]=useState(false);
+  const [opcion,setOpcion]=useState("10");
+  const [usarAbono,setUsarAbono]=useState(false);
+  const [abono,setAbono]=useState({periodo:"14",valor:"500000"});
+  const [usarCompra,setUsarCompra]=useState(false);
+  const [compra,setCompra]=useState({periodo:"16",tasa:"21.31",tipo:"efectiva",modalidad:"vencida",periodoTasa:"anual",mesesTasa:"5",otros:"0"});
+  const [res,setRes]=useState(null);
+  const [comparacion,setComparacion]=useState(null);
+  const [error,setError]=useState("");
+  function calcular(){
+    setError("");setRes(null);setComparacion(null);
+    try{
+      const vp=parseNumCO(monto),n=parseNumCO(nTxt),ot=parseNumCO(otros),gr=parseNumCO(gracia)||0;
+      if(!(vp>0)||!Number.isInteger(n)||n<=0||n>1200||!(ot>=0))throw new Error("Ingresa un monto positivo, un plazo entero y costos iguales o mayores que cero.");
+      if(leasing && sistema!=="frances")throw new Error("El leasing se construye con el sistema francés de cuota fija.");
+      if((usarAbono||usarCompra)&&sistema==="americano")throw new Error("Los abonos extraordinarios y la compra de cartera no están habilitados para el sistema americano.");
+      if(usarCompra && !(sistema==="frances"||sistema==="aleman"||leasing))throw new Error("La compra de cartera está disponible para francés y alemán.");
+      if(usarAbono && !(sistema==="frances"||leasing))throw new Error("El abono extraordinario está disponible para francés y leasing.");
+      if(gr>0 && sistema!=="frances" && !leasing)throw new Error("El periodo de gracia al inicio seguido del sistema francés se aplica al sistema francés.");
+      const {i,conv}=tasaParaCuota(tasaIn,periodoCuota,mesesCuota);
+      const pAbono=usarAbono?{periodo:parseNumCO(abono.periodo),valor:parseNumCO(abono.valor)}:null;
+      if(pAbono && (!Number.isInteger(pAbono.periodo)||pAbono.periodo<1||pAbono.periodo>n||!(pAbono.valor>0)))throw new Error("Revisa el periodo y el valor del abono extraordinario.");
+      let pCompra=null;
+      if(usarCompra){
+        const per=parseNumCO(compra.periodo),t=parseNumCO(compra.tasa),o=parseNumCO(compra.otros);
+        if(!Number.isInteger(per)||per<1||per>n||!Number.isFinite(t)||t<0||!(o>=0))throw new Error("Revisa el periodo, la tasa y los otros costos de la compra de cartera.");
+        const convNueva=convertirTasaAPeriodoOperacion({tasaPct:t,tipoEntrada:compra.tipo,modalidadEntrada:compra.modalidad,periodoEntrada:compra.periodoTasa,mesesEntradaPersonalizados:parseNumCO(compra.mesesTasa),periodoOperacion:periodoCuota,mesesOperacionPersonalizados:mesesCuota});
+        pCompra={periodo:per,i:convNueva.iEfectivaVencida,otros:o,conv:convNueva};
+      }
+      const porcentaje=parseNumCO(opcion)/100;
+      const residual=leasing?vp*porcentaje:0;
+      const cfg={monto:vp,n,i,sistema,otros:ot,gracia:gr,tipoGracia:gr>0?tipoGracia:"ninguna",leasing,opcion:residual,abono:pAbono,compra:pCompra,americano};
+      const r=generarTablaAmortizacion({...cfg,periodoCuota,mesesCuota});
+      const pasos=[{label:"1. Datos del crédito",content:`VP = ${formatMoneyLong(vp,moneda)} · n = ${n} periodos · sistema ${sistema}. Otros costos por periodo: ${formatMoneyLong(ot,moneda)}.`},...agregarPasosConversion(conv),{label:"2. Tasa utilizada",content:`i = ${formatPercentCO(i,10)} efectiva vencida del periodo de las cuotas.`},{label:"3. Cálculo del interés",content:"Interés de cada periodo = saldo del periodo anterior × tasa periódica efectiva vencida."},{label:"4. Cálculo del sistema",content:sistema==="frances"?`Cuota base = VP / [((1+i)^n−1)/(i(1+i)^n)]${leasing?` ajustada con el valor futuro de la opción de compra (${formatMoneyLong(residual,moneda)}).`:""}`:sistema==="aleman"?`Abono fijo a capital = monto del préstamo / número de periodos. Cuota = interés + abono a capital + otros.`:americano==="sin_intereses"?"No se paga durante los periodos; los intereses se acumulan en el saldo y se paga todo al final.":"Se pagan los intereses en cada periodo y el capital completo en el último periodo."},{label:"5. Otros costos",content:"Los otros costos se suman a la cuota, por fuera de la fórmula, y se restan al calcular el abono a capital. No reducen el saldo de la deuda."}];
+      if(gr>0)pasos.push({label:"6. Periodo de gracia",content:tipoGracia==="sin_intereses"?`Durante ${gr} periodos no se paga; los intereses se suman al saldo. El plazo total sigue siendo ${n} y quedan ${n-gr} periodos para amortizar.`:`Durante ${gr} periodos se pagan los intereses, sin abonar a capital. El plazo total sigue siendo ${n} y quedan ${n-gr} periodos para amortizar.`});
+      if(pAbono)pasos.push({label:"7. Abono extraordinario",content:`En el periodo ${pAbono.periodo} se paga adicionalmente ${formatMoneyLong(pAbono.valor,moneda)}. Se mantiene el plazo y la cuota se recalcula desde el periodo siguiente.`});
+      if(pCompra)pasos.push({label:"8. Compra de cartera",content:`Desde el periodo ${pCompra.periodo} se usa la nueva tasa efectiva vencida ${formatPercentCO(pCompra.i,8)} y otros costos de ${formatMoneyLong(pCompra.otros,moneda)}. Se conserva el saldo pendiente y el número de periodos restantes.`});
+      if(leasing)pasos.push({label:"9. Opción de compra",content:`Opción de compra = ${formatNumberCO(porcentaje*100,4,4)} % × ${formatMoneyLong(vp,moneda)} = ${formatMoneyLong(residual,moneda)}. El saldo final de la tabla debe ser ese valor.`});
+      pasos.push({label:"10. Costo efectivo anual real",content:`Se construyen los flujos: desembolso positivo y cuotas negativas. Se calcula la TIR periódica y se convierte a EA: EA = (1 + TIR periódica)^(periodos por año) − 1. Resultado: ${formatPercentCO(r.ea,8)}.`});
+      pasos.push({label:"11. Comprobación",content:`Saldo final = ${formatMoneyLong(r.saldoFinal,moneda)}${leasing?` (opción de compra: ${formatMoneyLong(residual,moneda)})`:" (debe ser cero)"}.`});
+      setRes({...r,i,conv,pasos,config:{...cfg,periodoCuota,mesesCuota},leasing});
+    }catch(e){setError(e.message||"No fue posible construir la tabla.");}
+  }
+  function comparar(){
+    setError("");setComparacion(null);
+    try{
+      const vp=parseNumCO(monto),n=parseNumCO(nTxt),ot=parseNumCO(otros);
+      if(!(vp>0)||!Number.isInteger(n)||n<=0||n>1200||!(ot>=0))throw new Error("Revisa monto, plazo y otros costos antes de comparar.");
+      const {i}=tasaParaCuota(tasaIn,periodoCuota,mesesCuota);
+      const common={monto:vp,n,i,otros:ot,gracia:0,tipoGracia:"ninguna",leasing:false,opcion:0,abono:null,compra:null,periodoCuota,mesesCuota};
+      const french=generarTablaAmortizacion({...common,sistema:"frances"});
+      const german=generarTablaAmortizacion({...common,sistema:"aleman"});
+      const varianteAmericana=sistema==="americano"?americano:"sin_intereses";
+      const american=generarTablaAmortizacion({...common,sistema:"americano",americano:varianteAmericana});
+      setComparacion([{nombre:"Francés",r:french},{nombre:"Alemán",r:german},{nombre:varianteAmericana==="sin_intereses"?"Americano · sin pago de intereses":"Americano · con pago de intereses",r:american}]);
+    }catch(e){setError(e.message||"No se pudo comparar.");}
+  }
+  const tabla=res?.filas||[];
+  return <div style={{display:"grid",gridTemplateColumns:"minmax(290px,0.9fr) minmax(360px,1.3fr)",gap:20,alignItems:"start"}}>
+    <Tarjeta>
+      <Etiqueta>Datos del crédito</Etiqueta>
+      <Campo label="Sistema de amortización"><Selector value={sistema} onChange={e=>{setSistema(e.target.value);setRes(null)}} options={[{value:"frances",label:"Francés · cuota fija"},{value:"aleman",label:"Alemán · abono fijo a capital"},{value:"americano",label:"Americano · pago al final"}]}/></Campo>
+      <Campo label={`Monto del crédito / valor del bien · ${moneda}`}><Entrada value={monto} onChange={e=>setMonto(e.target.value)} placeholder="1.000.000"/></Campo>
+      <Campo label="Número total de cuotas"><Entrada value={nTxt} onChange={e=>setNTxt(e.target.value)} placeholder="24"/></Campo>
+      <Campo label="Periodicidad de las cuotas"><Selector value={periodoCuota} onChange={e=>setPeriodoCuota(e.target.value)} options={OPC_PERIODOS_CUOTAS}/>{periodoCuota==="personalizado_meses"&&<Entrada value={mesesCuota} onChange={e=>setMesesCuota(e.target.value)} placeholder="Meses por cuota"/>}</Campo>
+      <EditorTasa titulo="Tasa del crédito" valor={tasaIn} onChange={setTasaIn}/>
+      <Campo label={`Otros costos por periodo · ${moneda}`}><Entrada value={otros} onChange={e=>setOtros(e.target.value)} placeholder="0"/></Campo>
+      {sistema==="americano"&&<Campo label="Modalidad del sistema americano"><Selector value={americano} onChange={e=>setAmericano(e.target.value)} options={[{value:"sin_intereses",label:"Sin pago de intereses (se acumulan)"},{value:"con_intereses",label:"Con pago de intereses en cada periodo"}]}/></Campo>}
+      {sistema==="frances"&&<div style={{borderTop:`1px solid ${C.line}`,paddingTop:10,marginTop:8}}>
+        <Etiqueta>Periodo de gracia al inicio</Etiqueta>
+        <Campo label="Número de periodos de gracia"><Entrada value={gracia} onChange={e=>setGracia(e.target.value)} placeholder="0"/></Campo>
+        {parseNumCO(gracia)>0&&<Campo label="Modalidad de gracia"><Selector value={tipoGracia} onChange={e=>setTipoGracia(e.target.value)} options={[{value:"sin_intereses",label:"Sin pago de intereses (se acumulan)"},{value:"con_intereses",label:"Con pago de intereses"}]}/></Campo>}
+      </div>}
+      <div style={{borderTop:`1px solid ${C.line}`,paddingTop:10,marginTop:8}}>
+        <label style={{display:"flex",gap:8,alignItems:"center",fontSize:13,fontWeight:700,color:C.navy}}><input type="checkbox" checked={leasing} onChange={e=>setLeasing(e.target.checked)}/> Es un leasing financiero</label>
+        {leasing&&<><Campo label="Opción de compra (%)"><Entrada value={opcion} onChange={e=>setOpcion(e.target.value)} placeholder="10"/></Campo><div style={{fontSize:12,color:C.slate}}>El saldo final será el porcentaje indicado del valor inicial del bien.</div></>}
+      </div>
+      {(sistema==="frances"||leasing)&&<div style={{borderTop:`1px solid ${C.line}`,paddingTop:10,marginTop:8}}>
+        <label style={{display:"flex",gap:8,alignItems:"center",fontSize:13,fontWeight:700,color:C.navy}}><input type="checkbox" checked={usarAbono} onChange={e=>setUsarAbono(e.target.checked)}/> Agregar abono extraordinario a capital</label>
+        {usarAbono&&<><Campo label="Periodo del abono"><Entrada value={abono.periodo} onChange={e=>setAbono({...abono,periodo:e.target.value})}/></Campo><Campo label={`Valor del abono · ${moneda}`}><Entrada value={abono.valor} onChange={e=>setAbono({...abono,valor:e.target.value})}/></Campo><div style={{fontSize:12,color:C.slate}}>El plazo se mantiene y la cuota se recalcula desde el periodo siguiente.</div></>}
+      </div>}
+      {(sistema==="frances"||sistema==="aleman"||leasing)&&<div style={{borderTop:`1px solid ${C.line}`,paddingTop:10,marginTop:8}}>
+        <label style={{display:"flex",gap:8,alignItems:"center",fontSize:13,fontWeight:700,color:C.navy}}><input type="checkbox" checked={usarCompra} onChange={e=>setUsarCompra(e.target.checked)}/> Incluir compra de cartera</label>
+        {usarCompra&&<>
+          <Campo label="Desde qué periodo inicia (incluyéndolo)"><Entrada value={compra.periodo} onChange={e=>setCompra({...compra,periodo:e.target.value})}/></Campo>
+          <EditorTasa titulo="Nueva tasa" valor={{tasa:compra.tasa,tipo:compra.tipo,modalidad:compra.modalidad,periodo:compra.periodoTasa,meses:compra.mesesTasa}} onChange={v=>setCompra({...compra,tasa:v.tasa,tipo:v.tipo,modalidad:v.modalidad,periodoTasa:v.periodo,mesesTasa:v.meses})}/>
+          <Campo label={`Nuevos otros costos · ${moneda}`}><Entrada value={compra.otros} onChange={e=>setCompra({...compra,otros:e.target.value})}/></Campo>
+        </>}
+      </div>}
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:14}}><Boton variant="gold" onClick={calcular}>Construir tabla</Boton><Boton variant="outline" onClick={comparar}>Comparar sistemas</Boton></div>
+      {error&&<div style={{color:C.danger,fontSize:13,marginTop:10}}>{error}</div>}
+    </Tarjeta>
+    <div>
+      {!res&&!comparacion&&<Tarjeta style={{padding:30,textAlign:"center",color:C.slate}}>Completa los datos y construye la tabla para ver cuánto va a intereses, cuánto a capital y cuánto queda pendiente.</Tarjeta>}
+      {res&&<>
+        <Tarjeta style={{marginBottom:12}}>
+          <Etiqueta>Resumen del crédito</Etiqueta>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(145px,1fr))",gap:10}}>
+            {[ ["Primera cuota",res.cuotaInicial], ["Intereses totales",res.totalInteres], ["Total de cuotas",res.totalPagado], ["Costo efectivo anual real",res.ea,"pct"] ].map(([label,val,kind])=><div key={label} style={{background:C.paperDark,borderRadius:8,padding:11}}><div style={{fontSize:11.5,color:C.slate}}>{label}</div><div style={{fontFamily:F_MONO,fontSize:16,fontWeight:700,color:C.navy,marginTop:5}}>{kind==="pct"?formatPercentCO(val,6):formatMoneyLong(val,moneda)}</div></div>)}
+          </div>
+          <div style={{marginTop:12,padding:11,background:Math.abs(res.saldoFinal-(res.leasing?res.opcion:0))<0.02?C.successBg:C.dangerBg,borderRadius:8,fontSize:13,color:C.navy}}><strong>Comprobación del saldo final:</strong> {formatMoneyLong(res.saldoFinal,moneda)}. {res.leasing?`Debe coincidir con la opción de compra (${formatMoneyLong(res.opcion,moneda)}).`:"Debe ser cero."}</div>
+          <div style={{fontSize:12,color:C.slate,marginTop:8}}>TIR periódica: {formatPercentCO(res.tir,8)} · Tasa efectiva anual real: {formatPercentCO(res.ea,8)}</div>
+          <Acordeon title="Ver procedimiento completo"><FichaProcedimiento pasos={res.pasos}/></Acordeon>
+        </Tarjeta>
+        <Tarjeta>
+          <Etiqueta>Tabla de amortización completa</Etiqueta>
+          <div style={{overflowX:"auto",maxHeight:560,overflowY:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11.5,minWidth:690}}><thead style={{position:"sticky",top:0,background:C.navy,color:C.white}}><tr>{["n","Cuota","Interés","Otros","Abono a capital",...(tabla.some(x=>x.abonoAdicional>0)?["Abono adicional"]:[]),"Saldo"].map(h=><th key={h} style={{padding:8,textAlign:"right",whiteSpace:"nowrap"}}>{h}</th>)}</tr></thead><tbody>{tabla.map(x=><tr key={x.n} style={{background:x.n===0?C.paperDark:"transparent"}}><td style={{padding:7,textAlign:"right",borderBottom:`1px solid ${C.line}`}}>{x.n}</td><td style={{padding:7,textAlign:"right",borderBottom:`1px solid ${C.line}`,whiteSpace:"nowrap"}}>{formatNumberCO(x.cuota,2,2)}</td><td style={{padding:7,textAlign:"right",borderBottom:`1px solid ${C.line}`,whiteSpace:"nowrap"}}>{formatNumberCO(x.interes,2,2)}</td><td style={{padding:7,textAlign:"right",borderBottom:`1px solid ${C.line}`,whiteSpace:"nowrap"}}>{formatNumberCO(x.otros,2,2)}</td><td style={{padding:7,textAlign:"right",borderBottom:`1px solid ${C.line}`,whiteSpace:"nowrap"}}>{formatNumberCO(x.abonoCapital,2,2)}</td>{tabla.some(y=>y.abonoAdicional>0)&&<td style={{padding:7,textAlign:"right",borderBottom:`1px solid ${C.line}`,whiteSpace:"nowrap"}}>{formatNumberCO(x.abonoAdicional,2,2)}</td>}<td style={{padding:7,textAlign:"right",borderBottom:`1px solid ${C.line}`,fontWeight:700,whiteSpace:"nowrap"}}>{formatNumberCO(x.saldo,2,2)}</td></tr>)}</tbody></table></div>
+          <div style={{fontSize:11.5,color:C.slate,marginTop:8}}>Los valores de la tabla están expresados en {moneda}. Desplázate horizontalmente si necesitas ver todas las columnas.</div>
+        </Tarjeta>
+      </>}
+      {comparacion&&<Tarjeta style={{marginTop:12}}>
+        <Etiqueta>Comparación de sistemas</Etiqueta>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:10}}>{comparacion.map(({nombre,r})=><div key={nombre} style={{border:`1px solid ${C.line}`,borderRadius:8,padding:12}}><strong style={{color:C.navy}}>{nombre}</strong><div style={{fontSize:11.5,color:C.slate,marginTop:8}}>Primera cuota</div><div style={{fontFamily:F_MONO,fontWeight:700,fontSize:14}}>{formatMoneyLong(r.cuotaInicial,moneda)}</div><div style={{fontSize:11.5,color:C.slate,marginTop:8}}>Intereses totales</div><div style={{fontFamily:F_MONO,fontWeight:700,fontSize:14}}>{formatMoneyLong(r.totalInteres,moneda)}</div><div style={{fontSize:11.5,color:C.slate,marginTop:8}}>Total pagado</div><div style={{fontFamily:F_MONO,fontWeight:700,fontSize:14}}>{formatMoneyLong(r.totalPagado,moneda)}</div></div>)}</div>
+      </Tarjeta>}
+    </div>
+  </div>;
+}
+
+function SimuladoresTercerCorte({moneda}){
+  const [submodo,setSubmodo]=useState("gradientes");
+  return <div>
+    <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:18}}>
+      <Boton small variant={submodo==="gradientes"?"gold":"outline"} onClick={()=>setSubmodo("gradientes")}>Gradientes</Boton>
+      <Boton small variant={submodo==="perpetuidades"?"gold":"outline"} onClick={()=>setSubmodo("perpetuidades")}>Perpetuidades</Boton>
+      <Boton small variant={submodo==="amortizaciones"?"gold":"outline"} onClick={()=>setSubmodo("amortizaciones")}>Sistemas de amortización</Boton>
+    </div>
+    {submodo==="gradientes"&&<SimuladorGradientes moneda={moneda}/>}
+    {submodo==="perpetuidades"&&<SimuladorPerpetuidades moneda={moneda}/>}
+    {submodo==="amortizaciones"&&<SimuladorAmortizaciones moneda={moneda}/>}
+  </div>;
+}
+
+
+/* ============================================================
    SIMULAR — CONTENEDOR + HISTORIAL
    (Un único sistema de historial, persistido en localStorage,
    compartido entre el modo básico y el modo avanzado.)
@@ -5232,6 +5721,7 @@ function Simular({ moneda }) {
           <Boton small variant={modo === "avanzado" ? "gold" : "outline"} onClick={() => setModo("avanzado")}>Flujos múltiples</Boton>
           <Boton small variant={modo === "tasas" ? "gold" : "outline"} onClick={() => setModo("tasas")}>Calculadora de tasas</Boton>
           <Boton small variant={modo === "anualidades" ? "gold" : "outline"} onClick={() => setModo("anualidades")}>Anualidades</Boton>
+          <Boton small variant={modo === "tercerCorte" ? "gold" : "outline"} onClick={() => setModo("tercerCorte")}>Tercer corte</Boton>
           <Boton small variant="ghost" onClick={() => setMostrarHistorial((v) => !v)}>{mostrarHistorial ? "Ocultar historial" : "Ver historial"}</Boton>
         </div>
       </div>
@@ -5260,6 +5750,7 @@ function Simular({ moneda }) {
       {modo === "avanzado" && <SimularAvanzado moneda={moneda} onGuardarHistorial={guardar} />}
       {modo === "tasas" && <CalculadoraTasas moneda={moneda} onGuardarHistorial={guardar} />}
       {modo === "anualidades" && <SimuladorAnualidades moneda={moneda} onGuardarHistorial={guardar} />}
+      {modo === "tercerCorte" && <SimuladoresTercerCorte moneda={moneda} />}
     </Section>
   );
 }
