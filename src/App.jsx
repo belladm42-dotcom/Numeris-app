@@ -5876,7 +5876,9 @@ function Simular({ moneda }) {
           <Boton small variant={modo === "avanzado" ? "gold" : "outline"} onClick={() => setModo("avanzado")}>Flujos múltiples</Boton>
           <Boton small variant={modo === "tasas" ? "gold" : "outline"} onClick={() => setModo("tasas")}>Calculadora de tasas</Boton>
           <Boton small variant={modo === "anualidades" ? "gold" : "outline"} onClick={() => setModo("anualidades")}>Anualidades</Boton>
-          <Boton small variant={modo === "tercerCorte" ? "gold" : "outline"} onClick={() => setModo("tercerCorte")}>Tercer corte</Boton>
+          <Boton small variant={modo === "gradientes" ? "gold" : "outline"} onClick={() => setModo("gradientes")}>Gradientes</Boton>
+          <Boton small variant={modo === "perpetuidades" ? "gold" : "outline"} onClick={() => setModo("perpetuidades")}>Perpetuidades</Boton>
+          <Boton small variant={modo === "amortizaciones" ? "gold" : "outline"} onClick={() => setModo("amortizaciones")}>Sistemas de amortización</Boton>
           <Boton small variant="ghost" onClick={() => setMostrarHistorial((v) => !v)}>{mostrarHistorial ? "Ocultar historial" : "Ver historial"}</Boton>
         </div>
       </div>
@@ -5905,7 +5907,9 @@ function Simular({ moneda }) {
       {modo === "avanzado" && <SimularAvanzado moneda={moneda} onGuardarHistorial={guardar} />}
       {modo === "tasas" && <CalculadoraTasas moneda={moneda} onGuardarHistorial={guardar} />}
       {modo === "anualidades" && <SimuladorAnualidades moneda={moneda} onGuardarHistorial={guardar} />}
-      {modo === "tercerCorte" && <SimuladoresTercerCorte moneda={moneda} />}
+      {modo === "gradientes" && <SimuladorGradientes moneda={moneda} />}
+      {modo === "perpetuidades" && <SimuladorPerpetuidades moneda={moneda} />}
+      {modo === "amortizaciones" && <SimuladorAmortizaciones moneda={moneda} />}
     </Section>
   );
 }
