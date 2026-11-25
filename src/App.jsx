@@ -186,15 +186,16 @@ function parseNumCO(v) {
 // n siempre representa un número entero de periodos. Para evitar que "100,000"
 // se interprete como 100 (decimal colombiano), se exige escribirlo sin separadores.
 function parseEnteroPeriodos(v, etiqueta = "n", maximo = 100000) {
-  // n es un conteo, no una cantidad monetaria: solo admite dígitos enteros.
-  // Se usa el límite literal para evitar dependencias de inicialización entre módulos.
-  const txt = String(v ?? "").trim().replace(/\s/g, "");
+  // n es una cantidad de periodos: admite dígitos solos o separadores de miles
+  // (100000, 100.000 o 100,000), pero nunca decimales.
+  let txt = String(v ?? "").trim().replace(/\s/g, "");
+  if (/^\d{1,3}([.,]\d{3})+$/.test(txt)) txt = txt.replace(/[.,]/g, "");
   if (!/^\d+$/.test(txt)) {
-    throw new Error(`${etiqueta} debe ser un número entero, sin puntos ni comas. Ejemplo: 20000. Máximo: 100000.`);
+    throw new Error(`${etiqueta} debe ser un número entero. Puedes escribir 100000, 100.000 o 100,000; no uses decimales. Máximo: 100.000.`);
   }
   const n = Number(txt);
   if (!Number.isSafeInteger(n) || n < 1 || n > maximo) {
-    throw new Error(`${etiqueta} debe estar entre 1 y ${maximo} periodos.`);
+    throw new Error(`${etiqueta} debe estar entre 1 y 100.000 periodos.`);
   }
   return n;
 }
@@ -2280,7 +2281,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
 }
 
 /* ============================================================
-   TERCER CORTE — Gradientes, Perpetuidades y Sistemas de amortización
+   SIMULADORES — Gradientes, Perpetuidades y Sistemas de amortización
    Motor de cálculo del módulo educativo (todas las cifras de los
    ejemplos se calculan con estas funciones, con precisión completa;
    solo se redondea la respuesta final a 2 decimales).
@@ -5152,7 +5153,7 @@ function SimuladorAnualidades({ moneda, onGuardarHistorial }) {
         {muestraA && <Campo label={`Cuota (A) — ${moneda}`}><Entrada value={A} onChange={(e) => setA(e.target.value)} placeholder="1.000.000" /></Campo>}
         {muestraVP && <Campo label={`Valor presente (VP) — ${moneda}`}><Entrada value={VP} onChange={(e) => setVP(e.target.value)} placeholder="30.000.000" /></Campo>}
         {muestraVF && <Campo label={`Valor futuro (VF) — ${moneda}`}><Entrada value={VF} onChange={(e) => setVF(e.target.value)} placeholder="150.000.000" /></Campo>}
-        <Campo label="Número de cuotas (n)" help="Escribe un número entero sin puntos ni comas. Máximo: 100000."><Entrada type="text" inputMode="numeric" pattern="[0-9]*" value={nTxt} onChange={(e) => setNTxt(e.target.value.replace(/[^0-9]/g, ""))} placeholder="24 (sin separadores)" /></Campo>
+        <Campo label="Número de cuotas (n)" help="Escribe un número entero sin puntos ni comas. Máximo: 100000."><Entrada type="text" inputMode="numeric" value={nTxt} onChange={(e) => setNTxt(e.target.value)} placeholder="24" /></Campo>
         <Campo label="Periodo de las cuotas">
           <Selector value={periodoCuotas} onChange={(e) => setPeriodoCuotas(e.target.value)} options={OPC_PERIODOS_CUOTAS} />
           {periodoCuotas === "personalizado_meses" && (
@@ -5317,9 +5318,14 @@ function SimuladorGradientes({ moneda }) {
         const signo = direccion === "creciente" ? 1 : -1;
         const valor = tipo === "aritmetico" ? a + signo * saltos * g : a * Math.pow(1 + signo * g, saltos);
         if (!(valor > 0) || !Number.isFinite(valor)) throw new Error(`La cuota del periodo ${t} sería cero o negativa, o supera el rango numérico disponible. Reduce el gradiente o cambia su dirección.`);
-        const vpCuota=valor/Math.pow(1+i,t),vfCuota=valor*Math.pow(1+i,n-t);
-        if(!Number.isFinite(vpCuota)||!Number.isFinite(vfCuota))throw new Error(`El valor presente o futuro de la cuota ${t} supera el rango numérico disponible. Reduce el número de cuotas o utiliza una tasa menor.`);
-        cuotas.push({ n: t, cuota: valor, saltos, vp: vpCuota, vf: vfCuota });
+        const logValor = Math.log(valor);
+        const logVP = logValor - t * Math.log1p(i);
+        const logVF = logValor + (n - t) * Math.log1p(i);
+        const vpCuota = logVP < Math.log(Number.MAX_VALUE) ? Math.exp(logVP) : Infinity;
+        const vfCuota = logVF < Math.log(Number.MAX_VALUE) ? Math.exp(logVF) : Infinity;
+        // Un valor puede superar el rango de un número ordinario en el momento
+        // que NO se está solicitando. Eso no debe bloquear el cálculo pedido.
+        cuotas.push({ n: t, cuota: valor, saltos, vp: vpCuota, vf: vfCuota, logVP, logVF });
       }
       const pagosExtra = extras.map((e, idx) => {
         const monto = parseNumCO(e.monto), momento = parseNumCO(e.momento);
@@ -5332,10 +5338,21 @@ function SimuladorGradientes({ moneda }) {
         for (let t = inicio; t <= n; t += cada) pagosExtra.push({ monto, momento: t, direccion: "salida", signo: 1, constante: true });
       }
       const extrasDetalle = pagosExtra.map(e => ({ ...e, vp: e.signo * e.monto / Math.pow(1 + i, e.momento), vf: e.signo * e.monto * Math.pow(1 + i, n - e.momento) }));
-      const vpCuotas = sumar(cuotas, "vp"), vfCuotas = sumar(cuotas, "vf");
-      const vpExtras = sumar(extrasDetalle, "vp"), vfExtras = sumar(extrasDetalle, "vf");
+      const sumaCompensada = (arr, key) => {
+        let total = 0, c = 0;
+        for (const item of arr) {
+          const y = (Number(item[key]) || 0) - c;
+          const t = total + y;
+          c = (t - total) - y;
+          total = t;
+        }
+        return total;
+      };
+      const vpCuotas = sumaCompensada(cuotas, "vp"), vfCuotas = sumaCompensada(cuotas, "vf");
+      const vpExtras = sumaCompensada(extrasDetalle, "vp"), vfExtras = sumaCompensada(extrasDetalle, "vf");
       const vp = vpCuotas + vpExtras, vf = vfCuotas + vfExtras;
-      if(!Number.isFinite(vp)||!Number.isFinite(vf))throw new Error("El resultado total supera el rango numérico disponible. Reduce el plazo o utiliza una tasa menor.");
+      if (objetivo === "VP" && !Number.isFinite(vp)) throw new Error("El valor presente supera el rango numérico disponible. Revisa la tasa y los valores ingresados.");
+      if (objetivo === "VF" && !Number.isFinite(vf)) throw new Error("El valor futuro supera el rango numérico disponible para mostrarlo como número. Reduce el plazo o la tasa.");
       const pasos = [
         { label: "1. Datos", content: `A₁ = ${formatMoneyLong(a, moneda)} · Gradiente ${tipo} = ${tipo === "aritmetico" ? formatMoneyLong(g, moneda) : formatPercentCO(g, 6)} · n = ${n} cuotas · Dirección: ${direccion}.` },
         ...agregarPasosConversion(conv),
@@ -5364,7 +5381,7 @@ function SimuladorGradientes({ moneda }) {
       <Campo label="¿Las cuotas aumentan o disminuyen?"><Selector value={direccion} onChange={e=>setDireccion(e.target.value)} options={[{value:"creciente",label:"Creciente (+)"},{value:"decreciente",label:"Decreciente (−)"}]}/></Campo>
       <Campo label={`Primera cuota (A₁) · ${moneda}`}><Entrada value={A1} onChange={e=>setA1(e.target.value)} placeholder="800.000"/></Campo>
       <Campo label={tipo === "aritmetico" ? `Gradiente (G) · ${moneda}` : "Gradiente geométrico (g) · %"}><Entrada value={gradiente} onChange={e=>setGradiente(e.target.value)} placeholder={tipo === "aritmetico" ? "30.000" : "0,5"}/></Campo>
-      <Campo label="Número de cuotas (n)" help="n debe ser entero y se escribe SIN puntos ni comas. Ejemplo: 15000. Máximo permitido: 100000. La tabla se muestra por páginas de 100 filas."><Entrada type="text" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={nTxt} onChange={e=>setNTxt(e.target.value.replace(/[^0-9]/g, "").slice(0,6))} placeholder="20000 (sin separadores)"/></Campo>
+      <Campo label="Número de cuotas (n)" help="n debe ser entero, sin decimales. Puedes escribir 100000, 100.000 o 100,000. Máximo: 100.000. La tabla se muestra por páginas de 100 filas."><Entrada type="text" inputMode="numeric" value={nTxt} onChange={e=>setNTxt(e.target.value)} placeholder="100000"/></Campo>
       <Campo label="Periodicidad de las cuotas"><Selector value={periodoCuota} onChange={e=>setPeriodoCuota(e.target.value)} options={OPC_PERIODOS_CUOTAS}/>{periodoCuota === "personalizado_meses" && <Entrada value={mesesCuota} onChange={e=>setMesesCuota(e.target.value)} placeholder="Meses por cuota"/>}</Campo>
       <Campo label="¿Cada cuánto cambia el gradiente?"><Selector value={periodoGrad} onChange={e=>setPeriodoGrad(e.target.value)} options={[{value:"mismo",label:"En cada periodo de cuota"},{value:"personalizado_meses",label:"En un periodo diferente (meses)"}]}/>{periodoGrad === "personalizado_meses" && <Entrada value={mesesGrad} onChange={e=>setMesesGrad(e.target.value)} placeholder="Meses entre cambios"/>}</Campo>
       <Campo label="¿Qué deseas calcular?"><Selector value={objetivo} onChange={e=>setObjetivo(e.target.value)} options={[{value:"VP",label:"Valor presente (VP)"},{value:"VF",label:"Valor futuro (VF)"}]}/></Campo>
@@ -5404,7 +5421,7 @@ function SimuladorGradientes({ moneda }) {
         </Tarjeta>
         <Tarjeta>
           <Etiqueta>Detalle de todos los flujos</Etiqueta>
-          <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:650}}><thead><tr>{["Periodo","Tipo de flujo","Valor del flujo","Cambios","VP del flujo","VF del flujo"].map(h=><th key={h} style={{textAlign:"right",padding:8,borderBottom:`2px solid ${C.line}`,color:C.navy,whiteSpace:"nowrap"}}>{h}</th>)}</tr></thead><tbody>{filasGradientePagina.map(x=><tr key={x.id} style={{background:x.orden===1?C.paperDark:"transparent"}}><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{x.momento}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right",whiteSpace:"nowrap"}}>{x.concepto}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right",whiteSpace:"nowrap"}}>{formatMoneyLong(x.valor,moneda)}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{x.saltos}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right",whiteSpace:"nowrap"}}>{formatMoneyLong(x.vpFila,moneda)}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right",whiteSpace:"nowrap"}}>{formatMoneyLong(x.vfFila,moneda)}</td></tr>)}</tbody><tfoot><tr><th colSpan="4" style={{textAlign:"right",padding:8}}>Total cuotas</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vpCuotas,moneda)}</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vfCuotas,moneda)}</th></tr><tr><th colSpan="4" style={{textAlign:"right",padding:8}}>Total pagos adicionales</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vpExtras,moneda)}</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vfExtras,moneda)}</th></tr><tr style={{background:C.successBg}}><th colSpan="4" style={{textAlign:"right",padding:8}}>Total general</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vp,moneda)}</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vf,moneda)}</th></tr></tfoot></table></div>
+          <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:650}}><thead><tr>{["Periodo","Tipo de flujo","Valor del flujo","Cambios","VP del flujo","VF del flujo"].map(h=><th key={h} style={{textAlign:"right",padding:8,borderBottom:`2px solid ${C.line}`,color:C.navy,whiteSpace:"nowrap"}}>{h}</th>)}</tr></thead><tbody>{filasGradientePagina.map(x=><tr key={x.id} style={{background:x.orden===1?C.paperDark:"transparent"}}><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{x.momento}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right",whiteSpace:"nowrap"}}>{x.concepto}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right",whiteSpace:"nowrap"}}>{formatMoneyLong(x.valor,moneda)}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right"}}>{x.saltos}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right",whiteSpace:"nowrap"}}>{Number.isFinite(x.vpFila)?formatMoneyLong(x.vpFila,moneda):"Fuera de rango"}</td><td style={{padding:7,borderBottom:`1px solid ${C.line}`,textAlign:"right",whiteSpace:"nowrap"}}>{Number.isFinite(x.vfFila)?formatMoneyLong(x.vfFila,moneda):"Fuera de rango"}</td></tr>)}</tbody><tfoot><tr><th colSpan="4" style={{textAlign:"right",padding:8}}>Total cuotas</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vpCuotas,moneda)}</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vfCuotas,moneda)}</th></tr><tr><th colSpan="4" style={{textAlign:"right",padding:8}}>Total pagos adicionales</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vpExtras,moneda)}</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vfExtras,moneda)}</th></tr><tr style={{background:C.successBg}}><th colSpan="4" style={{textAlign:"right",padding:8}}>Total general</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vp,moneda)}</th><th style={{textAlign:"right",padding:8}}>{formatMoneyLong(res.vf,moneda)}</th></tr></tfoot></table></div>
           <PaginadorTabla total={filasGradiente.length} pagina={paginaTabla} setPagina={setPaginaTabla}/>
           <div style={{fontSize:11.5,color:C.slate,marginTop:8}}>Los pagos únicos y los valores adicionales constantes aparecen como filas independientes. El total general incluye todos los flujos.</div>
         </Tarjeta>
@@ -5423,7 +5440,7 @@ function SimuladorPerpetuidades({ moneda }) {
   const [periodoGrad,setPeriodoGrad]=useState("mismo");
   const [mesesGrad,setMesesGrad]=useState("1");
   const [tasaIn,setTasaIn]=useState({tasa:"11.35",tipo:"efectiva",modalidad:"vencida",periodo:"anual",meses:"5"});
-  const [maxPagos,setMaxPagos]=useState("1000");
+  const [maxPagos,setMaxPagos]=useState("100000");
   const [paginaTabla,setPaginaTabla]=useState(1);
   const [res,setRes]=useState(null);
   const [error,setError]=useState("");
@@ -5544,12 +5561,12 @@ function SimuladorPerpetuidades({ moneda }) {
       <Etiqueta>Configuración de la perpetuidad</Etiqueta>
       <div style={{fontSize:12.5,color:C.slate,lineHeight:1.5,marginBottom:12}}>Una perpetuidad es una serie de pagos que no termina. Por eso calculamos cuánto vale hoy; no tiene valor futuro. La tabla muestra la cantidad n que elijas y agrega el valor presente de los pagos que siguen después, hasta el infinito.</div>
       <Campo label="Tipo de operación"><Selector value={operacion} onChange={e=>setOperacion(e.target.value)} options={[{value:"credito",label:"Crédito"},{value:"inversion",label:"Inversión"}]}/></Campo>
-      <Campo label="Tipo de perpetuidad"><Selector value={tipo} onChange={e=>{const v=e.target.value;setTipo(v);setMaxPagos(v==="constante"?"1000":v==="aritmetico"?"5000":"15000");setRes(null);setPaginaTabla(1);}} options={[{value:"constante",label:"Constante"},{value:"aritmetico",label:"Con gradiente aritmético"},{value:"geometrico",label:"Con gradiente geométrico"}]}/></Campo>
+      <Campo label="Tipo de perpetuidad"><Selector value={tipo} onChange={e=>{const v=e.target.value;setTipo(v);setRes(null);setPaginaTabla(1);}} options={[{value:"constante",label:"Constante"},{value:"aritmetico",label:"Con gradiente aritmético"},{value:"geometrico",label:"Con gradiente geométrico"}]}/></Campo>
       <Campo label={`Valor de la cuota (A) · ${moneda}`}><Entrada value={A} onChange={e=>setA(e.target.value)} placeholder="150.000"/></Campo>
       {tipo!=="constante"&&<Campo label={tipo==="aritmetico"?`Gradiente aritmético (L) · ${moneda}`:"Gradiente geométrico (g) · %"}><Entrada value={grad} onChange={e=>setGrad(e.target.value)} placeholder={tipo==="aritmetico"?"5.000":"0,72"}/></Campo>}
       <Campo label="Periodicidad de las cuotas"><Selector value={periodoCuota} onChange={e=>setPeriodoCuota(e.target.value)} options={OPC_PERIODOS_CUOTAS}/>{periodoCuota==="personalizado_meses"&&<Entrada value={mesesCuota} onChange={e=>setMesesCuota(e.target.value)} placeholder="Meses por cuota"/>}</Campo>
       {tipo!=="constante"&&<Campo label="¿Cada cuánto cambia el gradiente?"><Selector value={periodoGrad} onChange={e=>setPeriodoGrad(e.target.value)} options={[{value:"mismo",label:"En cada periodo de cuota"},{value:"personalizado_meses",label:"En un periodo diferente (meses)"}]}/>{periodoGrad==="personalizado_meses"&&<Entrada value={mesesGrad} onChange={e=>setMesesGrad(e.target.value)} placeholder="Meses entre cambios"/>}</Campo>}
-      <Campo label="Cantidad de pagos (n) que se muestran en la tabla" help="Escribe un entero SIN puntos ni comas. Puedes consultar hasta 100.000 pagos. Los pagos posteriores se incluyen en el valor pendiente."><Entrada type="text" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={maxPagos} onChange={e=>setMaxPagos(e.target.value.replace(/[^0-9]/g, "").slice(0,6))} placeholder="20000 (sin separadores)"/></Campo>
+      <Campo label="Cantidad de pagos (n) que se muestran en la tabla" help="Escribe un número entero, sin decimales. Se acepta 100000, 100.000 o 100,000. Puedes consultar hasta 100.000 pagos; los posteriores se incluyen en el valor pendiente."><Entrada type="text" inputMode="numeric" value={maxPagos} onChange={e=>setMaxPagos(e.target.value)} placeholder="100000"/></Campo>
       <div style={{fontSize:11.5,color:C.slate,marginTop:-6,marginBottom:10}}>Máximo permitido: 100.000 pagos. La tabla se muestra en páginas de 100 filas.</div>
       <EditorTasa titulo="Tasa ingresada" valor={tasaIn} onChange={setTasaIn}/>
       <Boton variant="gold" onClick={calcular}>Calcular valor presente</Boton>
@@ -5763,7 +5780,7 @@ function SimuladorAmortizaciones({moneda}){
       <Etiqueta>Datos del crédito</Etiqueta>
       <Campo label="Sistema de amortización"><Selector value={sistema} onChange={e=>{setSistema(e.target.value);setRes(null)}} options={[{value:"frances",label:"Francés · cuota fija"},{value:"aleman",label:"Alemán · abono fijo a capital"},{value:"americano",label:"Americano · pago al final"}]}/></Campo>
       <Campo label={`Monto del crédito / valor del bien · ${moneda}`}><Entrada value={monto} onChange={e=>setMonto(e.target.value)} placeholder="1.000.000"/></Campo>
-      <Campo label="Número total de cuotas (n)" help="n debe ser entero y se escribe SIN puntos ni comas. Ejemplo: 15000. Máximo permitido: 100000. La tabla se muestra por páginas de 100 filas."><Entrada type="text" inputMode="numeric" pattern="[0-9]*" value={nTxt} onChange={e=>setNTxt(e.target.value.replace(/[^0-9]/g, ""))} placeholder="24 (sin separadores)"/></Campo>
+      <Campo label="Número total de cuotas (n)" help="n debe ser entero, sin decimales. Puedes escribir 100000, 100.000 o 100,000. Máximo: 100.000. La tabla se muestra por páginas de 100 filas."><Entrada type="text" inputMode="numeric" value={nTxt} onChange={e=>setNTxt(e.target.value)} placeholder="24"/></Campo>
       <Campo label="Periodicidad de las cuotas"><Selector value={periodoCuota} onChange={e=>setPeriodoCuota(e.target.value)} options={OPC_PERIODOS_CUOTAS}/>{periodoCuota==="personalizado_meses"&&<Entrada value={mesesCuota} onChange={e=>setMesesCuota(e.target.value)} placeholder="Meses por cuota"/>}</Campo>
       <EditorTasa titulo="Tasa del crédito" valor={tasaIn} onChange={setTasaIn}/>
       <Campo label={`Otros costos por periodo · ${moneda}`}><Entrada value={otros} onChange={e=>setOtros(e.target.value)} placeholder="0"/></Campo>
