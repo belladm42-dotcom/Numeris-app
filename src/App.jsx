@@ -4,7 +4,7 @@ import {
 } from "recharts";
 import {
   Home, BookOpen, Calculator, BarChart3, MessageSquare, Library, Plus, Trash2,
-  ChevronDown, ChevronUp, Info, ArrowUp, ArrowDown, Check, AlertTriangle, RotateCcw, ArrowLeft, ArrowRight,
+  ChevronDown, ChevronUp, Info, ArrowUp, ArrowDown, Check, AlertTriangle, RotateCcw, ArrowLeft, ArrowRight, Brain,
 } from "lucide-react";
 
 /* ============================================================
@@ -702,6 +702,7 @@ const SECCIONES = [
   { id: "simular", label: "Simulación", icon: Calculator },
   { id: "comparar", label: "Comparar", icon: BarChart3 },
   { id: "glosario", label: "Glosario", icon: Library },
+  { id: "repaso", label: "Repaso", icon: Brain },
   { id: "interacciones", label: "Interacciones", icon: MessageSquare },
 ];
 
@@ -4065,8 +4066,17 @@ const NUMERIS_VISUAL_CSS = `
   table th { letter-spacing: .015em; }
   table tbody tr:hover { background: rgba(217,174,99,0.075) !important; }
   details > summary { cursor: pointer; }
+  /* Presentación más espaciosa de los resultados y procedimientos. */
+  .result-panel { border-radius: 20px !important; box-shadow: 0 16px 38px rgba(12,30,56,.075) !important; }
+  .result-metrics { gap: 16px !important; }
+  .result-metric { min-height: 104px; padding: 19px 20px !important; border-radius: 16px !important; }
+  .result-explanation { line-height: 1.75 !important; margin-top: 18px !important; }
+  .procedure-panel { border-radius: 18px !important; padding: 24px !important; }
+  .comparison-system-card { min-width: 0; overflow-wrap: anywhere; }
   @media (max-width: 680px) {
     input, select, textarea { font-size: 16px !important; }
+    .result-metric { min-height: 88px; }
+    .procedure-panel { padding: 18px !important; }
   }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 `;
@@ -4090,6 +4100,16 @@ const REPASO_QUIZ = [
   { q: "¿Qué caracteriza a un gradiente aritmético?", options: ["Cada pago cambia el mismo porcentaje.", "Cada pago cambia la misma cantidad de pesos.", "Todos los pagos son iguales."], correct: 1, explain: "En el gradiente aritmético, la variación es una cantidad fija de pesos." },
   { q: "¿Qué representa el abono a capital?", options: ["La parte del pago que reduce la deuda.", "El cobro del seguro.", "El interés del periodo."], correct: 0, explain: "El abono a capital devuelve parte del dinero prestado y disminuye el saldo." },
   { q: "¿Qué es una perpetuidad?", options: ["Una serie de pagos que termina en un periodo definido.", "Una fila de pagos que continúa para siempre.", "Un único pago en el momento cero."], correct: 1, explain: "Una perpetuidad es una serie de pagos sin último periodo." },
+  { q: "¿Qué muestra el valor futuro (VF)?", options: ["Cuánto vale hoy una serie de pagos.", "Cuánto valdrá el dinero en la fecha final.", "Cuánto se debe antes del primer pago."], correct: 1, explain: "VF lleva los valores hasta la fecha final de la operación." },
+  { q: "¿Qué describe una tasa nominal?", options: ["Una tasa anual expresada junto con su frecuencia de capitalización.", "Siempre el costo efectivo de un mes.", "Una tasa que no necesita conversión."], correct: 0, explain: "La tasa nominal se expresa para el año e indica cada cuánto se capitalizan o aplican los intereses." },
+  { q: "¿Qué representa la capitalización?", options: ["Retirar los intereses cada periodo.", "Sumar los intereses al capital para que también produzcan intereses.", "Dividir el capital en cuotas iguales."], correct: 1, explain: "Al capitalizar, los intereses se incorporan al capital y pueden generar nuevos intereses." },
+  { q: "¿Qué significa que una tasa sea anticipada?", options: ["Que el interés se cobra o descuenta al inicio del periodo.", "Que el interés se paga al final del periodo.", "Que la tasa se aplica solamente una vez."], correct: 0, explain: "La tasa anticipada se cobra o descuenta al comienzo del periodo." },
+  { q: "¿Qué caracteriza a un gradiente geométrico?", options: ["Cada pago cambia una cantidad fija de pesos.", "Cada pago cambia el mismo porcentaje.", "Todos los pagos son iguales."], correct: 1, explain: "En el gradiente geométrico, cada cambio se calcula aplicando un porcentaje." },
+  { q: "¿Qué ocurre con el saldo después de un abono a capital?", options: ["Aumenta por el valor del abono.", "Permanece siempre igual.", "Disminuye por la parte que reduce la deuda."], correct: 2, explain: "El abono a capital reduce el dinero que todavía se debe." },
+  { q: "¿Cómo funciona el sistema francés?", options: ["Tiene una cuota fija durante el crédito.", "Tiene un abono a capital fijo y cuotas decrecientes.", "Devuelve todo el capital únicamente al final."], correct: 0, explain: "En el sistema francés la cuota se mantiene fija, aunque cambian sus componentes de interés y capital." },
+  { q: "¿Qué caracteriza al sistema alemán?", options: ["La cuota es siempre fija.", "El abono a capital es fijo y la cuota suele disminuir.", "No se pagan intereses durante el crédito."], correct: 1, explain: "En el sistema alemán se devuelve la misma cantidad de capital en cada periodo; al bajar el saldo, también disminuyen los intereses." },
+  { q: "¿Qué es la TIR en el análisis de un crédito?", options: ["La cantidad de cuotas pendientes.", "La tasa que compara el desembolso con los pagos del crédito.", "El valor del seguro mensual."], correct: 1, explain: "La TIR permite relacionar el dinero recibido con todos los pagos realizados y estimar el costo efectivo." },
+  { q: "¿Qué es un periodo de gracia?", options: ["Un periodo al inicio en el que, según la modalidad, no se paga capital o no se paga nada.", "Un pago adicional al final del crédito.", "Una reducción automática de la tasa."], correct: 0, explain: "Durante la gracia se aplaza el pago de capital; según la modalidad, pueden pagarse los intereses o acumularse." },
 ];
 
 function RepasoInteractivo() {
@@ -4098,26 +4118,35 @@ function RepasoInteractivo() {
   const [volteada, setVolteada] = useState(false);
   const [pregunta, setPregunta] = useState(0);
   const [seleccion, setSeleccion] = useState(null);
+  const [selecciones, setSelecciones] = useState([]);
   const [respuestas, setRespuestas] = useState([]);
   const [terminado, setTerminado] = useState(false);
   const tarjeta = REPASO_FLASHCARDS[indice];
   const q = REPASO_QUIZ[pregunta];
   const responder = (op) => {
-    if (seleccion !== null) return;
+    // Permite corregir una respuesta al volver a una pregunta anterior.
     setSeleccion(op);
-    setRespuestas((prev) => [...prev, op === q.correct]);
+    setSelecciones((prev) => { const copia = [...prev]; copia[pregunta] = op; return copia; });
+    setRespuestas((prev) => { const copia = [...prev]; copia[pregunta] = op === q.correct; return copia; });
   };
   const siguientePregunta = () => {
     if (pregunta === REPASO_QUIZ.length - 1) setTerminado(true);
-    else { setPregunta((v) => v + 1); setSeleccion(null); }
+    else { const siguiente = pregunta + 1; setPregunta(siguiente); setSeleccion(selecciones[siguiente] ?? null); }
   };
-  const reiniciarQuiz = () => { setPregunta(0); setSeleccion(null); setRespuestas([]); setTerminado(false); };
+  const preguntaAnterior = () => {
+    if (pregunta === 0) return;
+    const anterior = pregunta - 1;
+    setPregunta(anterior);
+    setSeleccion(selecciones[anterior] ?? null);
+    setTerminado(false);
+  };
+  const reiniciarQuiz = () => { setPregunta(0); setSeleccion(null); setSelecciones([]); setRespuestas([]); setTerminado(false); };
   return (
     <div className="edu-fade" style={{ display: "grid", gap: 20 }}>
       <div style={{ background: "linear-gradient(135deg,#0C1E38,#24456F)", borderRadius: 20, padding: "clamp(22px,4vw,34px)", color: C.white, boxShadow: "0 18px 38px rgba(12,30,56,0.15)" }}>
         <div style={{ fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.13em", color: C.goldLight, fontWeight: 800 }}>REPASO INTERACTIVO</div>
         <h2 style={{ fontFamily: F_DISPLAY, fontSize: "clamp(25px,3.5vw,34px)", margin: "8px 0", fontWeight: 600 }}>Pon a prueba lo que aprendiste</h2>
-        <p style={{ color: "#D8E0EA", margin: 0, lineHeight: 1.65 }}>Repasa conceptos de Numeris con tarjetas y preguntas cortas. El contenido se basa en las definiciones del glosario.</p>
+        <p style={{ color: "#D8E0EA", margin: 0, lineHeight: 1.65 }}>Repasa conceptos de Numeris con tarjetas y un cuestionario de 15 preguntas. Recibirás una explicación breve después de cada respuesta.</p>
       </div>
       <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
         <Boton variant={modo === "flashcards" ? "gold" : "outline"} onClick={() => setModo("flashcards")}>Flashcards</Boton>
@@ -4145,7 +4174,7 @@ function RepasoInteractivo() {
         <Tarjeta style={{ padding: "clamp(20px,4vw,34px)" }}>
           {!terminado ? <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 18 }}>
-              <Etiqueta>Pregunta {pregunta + 1} de {REPASO_QUIZ.length}</Etiqueta>
+              <Etiqueta>Pregunta {pregunta + 1} de 15</Etiqueta>
               <span style={{ fontFamily: F_MONO, fontSize: 12, color: C.slate }}>{Math.round((pregunta / REPASO_QUIZ.length) * 100)} %</span>
             </div>
             <div style={{ height: 7, borderRadius: 99, background: C.paperDark, overflow: "hidden", marginBottom: 24 }}><div style={{ height: "100%", width: `${((pregunta + 1) / REPASO_QUIZ.length) * 100}%`, background: `linear-gradient(90deg,${C.gold},${C.goldLight})`, transition: "width .25s" }}/></div>
@@ -4154,17 +4183,27 @@ function RepasoInteractivo() {
               {q.options.map((op, i) => {
                 const elegida = seleccion === i;
                 const correcta = seleccion !== null && i === q.correct;
-                return <button key={op} type="button" onClick={() => responder(i)} disabled={seleccion !== null} style={{ textAlign: "left", padding: "15px 17px", borderRadius: 13, border: `1px solid ${correcta ? C.success : elegida ? C.danger : C.line}`, background: correcta ? C.successBg : elegida ? C.dangerBg : "#FFFFFF", color: C.navy, fontFamily: F_BODY, fontSize: 14, lineHeight: 1.55, cursor: seleccion === null ? "pointer" : "default" }}>{op}</button>;
+                return <button key={op} type="button" onClick={() => responder(i)} aria-pressed={elegida} style={{ textAlign: "left", padding: "15px 17px", borderRadius: 13, border: `1px solid ${correcta ? C.success : elegida ? C.danger : C.line}`, background: correcta ? C.successBg : elegida ? C.dangerBg : "#FFFFFF", color: C.navy, fontFamily: F_BODY, fontSize: 14, lineHeight: 1.55, cursor: "pointer", transition: "border .15s ease, background .15s ease, transform .15s ease" }}>{op}</button>;
               })}
             </div>
             {seleccion !== null && <div style={{ marginTop: 16, padding: 15, borderRadius: 13, background: seleccion === q.correct ? C.successBg : C.dangerBg, color: C.navy, lineHeight: 1.6 }}><strong>{seleccion === q.correct ? "¡Correcto!" : "No exactamente."}</strong> {q.explain}</div>}
-            {seleccion !== null && <div style={{ marginTop: 18, textAlign: "right" }}><Boton variant="gold" onClick={siguientePregunta}>{pregunta === REPASO_QUIZ.length - 1 ? "Ver resultado" : "Siguiente pregunta"} <ArrowRight size={16}/></Boton></div>}
+            <div style={{ marginTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <Boton variant="outline" disabled={pregunta === 0} onClick={preguntaAnterior}><ArrowLeft size={16}/> Volver a la pregunta anterior</Boton>
+              {seleccion !== null ? (
+                <Boton variant="gold" onClick={siguientePregunta}>{pregunta === REPASO_QUIZ.length - 1 ? "Ver resultado" : "Siguiente pregunta"} <ArrowRight size={16}/></Boton>
+              ) : (
+                <span style={{ fontSize: 12, color: C.slate }}>Selecciona una respuesta para continuar.</span>
+              )}
+            </div>
           </> : <div style={{ textAlign: "center", padding: "24px 10px" }}>
             <div style={{ width: 66, height: 66, borderRadius: "50%", background: C.successBg, color: C.success, display: "grid", placeItems: "center", margin: "0 auto 16px" }}><Check size={32}/></div>
             <Etiqueta>Repaso terminado</Etiqueta>
             <h3 style={{ fontFamily: F_DISPLAY, fontSize: 30, color: C.navy, margin: "8px 0" }}>Obtuviste {respuestas.filter(Boolean).length} de {REPASO_QUIZ.length}</h3>
             <p style={{ color: C.slate, lineHeight: 1.65 }}>Puedes volver a intentarlo para reforzar los conceptos.</p>
-            <Boton variant="gold" onClick={reiniciarQuiz}><RotateCcw size={16}/> Repetir mini quiz</Boton>
+            <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
+              <Boton variant="outline" onClick={() => { setPregunta(0); setSeleccion(selecciones[0] ?? null); setTerminado(false); }}><ArrowLeft size={16}/> Revisar respuestas</Boton>
+              <Boton variant="gold" onClick={reiniciarQuiz}><RotateCcw size={16}/> Repetir mini quiz</Boton>
+            </div>
           </div>}
         </Tarjeta>
       )}
@@ -4172,13 +4211,12 @@ function RepasoInteractivo() {
   );
 }
 
-function Aprender() {
+function Aprender({ ir }) {
   const esMovil = useMediaQuery("(max-width: 860px)");
   const [tema, setTema] = useState(0);
   const [modulo, setModulo] = useState(1);
   const [vista, setVista] = useState("modulo"); // "modulo" | "fin"
   const [menuAbierto, setMenuAbierto] = useState(false);
-  const [vistaAprendizaje, setVistaAprendizaje] = useState("temas");
   const [completados, setCompletados] = useState(() => new Set());
   const [visitados, setVisitados] = useState(() => new Set(["0-1"]));
   const raizRef = useRef(null);
@@ -4405,12 +4443,7 @@ function Aprender() {
       <Section style={{ maxWidth: 1180, paddingTop: 44, paddingBottom: 60 }}>
         <Etiqueta>Educación financiera</Etiqueta>
         <h1 style={{ fontFamily: F_DISPLAY, fontSize: 32, color: C.navy, margin: "0 0 20px" }}>Conceptos fundamentales de matemáticas financieras</h1>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 24, padding: 7, background: "rgba(255,255,255,0.72)", border: `1px solid ${C.line}`, borderRadius: 15, width: "fit-content", maxWidth: "100%" }}>
-          <Boton small variant={vistaAprendizaje === "temas" ? "gold" : "outline"} onClick={() => setVistaAprendizaje("temas")}><BookOpen size={15}/> Recorrer temas</Boton>
-          <Boton small variant={vistaAprendizaje === "repaso" ? "gold" : "outline"} onClick={() => setVistaAprendizaje("repaso")}><Library size={15}/> Repaso interactivo</Boton>
-        </div>
-
-        {vistaAprendizaje === "repaso" ? <RepasoInteractivo /> : <div style={{
+        <div style={{
           display: "grid", gap: 24, alignItems: "start",
           gridTemplateColumns: esMovil ? "minmax(0, 1fr)" : "270px minmax(0, 1fr)",
         }}>
@@ -4466,11 +4499,35 @@ function Aprender() {
               )}
             </div>
           </div>
-        </div>}
+        </div>
 
-      {vistaAprendizaje === "temas" && <div style={{ marginTop: 22, padding: "18px 22px", background: "linear-gradient(135deg,#F1EFE8,#FBFAF6)", border: `1px solid ${C.line}`, borderRadius: 16, fontSize: 13, color: C.slate, lineHeight: 1.7 }}>
+      <div style={{ marginTop: 22, padding: "18px 22px", background: "linear-gradient(135deg,#F1EFE8,#FBFAF6)", border: `1px solid ${C.line}`, borderRadius: 16, fontSize: 13, color: C.slate, lineHeight: 1.7 }}>
         <strong style={{ color: C.navy }}>Notación:</strong> para interés simple y compuesto usamos <em>i</em> (tasa por periodo) y <em>n</em> (número de periodos). Para interés continuo usamos <em>r</em> (tasa continua) y <em>t</em> (tiempo en años). Nunca usamos una "T" aislada: siempre indicamos "Momento del flujo" con su unidad explícita.
-      </div>}
+      </div>
+
+      <div style={{
+        marginTop: 28,
+        padding: "clamp(22px, 4vw, 32px)",
+        borderRadius: 20,
+        background: "linear-gradient(135deg, #0C1E38 0%, #18385F 68%, #24456F 100%)",
+        color: C.white,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 22,
+        flexWrap: "wrap",
+        boxShadow: "0 18px 38px rgba(12,30,56,0.15)",
+        border: `1px solid ${C.gold}66`
+      }}>
+        <div style={{ flex: "1 1 280px", minWidth: 0 }}>
+          <div style={{ fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.14em", textTransform: "uppercase", color: C.goldLight, fontWeight: 800, marginBottom: 8 }}>Repaso interactivo</div>
+          <h2 style={{ fontFamily: F_DISPLAY, fontSize: "clamp(22px, 3vw, 30px)", lineHeight: 1.2, margin: "0 0 8px", color: C.white }}>¿Listo para poner a prueba lo que sabes?</h2>
+          <p style={{ margin: 0, color: "#D8E0EA", fontSize: 14, lineHeight: 1.65, maxWidth: 600 }}>Repasa los conceptos con flashcards y un mini quiz de 15 preguntas. Puedes revisar tus respuestas y volver a intentarlo.</p>
+        </div>
+        <Boton variant="gold" onClick={() => ir && ir("repaso")} style={{ padding: "14px 22px", fontSize: 14.5, flexShrink: 0 }}>
+          Pon a prueba lo que sabes <ArrowRight size={17} />
+        </Boton>
+      </div>
 
       </Section>
     </div>
@@ -6594,9 +6651,39 @@ function SimuladorAmortizaciones({moneda,onGuardarHistorial}){
           <div style={{fontSize:11.5,color:C.slate,marginTop:8}}>Los valores de la tabla están expresados en {moneda}. Máximo permitido: 100.000 cuotas. La tabla se muestra por páginas de 100 filas.</div>
         </Tarjeta>
       </>}
-      {comparacion&&<Tarjeta style={{marginTop:12}}>
-        <Etiqueta>Comparación de sistemas</Etiqueta>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:10}}>{comparacion.map(({nombre,r,error:errSis})=>errSis?<div key={nombre} style={{border:`1px solid ${C.line}`,borderRadius:8,padding:12}}><strong style={{color:C.navy}}>{nombre}</strong><div style={{fontSize:12,color:C.danger,marginTop:8}}>No se pudo calcular: {errSis}</div></div>:<div key={nombre} style={{border:`1px solid ${C.line}`,borderRadius:8,padding:12}}><strong style={{color:C.navy}}>{nombre}</strong><div style={{fontSize:11.5,color:C.slate,marginTop:8}}>Primera cuota</div><div style={{fontFamily:F_MONO,fontWeight:700,fontSize:14}}>{formatMoneyLong(r.cuotaInicial,moneda)}</div><div style={{fontSize:11.5,color:C.slate,marginTop:8}}>Intereses totales</div><div style={{fontFamily:F_MONO,fontWeight:700,fontSize:14}}>{formatMoneyLong(r.totalInteres,moneda)}</div><div style={{fontSize:11.5,color:C.slate,marginTop:8}}>Total pagado</div><div style={{fontFamily:F_MONO,fontWeight:700,fontSize:14}}>{formatMoneyLong(r.totalPagado,moneda)}</div></div>)}</div>
+      {comparacion&&<Tarjeta style={{marginTop:18,padding:"clamp(20px,3vw,30px)",background:"linear-gradient(160deg,#FFFFFF 0%,#F8F6F0 100%)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",marginBottom:18}}>
+          <div>
+            <Etiqueta>Comparación de sistemas</Etiqueta>
+            <h3 style={{fontFamily:F_DISPLAY,fontSize:"clamp(21px,2.5vw,27px)",color:C.navy,margin:"0 0 5px"}}>El mismo crédito, tres formas de pagarlo</h3>
+            <p style={{fontSize:13,color:C.slate,lineHeight:1.55,margin:0}}>Compara la primera cuota, los intereses totales y el total pagado en cada sistema.</p>
+          </div>
+          <div style={{padding:"8px 12px",borderRadius:999,background:"#F3E9D5",color:C.goldDeep,fontSize:11,fontWeight:800,letterSpacing:".06em",textTransform:"uppercase"}}>Vista comparativa</div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))",gap:16,alignItems:"stretch"}}>
+          {comparacion.map(({nombre,r,error:errSis},idx)=>errSis?(
+            <div key={nombre} style={{border:`1px solid ${C.danger}44`,borderRadius:18,padding:18,background:"linear-gradient(145deg,#FFF8F7,#F9EDEC)",minWidth:0}}>
+              <div style={{fontFamily:F_DISPLAY,fontSize:20,fontWeight:700,color:C.navy,marginBottom:10}}>{nombre}</div>
+              <div style={{fontSize:12.5,color:C.danger,lineHeight:1.6}}>No se pudo calcular: {errSis}</div>
+            </div>
+          ):(
+            <div key={nombre} style={{border:`1px solid ${idx===0?C.navy+"33":idx===1?C.gold+"66":C.line}`,borderRadius:18,padding:20,background:idx===0?"linear-gradient(160deg,#F1F5FA,#FFFFFF)":idx===1?"linear-gradient(160deg,#FBF4E7,#FFFFFF)":"linear-gradient(160deg,#F5F5F3,#FFFFFF)",boxShadow:"0 14px 30px rgba(12,30,56,0.07)",display:"flex",flexDirection:"column",gap:14,minWidth:0}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+                <div style={{fontFamily:F_DISPLAY,fontSize:21,fontWeight:700,color:C.navy}}>{nombre}</div>
+                <div style={{width:9,height:9,borderRadius:"50%",background:idx===0?C.navy:idx===1?C.gold:C.slate,flexShrink:0}}/>
+              </div>
+              <div style={{padding:"13px 14px",borderRadius:13,background:"rgba(255,255,255,0.78)",border:`1px solid ${C.line}`}}>
+                <div style={{fontSize:11.5,color:C.slate,fontWeight:650,marginBottom:5}}>Primera cuota</div>
+                <div style={{fontFamily:F_MONO,fontSize:"clamp(16px,1.7vw,19px)",fontWeight:800,color:C.navy,overflowWrap:"anywhere"}}>{formatMoneyLong(r.cuotaInicial,moneda)}</div>
+              </div>
+              <div style={{display:"grid",gap:12}}>
+                <div><div style={{fontSize:11.5,color:C.slate,marginBottom:4}}>Intereses totales</div><div style={{fontFamily:F_MONO,fontWeight:750,fontSize:14.5,color:C.ink,overflowWrap:"anywhere"}}>{formatMoneyLong(r.totalInteres,moneda)}</div></div>
+                <div style={{height:1,background:C.line}}/>
+                <div><div style={{fontSize:11.5,color:C.slate,marginBottom:4}}>Total pagado</div><div style={{fontFamily:F_MONO,fontWeight:850,fontSize:16,color:C.navy,overflowWrap:"anywhere"}}>{formatMoneyLong(r.totalPagado,moneda)}</div></div>
+              </div>
+            </div>
+          ))}
+        </div>
       </Tarjeta>}
     </div>
   </div>;
@@ -7445,10 +7532,11 @@ export default function App() {
       <style>{NUMERIS_VISUAL_CSS}</style>
       <Nav activa={seccion} setActiva={setSeccion} moneda={moneda} setMoneda={setMoneda} />
       {seccion === "inicio" && <Inicio ir={setSeccion} />}
-      {seccion === "aprender" && <Aprender />}
+      {seccion === "aprender" && <Aprender ir={setSeccion} />}
       {seccion === "simular" && <Simular moneda={moneda} />}
       {seccion === "comparar" && <Comparar moneda={moneda} />}
       {seccion === "glosario" && <Glosario />}
+      {seccion === "repaso" && <RepasoInteractivo />}
       {seccion === "interacciones" && <Interacciones />}
       <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 28, background: "rgba(255,255,255,0.48)" }}>
         <Section style={{ padding: "26px 24px", fontSize: 11.5, color: C.slate, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
