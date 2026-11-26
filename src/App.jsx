@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback, useContext, createContext } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import {
   Home, BookOpen, Calculator, BarChart3, MessageSquare, Library, Plus, Trash2,
-  ChevronDown, ChevronUp, Info, ArrowUp, ArrowDown, Check, AlertTriangle, RotateCcw,
+  ChevronDown, ChevronUp, Info, ArrowUp, ArrowDown, Check, AlertTriangle, RotateCcw, ArrowLeft, ArrowRight,
 } from "lucide-react";
 
 /* ============================================================
@@ -552,19 +552,12 @@ function formatearResultadoHistorial(h) {
    COMPONENTES DE UTILIDAD
    ============================================================ */
 function Section({ children, style }) {
-  return <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px", ...style }}>{children}</div>;
+  return <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 clamp(16px, 3vw, 28px)", ...style }}>{children}</div>;
 }
 
 function Etiqueta({ children }) {
   return (
-    <div style={{
-      display: "inline-flex", alignItems: "center", gap: 8,
-      fontFamily: F_MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase",
-      color: C.goldDeep, fontWeight: 700, marginBottom: 10,
-      background: "linear-gradient(135deg, rgba(217,174,99,0.22), rgba(255,255,255,0.72))",
-      border: `1px solid ${C.gold}55`, borderRadius: 999, padding: "7px 12px",
-      boxShadow: "0 8px 24px rgba(19,42,76,0.08)"
-    }}>
+    <div style={{ display: "inline-flex", alignItems: "center", fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.12em", textTransform: "uppercase", color: C.goldDeep, fontWeight: 800, marginBottom: 12, padding: "7px 12px", borderRadius: 999, border: `1px solid ${C.gold}55`, background: "linear-gradient(135deg, rgba(217,174,99,0.18), rgba(255,255,255,0.86))" }}>
       {children}
     </div>
   );
@@ -572,15 +565,7 @@ function Etiqueta({ children }) {
 
 function Tarjeta({ children, style }) {
   return (
-    <div style={{
-      background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.92))",
-      border: `1px solid ${C.line}`,
-      borderRadius: 18,
-      padding: 24,
-      boxShadow: "0 18px 45px rgba(12,30,56,0.08)",
-      backdropFilter: "blur(6px)",
-      ...style
-    }}>
+    <div style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.94))", border: `1px solid ${C.line}`, borderRadius: 18, padding: "clamp(18px, 2.5vw, 26px)", boxShadow: "0 16px 40px rgba(12,30,56,0.07)", ...style }}>
       {children}
     </div>
   );
@@ -588,36 +573,25 @@ function Tarjeta({ children, style }) {
 
 function Boton({ children, onClick, variant = "primary", type = "button", small, style, disabled }) {
   const base = {
-    fontFamily: F_BODY, fontWeight: 700, fontSize: small ? 13 : 14.5,
-    cursor: disabled ? "not-allowed" : "pointer",
-    borderRadius: 12, padding: small ? "8px 14px" : "12px 22px",
-    border: "1px solid transparent", display: "inline-flex", alignItems: "center",
-    justifyContent: "center", gap: 7,
-    transition: "transform .18s ease, box-shadow .18s ease, opacity .15s ease",
-    opacity: disabled ? 0.5 : 1,
-    boxShadow: "0 10px 24px rgba(12,30,56,0.08)",
+    fontFamily: F_BODY, fontWeight: 600, fontSize: small ? 13 : 14.5, cursor: disabled ? "not-allowed" : "pointer",
+    borderRadius: 12, padding: small ? "8px 14px" : "12px 22px", border: "1px solid transparent",
+    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+    transition: "transform .18s ease, box-shadow .18s ease, opacity .15s", opacity: disabled ? 0.5 : 1,
+    boxShadow: "0 8px 20px rgba(12,30,56,0.09)",
   };
   const variants = {
-    primary: { background: "linear-gradient(135deg, #24456F 0%, #132A4C 100%)", color: C.white },
-    gold: { background: "linear-gradient(135deg, #D9AE63 0%, #B8863B 100%)", color: C.navyDeep },
-    outline: { background: "rgba(255,255,255,0.72)", color: C.navy, border: `1px solid ${C.navy}25` },
-    ghost: { background: "rgba(255,255,255,0.35)", color: C.slate },
-    danger: { background: "rgba(247,233,231,0.85)", color: C.danger, border: `1px solid ${C.danger}33` },
+    primary: { background: "linear-gradient(135deg, #24456F, #132A4C)", color: C.white },
+    gold: { background: "linear-gradient(135deg, #E1BD7B, #B8863B)", color: C.navyDeep },
+    outline: { background: "rgba(255,255,255,0.82)", color: C.navy, border: `1px solid ${C.navy}33` },
+    ghost: { background: "rgba(255,255,255,0.5)", color: C.slate },
+    danger: { background: "rgba(247,233,231,0.8)", color: C.danger, border: `1px solid ${C.danger}55` },
   };
   return (
-    <button type={type} disabled={disabled} onClick={disabled ? undefined : onClick}
-      style={{ ...base, ...variants[variant], ...style }}
+    <button type={type} disabled={disabled} onClick={disabled ? undefined : onClick} style={{ ...base, ...variants[variant], ...style }}
       onFocus={(e) => (e.target.style.outline = `2px solid ${C.gold}`)}
       onBlur={(e) => (e.target.style.outline = "none")}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.transform = "translateY(-1px)";
-        e.currentTarget.style.boxShadow = "0 14px 28px rgba(12,30,56,0.14)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "0 10px 24px rgba(12,30,56,0.08)";
-      }}>
+      onMouseEnter={(e) => { if (!disabled) { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 13px 26px rgba(12,30,56,0.14)"; } }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 8px 20px rgba(12,30,56,0.09)"; }}>
       {children}
     </button>
   );
@@ -625,18 +599,18 @@ function Boton({ children, onClick, variant = "primary", type = "button", small,
 
 function Campo({ label, children, help }) {
   return (
-    <label style={{ display: "block", marginBottom: 16 }}>
-      <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: C.navy, marginBottom: 6 }}>{label}</span>
+    <label style={{ display: "block", marginBottom: 14 }}>
+      <span style={{ display: "block", fontSize: 13, fontWeight: 750, color: C.navy, marginBottom: 7 }}>{label}</span>
       {children}
-      {help && <span style={{ display: "block", fontSize: 11.5, color: C.slate, marginTop: 6, lineHeight: 1.45 }}>{help}</span>}
+      {help && <span style={{ display: "block", fontSize: 11.5, color: C.slate, marginTop: 7, lineHeight: 1.5 }}>{help}</span>}
     </label>
   );
 }
 
 const inputStyle = {
   width: "100%", boxSizing: "border-box", fontFamily: F_MONO, fontSize: 14.5, padding: "12px 14px",
-  border: `1px solid ${C.line}`, borderRadius: 12, background: "rgba(255,255,255,0.9)", color: C.ink,
-  boxShadow: "inset 0 1px 2px rgba(12,30,56,0.04), 0 4px 14px rgba(12,30,56,0.03)",
+  border: `1px solid ${C.line}`, borderRadius: 12, background: "rgba(255,255,255,0.92)", color: C.ink,
+  boxShadow: "inset 0 1px 2px rgba(12,30,56,0.035), 0 4px 12px rgba(12,30,56,0.025)",
 };
 const selectStyle = { ...inputStyle, fontFamily: F_BODY };
 
@@ -649,21 +623,35 @@ function Selector({ value, onChange, options, ...rest }) {
   );
 }
 
+function IndicadorOperacion({ operacion = "credito" }) {
+  const inversion = operacion === "inversion";
+  return (
+    <div role="status" aria-live="polite" style={{
+      display: "inline-flex", alignItems: "center", gap: 9, marginTop: 2, marginBottom: 12,
+      padding: "9px 13px", borderRadius: 12,
+      color: inversion ? "#246447" : C.navy,
+      background: inversion ? "linear-gradient(135deg, #E8F3EC, #F4FAF6)" : "linear-gradient(135deg, #EAF0F8, #F5F8FC)",
+      border: inversion ? "1px solid #A9CDB7" : "1px solid #C3D2E5",
+      fontSize: 12.5, fontWeight: 800, letterSpacing: "0.01em"
+    }}>
+      <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: "50%", background: inversion ? "#39815D" : C.navyLight }} />
+      Modo {inversion ? "inversión" : "crédito"}
+      <span style={{ fontWeight: 500, opacity: 0.8 }}>{inversion ? "· Aporte y rendimiento" : "· Obligación de pago"}</span>
+    </div>
+  );
+}
+
 function Acordeon({ title, defaultOpen, children }) {
   const [open, setOpen] = useState(!!defaultOpen);
   return (
-    <div style={{
-      border: `1px solid ${C.line}`, borderRadius: 16, marginBottom: 12,
-      overflow: "hidden", background: "rgba(255,255,255,0.92)",
-      boxShadow: "0 14px 30px rgba(12,30,56,0.06)"
-    }}>
+    <div style={{ border: `1px solid ${C.line}`, borderRadius: 15, marginBottom: 14, overflow: "hidden", background: "rgba(255,255,255,0.96)", boxShadow: "0 10px 26px rgba(12,30,56,0.055)" }}>
       <button onClick={() => setOpen(!open)} style={{
-        width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px",
-        background: "transparent", border: "none", cursor: "pointer", fontFamily: F_BODY, fontSize: 15, fontWeight: 700, color: C.navy,
+        width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "17px 20px",
+        background: "transparent", border: "none", cursor: "pointer", fontFamily: F_BODY, fontSize: 15, fontWeight: 600, color: C.navy,
       }}>
         {title}{open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
       </button>
-      {open && <div style={{ padding: "0 20px 20px" }}>{children}</div>}
+      {open && <div style={{ padding: "0 20px 22px", lineHeight: 1.75 }}>{children}</div>}
     </div>
   );
 }
@@ -671,11 +659,7 @@ function Acordeon({ title, defaultOpen, children }) {
 /* Ficha de procedimiento — elemento distintivo tipo "recibo" con pasos numerados */
 function FichaProcedimiento({ pasos }) {
   return (
-    <div style={{
-      background: "linear-gradient(180deg, #10233f 0%, #0c1e38 100%)",
-      borderRadius: 18, padding: "22px 24px", marginTop: 14,
-      boxShadow: "0 18px 36px rgba(12,30,56,0.16)"
-    }}>
+    <div style={{ background: "linear-gradient(145deg, #10233f 0%, #0C1E38 100%)", border: "1px solid rgba(217,174,99,0.18)", borderRadius: 18, padding: "clamp(20px, 3vw, 28px)", marginTop: 18, boxShadow: "0 16px 34px rgba(12,30,56,0.14)" }}>
       <div style={{ fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.14em", textTransform: "uppercase", color: C.goldLight, marginBottom: 14 }}>
         Procedimiento completo
       </div>
@@ -695,11 +679,10 @@ function FichaProcedimiento({ pasos }) {
 function Verificacion({ ok, residual, mensaje }) {
   return (
     <div style={{
-      marginTop: 14, padding: "14px 16px", borderRadius: 14,
-      background: ok ? C.successBg : C.dangerBg,
+      marginTop: 18, padding: "16px 18px", borderRadius: 14,
+      background: ok ? "linear-gradient(135deg, #E8F3EC, #F5FAF6)" : "linear-gradient(135deg, #F9EDEC, #FFF8F7)",
       border: ok ? `1px solid ${C.success}33` : `1px solid ${C.danger}33`,
-      display: "flex", alignItems: "flex-start", gap: 10,
-      boxShadow: "0 10px 22px rgba(12,30,56,0.05)",
+      display: "flex", alignItems: "flex-start", gap: 12, boxShadow: "0 8px 22px rgba(12,30,56,0.045)",
     }}>
       {ok ? <Check size={17} color={C.success} style={{ marginTop: 2, flexShrink: 0 }} /> : <AlertTriangle size={17} color={C.danger} style={{ marginTop: 2, flexShrink: 0 }} />}
       <div style={{ fontSize: 13.5, color: ok ? C.success : C.danger }}>
@@ -724,13 +707,8 @@ const SECCIONES = [
 
 function Nav({ activa, setActiva, moneda, setMoneda }) {
   return (
-    <div style={{
-      position: "sticky", top: 0, zIndex: 20,
-      background: "linear-gradient(135deg, #0c1e38 0%, #132A4C 60%, #1a3964 100%)",
-      borderBottom: `1px solid ${C.gold}55`,
-      boxShadow: "0 14px 32px rgba(12,30,56,0.18)"
-    }}>
-      <Section style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", flexWrap: "wrap", gap: 12 }}>
+    <div style={{ position: "sticky", top: 0, zIndex: 20, background: "linear-gradient(135deg, #0C1E38 0%, #132A4C 62%, #1C3A63 100%)", borderBottom: `1px solid ${C.gold}88`, boxShadow: "0 12px 30px rgba(12,30,56,0.17)" }}>
+      <Section style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", flexWrap: "wrap", gap: 10 }}>
         <div>
           <div style={{ fontFamily: F_DISPLAY, fontSize: 24, color: C.white, letterSpacing: "0.01em" }}>Numeris</div>
           <div style={{ fontFamily: F_MONO, fontSize: 10.5, color: C.goldLight, letterSpacing: "0.08em", textTransform: "uppercase" }}>Educación y simulación financiera</div>
@@ -740,13 +718,9 @@ function Nav({ activa, setActiva, moneda, setMoneda }) {
             const Icon = s.icon; const activeSec = activa === s.id;
             return (
               <button key={s.id} onClick={() => setActiva(s.id)} aria-current={activeSec ? "page" : undefined} style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 999,
-                border: "1px solid transparent", cursor: "pointer",
-                background: activeSec ? "linear-gradient(135deg, #D9AE63 0%, #B8863B 100%)" : "rgba(255,255,255,0.08)",
-                color: activeSec ? C.navyDeep : "#F2F5FA",
-                fontFamily: F_BODY, fontSize: 13, fontWeight: 700,
-                boxShadow: activeSec ? "0 10px 24px rgba(0,0,0,0.18)" : "none",
-                backdropFilter: "blur(6px)",
+                display: "flex", alignItems: "center", gap: 7, padding: "9px 14px", borderRadius: 999, border: activeSec ? `1px solid ${C.goldLight}` : "1px solid transparent", cursor: "pointer",
+                background: activeSec ? "linear-gradient(135deg, #E1BD7B, #B8863B)" : "rgba(255,255,255,0.07)", color: activeSec ? C.navyDeep : "#E6EBF2",
+                fontFamily: F_BODY, fontSize: 13, fontWeight: 600,
               }}>
                 <Icon size={14} />{s.label}
               </button>
@@ -755,7 +729,7 @@ function Nav({ activa, setActiva, moneda, setMoneda }) {
         </div>
         <Selector value={moneda} onChange={(e) => setMoneda(e.target.value)}
           options={[{ value: "COP", label: "COP · $" }, { value: "EUR", label: "EUR · €" }, { value: "USD", label: "USD · US$" }]}
-          style={{ ...selectStyle, width: 140, background: "rgba(255,255,255,0.12)", color: C.white, border: "1px solid rgba(255,255,255,0.14)", boxShadow: "none" }} />
+          style={{ ...selectStyle, width: 130, background: C.navyLight, color: C.white, border: `1px solid ${C.navyLight}` }} />
       </Section>
     </div>
   );
@@ -766,12 +740,8 @@ function Nav({ activa, setActiva, moneda, setMoneda }) {
    ============================================================ */
 function Inicio({ ir }) {
   return (
-    <Section style={{ paddingTop: 64, paddingBottom: 70 }}>
-      <div style={{
-        maxWidth: 760, padding: "34px 36px", borderRadius: 24,
-        background: "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.72))",
-        border: `1px solid ${C.line}`, boxShadow: "0 24px 60px rgba(12,30,56,0.08)"
-      }}>
+    <Section style={{ paddingTop: 64, paddingBottom: 72 }}>
+      <div style={{ maxWidth: 790, padding: "clamp(24px,4vw,42px)", borderRadius: 26, background: "linear-gradient(135deg,rgba(255,255,255,0.96),rgba(255,255,255,0.76))", border: `1px solid ${C.line}`, boxShadow: "0 24px 60px rgba(12,30,56,0.075)" }}>
         <Etiqueta>Caso aplicado · Matemáticas Financieras · Tercer corte 2026-2</Etiqueta>
         <h1 style={{ fontFamily: F_DISPLAY, fontSize: 44, lineHeight: 1.1, color: C.navy, margin: "0 0 18px" }}>
           Entiende tu dinero antes de decidir.
@@ -803,13 +773,7 @@ function Inicio({ ir }) {
         </div>
       </div>
 
-      <div style={{
-        marginTop: 40, padding: 18,
-        background: "linear-gradient(135deg, rgba(234,230,218,0.92), rgba(255,255,255,0.78))",
-        borderRadius: 16, border: `1px solid ${C.line}`,
-        fontSize: 12.5, color: C.slate, lineHeight: 1.6,
-        boxShadow: "0 10px 24px rgba(12,30,56,0.05)"
-      }}>
+      <div style={{ marginTop: 40, padding: 16, background: C.paperDark, borderRadius: 8, fontSize: 12.5, color: C.slate, lineHeight: 1.5 }}>
         Esta herramienta tiene fines educativos y de simulación. Es solo para estudiar y practicar. No es consejo de banco.
       </div>
 
@@ -830,8 +794,8 @@ function Inicio({ ir }) {
 function ExplicacionSencilla({ children }) {
   return (
     <div style={{
-      background: "#FDF3E7", border: `1px solid ${C.gold}55`, borderRadius: 10,
-      padding: "16px 18px", margin: "14px 0",
+      background: "linear-gradient(135deg, #FFF8EC 0%, #FDF3E7 100%)", border: `1px solid ${C.gold}66`, borderRadius: 16,
+      padding: "22px 24px", margin: "22px 0", boxShadow: "0 10px 26px rgba(140,100,32,0.07)",
     }}>
       <div style={{
         fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.1em", textTransform: "uppercase",
@@ -849,13 +813,13 @@ function BloqueInteres({
   formula, despejes, ejemploTexto, pasosEjemplo, notaEspecial,
 }) {
   return (
-    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
-      <p><strong>¿Qué es?</strong> {queEs}</p>
+    <div style={{ fontSize: 15, color: C.ink, lineHeight: 1.85, display: "flex", flexDirection: "column", gap: 10 }}>
+      <p style={{ margin: "4px 0 8px" }}><strong>¿Qué es?</strong> {queEs}</p>
 
       <ExplicacionSencilla>{analogia}</ExplicacionSencilla>
 
-      <p><strong>¿Cómo funciona?</strong> {comoFunciona}</p>
-      <p style={{ color: C.slate }}><strong>{usoLabel}</strong> {usoRespuesta}</p>
+      <p style={{ margin: "4px 0 8px" }}><strong>¿Cómo funciona?</strong> {comoFunciona}</p>
+      <p style={{ color: C.slate, margin: "4px 0 8px" }}><strong>{usoLabel}</strong> {usoRespuesta}</p>
 
       {notaEspecial && (
         <div style={{ marginTop: 10, marginBottom: 10, padding: 12, background: `${C.gold}1a`, borderRadius: 6, fontSize: 13, color: C.goldDeep, fontWeight: 600 }}>
@@ -904,8 +868,9 @@ function TarjetaMini({ titulo, children, tono = "neutral" }) {
   };
   return (
     <div style={{
-      background: fondos[tono], border: `1px solid ${bordes[tono]}`, borderRadius: 8,
-      padding: "14px 16px", flex: "1 1 180px", minWidth: 180,
+      background: fondos[tono], border: `1px solid ${bordes[tono]}`, borderRadius: 15,
+      padding: "18px 20px", flex: "1 1 190px", minWidth: 180,
+      boxShadow: "0 8px 20px rgba(12,30,56,0.045)",
     }}>
       <div style={{ fontWeight: 700, color: C.navy, fontSize: 13.5, marginBottom: 6 }}>{titulo}</div>
       <div style={{ fontSize: 13.5, color: C.ink, lineHeight: 1.55 }}>{children}</div>
@@ -916,8 +881,9 @@ function TarjetaMini({ titulo, children, tono = "neutral" }) {
 function BloqueFormula({ children }) {
   return (
     <div style={{
-      fontFamily: F_MONO, fontSize: 18, background: C.paper, padding: "14px 18px",
-      borderRadius: 8, margin: "10px 0", color: C.navy, overflowX: "auto",
+      fontFamily: F_MONO, fontSize: 18, background: "linear-gradient(135deg, #F5F3ED, #FFFFFF)", padding: "18px 22px",
+      border: `1px solid ${C.line}`, borderRadius: 15, margin: "14px 0", color: C.navy, overflowX: "auto",
+      boxShadow: "inset 0 1px 3px rgba(12,30,56,0.035)",
     }}>
       {children}
     </div>
@@ -927,8 +893,8 @@ function BloqueFormula({ children }) {
 function NivelCinco({ children, titulo = "🧸 Nivel 5 años" }) {
   return (
     <div style={{
-      background: "#FDF3E7", border: `1px solid ${C.gold}55`, borderRadius: 10,
-      padding: "16px 18px", marginBottom: 20,
+      background: "linear-gradient(135deg, #FFF8EC 0%, #FDF3E7 100%)", border: `1px solid ${C.gold}66`, borderRadius: 16,
+      padding: "22px 24px", marginBottom: 24, boxShadow: "0 10px 24px rgba(140,100,32,0.06)",
     }}>
       <div style={{
         fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.1em", textTransform: "uppercase",
@@ -943,8 +909,9 @@ function NivelCinco({ children, titulo = "🧸 Nivel 5 años" }) {
 
 function ConversionTasas() {
   return (
-    <RecorridoSubmodulos>
+    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
+      <IntroTema>
       <NivelCinco>
         {`Imagina que tienes una plantica y le echas agua todos los días.
 La planta va creciendo poquito a poquito, cada día.
@@ -966,9 +933,10 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
 
 
       </NivelCinco>
+      </IntroTema>
 
       {/* SECCIÓN 1 */}
-      <Acordeon title="1 · Las tasas tienen nombre y apellido" defaultOpen>
+      <Modulo title="1 · Las tasas tienen nombre y apellido">
         <p>Piensa en una tasa como si fuera una persona: tiene un <strong>nombre</strong> y dos <strong>apellidos</strong>. Si conoces los tres, ya sabes todo lo que necesitas saber de esa tasa.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
           <TarjetaMini titulo="Nombre">
@@ -993,16 +961,16 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
             Dicho fácil: "En todo el año son 24 monedas por cada 100, pero las cobran poquito a poquito, una vez cada mes."
           </div>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 2 */}
-      <Acordeon title="2 · ¿Qué es una tasa nominal?">
+      <Modulo title="2 · ¿Qué es una tasa nominal?">
         <p><strong>¿Qué es?</strong> La tasa nominal es una tasa anual escrita junto con la frecuencia con la que se capitalizan o aplican los intereses. No es falsa: solo necesita convertirse antes de usarla o compararla.</p>
         <p style={{ color: C.slate }}><strong>¿Cuándo se usa?</strong> Se usa mucho para presentar tasas anuales. Para saber qué tasa entra realmente en una fórmula, primero revisamos su capitalización y la convertimos al periodo correcto.</p>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 3 */}
-      <Acordeon title="3 · Pasar de nominal a periódica (repartir la tasa)">
+      <Modulo title="3 · Pasar de nominal a periódica (repartir la tasa)">
         <p>Si tienes la tasa de todo el año y quieres saber cuánto le toca a cada mes, la <strong>repartes</strong>. Es como cortar una torta en pedacitos iguales para que a cada mes le toque uno.</p>
         <BloqueFormula>ip = NA / nc</BloqueFormula>
         <p><strong>NA:</strong> la torta entera (todo el año). <strong>nc:</strong> en cuántos pedacitos la cortas (12 si es por mes, 4 si es cada tres meses). <strong>ip:</strong> lo que le toca a cada pedacito.</p>
@@ -1019,10 +987,10 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
             ]} />
           </Acordeon>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 4 */}
-      <Acordeon title="4 · Pasar de periódica a nominal (juntar los pedacitos)">
+      <Modulo title="4 · Pasar de periódica a nominal (juntar los pedacitos)">
         <p>Ahora es al revés: ya tienes el pedacito de un mes y quieres armar la torta entera del año. Entonces <strong>multiplicas</strong>: juntas todos los pedacitos.</p>
         <BloqueFormula>NA = ip × nc</BloqueFormula>
         <p><strong>ip:</strong> el pedacito (por ejemplo, de un mes). <strong>nc:</strong> cuántos pedacitos hay en el año. <strong>NA:</strong> la torta completa del año.</p>
@@ -1039,19 +1007,19 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
             ]} />
           </Acordeon>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 5 */}
-      <Acordeon title="5 · ¿Qué es una tasa efectiva?">
+      <Modulo title="5 · ¿Qué es una tasa efectiva?">
         <p><strong>¿Qué es?</strong> La tasa efectiva muestra cuánto crece o cuesta el dinero en un periodo determinado, teniendo en cuenta la capitalización de los intereses.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 10 }}>
           <TarjetaMini titulo="Nominal">Es una tasa anual expresada con una frecuencia de capitalización.</TarjetaMini>
           <TarjetaMini titulo="Efectiva">Muestra el crecimiento o costo para un periodo específico.</TarjetaMini>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 6 */}
-      <Acordeon title="6 · Cambiar una tasa efectiva de tamaño (mes → año, etc.)">
+      <Modulo title="6 · Cambiar una tasa efectiva de tamaño (mes → año, etc.)">
         <p>A veces tienes la tasa de un tamaño (la de cada mes) y la necesitas de otro tamaño (la de todo el año). Es como pasar de contar en pasitos a contar en kilómetros: el camino es el mismo, solo cambia cómo lo cuentas. Esta fórmula hace ese cambio.</p>
         <BloqueFormula>(1 + iy)^(ny/nx) − 1 = ix</BloqueFormula>
         <p><strong>iy:</strong> la tasa que ya tienes. <strong>ny:</strong> cuántas veces cabe esa tasa en un año. <strong>ix:</strong> la tasa nueva que buscas. <strong>nx:</strong> cuántas veces cabe la tasa nueva en un año.</p>
@@ -1068,10 +1036,10 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
             ]} />
           </Acordeon>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 7 */}
-      <Acordeon title="7 · Capitalización (cuando el interés hace más interés)">
+      <Modulo title="7 · Capitalización (cuando el interés hace más interés)">
         <p>Capitalizar significa que los intereses se incorporan al capital. Dicho fácil: es como una alcancía donde las moneditas nuevas también empiezan a producir más moneditas.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
           <TarjetaMini titulo="Mensual">Los intereses se incorporan al capital 12 veces al año (una vez por mes).</TarjetaMini>
@@ -1079,10 +1047,10 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
           <TarjetaMini titulo="Semestral">Los intereses se incorporan al capital 2 veces al año (cada seis meses).</TarjetaMini>
         </div>
         <p style={{ color: C.slate }}>Una mayor frecuencia de capitalización puede cambiar el valor acumulado si la tasa nominal y las demás condiciones son comparables. Por eso es importante convertir tasas antes de compararlas.</p>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 8 */}
-      <Acordeon title="8 · Tasa vencida y tasa anticipada (¿cuándo se paga?)">
+      <Modulo title="8 · Tasa vencida y tasa anticipada (¿cuándo se paga?)">
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <TarjetaMini titulo="Vencida">
             Pagas el interés AL FINAL. Como en el restaurante: primero comes y después pagas.
@@ -1091,10 +1059,10 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
             El interés se descuenta o se paga AL PRINCIPIO del periodo. Como idea fácil: se cobra antes de que termine el periodo.
           </TarjetaMini>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 9 */}
-      <Acordeon title="9 · Pasar de vencida a anticipada (y al revés)">
+      <Modulo title="9 · Pasar de vencida a anticipada (y al revés)">
         <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontSize: 12.5, color: C.slate, marginBottom: 4 }}>De vencida a anticipada</div>
@@ -1119,10 +1087,10 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
           </div>
           <p style={{ color: C.slate }}>La tasa equivalente cambia porque cambia el momento en que se descuenta o se paga el interés: al inicio o al final.</p>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 10 */}
-      <Acordeon title="10 · Un ejemplo completo, paso a pasito (23,54 % NAC → NAS)">
+      <Modulo title="10 · Un ejemplo completo, paso a pasito (23,54 % NAC → NAS)">
         <p>Aquí vamos a cambiar una tasa de un tamaño a otro, pasito a pasito, sin saltarnos nada. <strong>NAC:</strong> nominal anual, se cobra cada 4 meses (cuatrimestral). <strong>NAS:</strong> nominal anual, se cobra cada 6 meses (semestral).</p>
         <FichaProcedimiento pasos={[
           { label: "Paso 1 — Repartir la tasa nominal en su pedacito", content: "23,54 % / 3 = 7,85 % (el pedacito de cada cuatrimestre)" },
@@ -1130,10 +1098,10 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
           { label: "Paso 3 — Volver a armar la tasa nominal", content: "12 % × 2 = 24 % NAS" },
         ]} />
         <p style={{ marginTop: 12, color: C.slate }}>Ojo: el dinero NO cambió. Solo cambiamos la forma de contar la tasa, para poder compararla o usarla en otra cuenta.</p>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 11 */}
-      <Acordeon title="11 · Errores comunes (para no caer en la trampa)">
+      <Modulo title="11 · Errores comunes (para no caer en la trampa)">
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <TarjetaMini titulo="1. Dividir una tasa trimestral entre 3" tono="alerta">
             "Trimestral" no se divide entre 3: se divide entre 4, porque en un año caben 4 trimestres (4 × 3 meses = 12 meses).
@@ -1145,9 +1113,9 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
             No puedes saltar de un solo brinco de anticipada a vencida. Hay que ir paso a pasito, pasando por el pedacito de cada periodo.
           </TarjetaMini>
         </div>
-      </Acordeon>
+      </Modulo>
 
-    </RecorridoSubmodulos>
+    </div>
   );
 }
 
@@ -1161,8 +1129,9 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
 function Interpretacion({ children }) {
   return (
     <div style={{
-      marginTop: 12, padding: "12px 16px", borderRadius: 8, background: C.successBg,
-      fontSize: 13.5, color: C.navy, lineHeight: 1.6,
+      marginTop: 18, padding: "17px 20px", borderRadius: 15, background: "linear-gradient(135deg, #EAF3ED, #F6FAF7)",
+      border: `1px solid ${C.success}28`, fontSize: 14, color: C.navy, lineHeight: 1.75,
+      boxShadow: "0 8px 20px rgba(47,109,79,0.045)",
     }}>
       <strong>Interpretación: qué nos dice el resultado.</strong> {children}
     </div>
@@ -1199,8 +1168,9 @@ function AnualidadesVencidas() {
   const mVFtotal = mVFcuotas + mVFe1 + mVFe2;
 
   return (
-    <RecorridoSubmodulos>
+    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
+      <IntroTema>
       <NivelCinco titulo="🧸 Nivel 5 años">
         {`Imagina que compras una bicicleta, pero no la pagas toda hoy.
 La pagas en pedacitos iguales: todos los meses das la misma plata.
@@ -1221,9 +1191,10 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
       <div style={{ padding: 14, background: C.paperDark, borderRadius: 8, fontSize: 13.5, color: C.slate, marginBottom: 14 }}>
         <strong style={{ color: C.navy }}>Dos ideas clave:</strong> (1) las anualidades usan interés <strong>compuesto</strong>, porque cada cuota cae en un día diferente. (2) La tasa debe hablar el mismo idioma que las cuotas: si las cuotas son mensuales, la tasa también debe ser mensual.
       </div>
+      </IntroTema>
 
       {/* SECCIÓN 1 */}
-      <Acordeon title="1 · De un solo pago a muchas cuotas" defaultOpen>
+      <Modulo title="1 · De un solo pago a muchas cuotas">
         <p>Antes mirábamos <strong>un solo pago</strong>: una plata hoy y una plata después.</p>
         <p>Con las anualidades miramos <strong>muchos pagos iguales</strong>. Es como una fila de galletas del mismo tamaño.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
@@ -1243,10 +1214,10 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
           <TarjetaMini titulo="Arriendo mensual">Pagas la misma plata cada mes por vivir ahí.</TarjetaMini>
           <TarjetaMini titulo="App mensual">Pagas la misma plata cada mes por una app o un juego.</TarjetaMini>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 2 */}
-      <Acordeon title="2 · ¿Qué es una anualidad? Las 4 condiciones">
+      <Modulo title="2 · ¿Qué es una anualidad? Las 4 condiciones">
         <p><strong>¿Qué es?</strong> Una anualidad es una fila de pagos iguales que se repiten cada cierto tiempo.</p>
         <p>Para que sea anualidad, debe cumplir estas <strong>4 reglas</strong>:</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
@@ -1292,10 +1263,10 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
         <Interpretacion>
           Para decidir, hazte una sola pregunta: ¿los pagos son iguales, regulares y con la misma tasa? Si sí, es anualidad. Si hay uno distinto, ese se saca de la fila.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 3 */}
-      <Acordeon title="3 · ¿Qué significa vencida?">
+      <Modulo title="3 · ¿Qué significa vencida?">
         <p><strong>¿Qué es?</strong> En una anualidad vencida pagas <strong>al final</strong>. Primero pasa el mes, el bimestre o el pedacito de tiempo, y después pagas.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
           <TarjetaMini titulo="Como el restaurante" tono="azul">Primero comes el almuerzo y al final pagas. Primero pasa el mes y al final pagas la cuota.</TarjetaMini>
@@ -1309,10 +1280,10 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
         <Interpretacion>
           En una anualidad vencida nunca hay una cuota en el momento 0 (hoy). La primera cuota aparece cuando termina el primer pedacito de tiempo.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 4 */}
-      <Acordeon title="4 · La línea de tiempo de una anualidad vencida">
+      <Modulo title="4 · La línea de tiempo de una anualidad vencida">
         <p>La línea de tiempo es como un calendario en dibujos. El <strong>0</strong> es hoy. Los números <strong>1, 2, 3... n</strong> muestran cuándo cae cada cuota.</p>
         <div style={{ border: `1px solid ${C.line}`, borderRadius: 8, background: C.paper, display: "flex", flexWrap: "wrap", margin: "12px 0", overflow: "hidden" }}>
           <PasoLinea etiqueta="Momento" momento="0" pago="" />
@@ -1333,10 +1304,10 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
         <Interpretacion>
           Todas las A son iguales porque todas las cuotas valen lo mismo. Lo único que cambia de una cuota a otra es el momento en que cae.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 5 */}
-      <Acordeon title="5 · Valor de hoy: cuánto valen hoy varias cuotas futuras">
+      <Modulo title="5 · Valor de hoy: cuánto valen hoy varias cuotas futuras">
         <p><strong>¿Qué es?</strong> El valor de hoy responde: <strong>¿cuánto valen hoy todas esas cuotas?</strong></p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
           Una cuota del final no vale igual que una cuota de hoy. Para traerla a hoy, la hacemos más pequeña. Luego juntamos todas esas cuotas traídas a hoy.
@@ -1376,10 +1347,10 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
             En total pagas COP 3.000, pero mirado desde hoy vale menos, porque esa plata se paga después.
           </Interpretacion>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 6 */}
-      <Acordeon title="6 · Valor del final: cuánto tendré al final si pago o ahorro lo mismo cada vez">
+      <Modulo title="6 · Valor del final: cuánto tendré al final si pago o ahorro lo mismo cada vez">
         <p><strong>¿Qué es?</strong> El valor del final responde: <strong>¿cuánto valen todas las cuotas al final?</strong></p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
           Es como una alcancía: metes la misma plata varias veces y cada pago va creciendo con intereses hasta el final.
@@ -1411,10 +1382,10 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
             Metiste COP 3.000, pero al final hay COP 3.152,50. La diferencia son las moneditas extra del interés.
           </Interpretacion>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 7 */}
-      <Acordeon title="7 · ¿De cuánto es la cuota? Hallar A desde VP o VF">
+      <Modulo title="7 · ¿De cuánto es la cuota? Hallar A desde VP o VF">
         <p>A veces ya sabemos el valor total, pero no sabemos la cuota.</p>
         <p style={{ color: C.slate }}>Ahí buscamos <strong>A</strong>, que es la cuota que se paga cada vez.</p>
 
@@ -1457,10 +1428,10 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
           Con el 7,69 % redondeado el resultado se mueve un poco. Para obtener COP 861.110,12 se usa la tasa sin redondear (7,6890625 %). Conviene guardar todos los decimales de la tasa mientras haces las cuentas.
         </Interpretacion>
         <p style={{ color: C.slate, marginTop: 10 }}><strong>Diferencia entre los dos casos:</strong> desde VP la cuota paga una deuda que existe hoy; desde VF la cuota construye un ahorro que existirá en el final.</p>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 8 */}
-      <Acordeon title="8 · El error más común: la tasa y las cuotas no hablan el mismo idioma">
+      <Modulo title="8 · El error más común: la tasa y las cuotas no hablan el mismo idioma">
         <div style={{ padding: 16, background: C.dangerBg, border: `1px solid ${C.danger}55`, borderRadius: 10, marginBottom: 14 }}>
           <div style={{ fontFamily: F_MONO, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: C.danger, fontWeight: 700, marginBottom: 6 }}>
             Advertencia
@@ -1498,10 +1469,10 @@ Y si aparece un pago diferente, como un abono grande, ese no entra en la fila. E
             Con la tasa bien traducida el resultado sale bien. Si usas la tasa grande sin traducir, la cuenta queda muy mal.
           </Interpretacion>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 9 */}
-      <Acordeon title="9 · Anualidades + pagos extra: la galleta grande fuera de la fila">
+      <Modulo title="9 · Anualidades + pagos extra: la galleta grande fuera de la fila">
 
         <NivelCinco titulo="🧸 Nivel 5 años">
           {`Imagina una fila de galletas iguales. Esa fila son las cuotas.
@@ -1664,10 +1635,10 @@ La regla es fácil:
             Pagas 36 cuotas iguales de un carro y además haces un abono extra junto con la cuota 17. Las 36 cuotas forman la anualidad. El abono extra se calcula aparte, como pago suelto en el pedacito de tiempo 17, y se suma al total.
           </TarjetaMini>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 10 */}
-      <Acordeon title="10 · Ejemplo completo: la casa con dos pagos extra">
+      <Modulo title="10 · Ejemplo completo: la casa con dos pagos extra">
         <p>Una pareja compró una casa hoy por COP 720.000.000. Pagaron cuotas bimestrales de COP 8.927.479,48 durante 15 años. La tasa es 5,73 % NAC (nominal anual, se cobra cada cuatrimestre). Además hicieron 2 pagos extra, en los bimestres 20 y 40, ambos por el mismo valor. ¿De cuánto fue cada pago extra?</p>
         <TarjetaMini titulo="Qué es qué" tono="azul">
           Las 90 cuotas son la fila de pagos iguales. Los dos X son pagos aparte. La foto es hoy, porque la casa se compró hoy.
@@ -1690,10 +1661,10 @@ La regla es fácil:
         <Interpretacion>
           Las 90 cuotas aportan COP 538,5 millones al valor de la casa de hoy. Los COP 181,5 millones que faltan los cubren los dos pagos extra: cada uno es de COP 120.000.000 cuando se paga, pero traídos a hoy valen menos (unos 99,3 millones y 82,2 millones), porque llegan más adelante. En clase los factores se redondean a 0,83 y 0,69 (suman 1,51); aquí usamos más decimales y el resultado sigue dando 120 millones.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 11 */}
-      <Acordeon title="11 · Ejemplo del carro">
+      <Modulo title="11 · Ejemplo del carro">
         <p>Hace 5 años compraste un carro. Debes pagar cuotas mensuales de COP 3.078.925,79 con una tasa del 0,71 % periódica mensual. ¿Cuánto costó el carro el día que lo compraron?</p>
         <TarjetaMini titulo="Pista" tono="azul">
           Queremos saber cuánto valía el carro cuando lo compraron. Esa es la foto de hoy.
@@ -1708,10 +1679,10 @@ La regla es fácil:
         <Interpretacion>
           Pagaste 60 cuotas de unos COP 3,08 millones (cerca de COP 184,7 millones en total) por un carro que valía COP 150 millones el día de la compra. La diferencia son las moneditas extra del interés.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 12 */}
-      <Acordeon title="12 · Cierre y preguntas de repaso">
+      <Modulo title="12 · Cierre y preguntas de repaso">
         <div style={{ padding: 16, background: "#FDF3E7", border: `1px solid ${C.gold}55`, borderRadius: 10, marginBottom: 12 }}>
           <div style={{ fontWeight: 700, color: C.navy, marginBottom: 8 }}>Antes de seguir, intenta responder sin mirar los apuntes:</div>
           <ol style={{ margin: 0, paddingLeft: 20 }}>
@@ -1734,9 +1705,9 @@ La regla es fácil:
           </ol>
         </Acordeon>
         <p style={{ color: C.slate }}>Próximamente: ¿y si pagas todo al inicio del pedacito de tiempo? Eso será la anualidad anticipada.</p>
-      </Acordeon>
+      </Modulo>
 
-    </RecorridoSubmodulos>
+    </div>
   );
 }
 
@@ -1825,8 +1796,9 @@ function AnualidadesAnticipadas() {
   };
 
   return (
-    <RecorridoSubmodulos>
+    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
+      <IntroTema>
       <NivelCinco titulo="🧸 Nivel 5 años">
         {`Imagina que vas al cine.
 Primero pagas la boleta y después ves la película.
@@ -1849,9 +1821,10 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
       <div style={{ padding: 14, background: C.paperDark, borderRadius: 8, fontSize: 13.5, color: C.slate, marginBottom: 14 }}>
         <strong style={{ color: C.navy }}>Para entender esto necesitas tres ideas:</strong> interés compuesto, conversión de tasas y anualidades vencidas. Aquí las usamos juntas, pero con lenguaje sencillo.
       </div>
+      </IntroTema>
 
       {/* SECCIÓN 1 */}
-      <Acordeon title="1 · ¿Qué cambia frente a una anualidad vencida?" defaultOpen>
+      <Modulo title="1 · ¿Qué cambia frente a una anualidad vencida?">
         <p><strong>¿Qué no cambia?</strong> Sigue siendo anualidad, así que conserva las mismas 4 reglas:</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
           <TarjetaMini titulo="1. Pagos iguales">Todas las cuotas valen lo mismo.</TarjetaMini>
@@ -1909,10 +1882,10 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <Interpretacion>
           Es la misma fila de cuotas, solo que se corrió un puesto hacia el inicio. Ese cambio pequeño cambia el resultado.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 2 */}
-      <Acordeon title={"2 · ¿Qué significa \"anticipada\"?"}>
+      <Modulo title={"2 · ¿Qué significa \"anticipada\"?"}>
         <p><strong>¿Qué es?</strong> Una anualidad anticipada es una fila de pagos iguales que haces <strong>al inicio</strong> de cada pedacito de tiempo.</p>
         <p><strong>¿Cómo funciona?</strong> Pagas primero y después usas el pedacito de tiempo. Por ejemplo: pagas el arriendo y luego vives el mes.</p>
         <TarjetaMini titulo={"\"Anticipada\" NO significa error"} tono="alerta">
@@ -1934,10 +1907,10 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <Interpretacion>
           Para saber cuál es, pregúntate: ¿pago cuando termina el mes o cuando empieza? Si es cuando empieza, es anticipada.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 3 */}
-      <Acordeon title="3 · No es lo mismo tasa anticipada que anualidad anticipada">
+      <Modulo title="3 · No es lo mismo tasa anticipada que anualidad anticipada">
         <p>Estas dos palabras se parecen, pero no significan lo mismo.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
           <TarjetaMini titulo="Tarjeta 1 · Tasa anticipada" tono="azul">
@@ -1970,10 +1943,10 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <Interpretacion>
           Cada pregunta se resuelve por separado. Primero miras la tasa y la dejas como lista para usar del tamaño de las cuotas. Después miras la cuota y decides si usas la fórmula de vencida o la de anticipada.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 4 */}
-      <Acordeon title="4 · Conexión con interés compuesto y conversión de tasas">
+      <Modulo title="4 · Conexión con interés compuesto y conversión de tasas">
         <TarjetaMini titulo="Dicho claramente" tono="azul">
           Las anualidades usan <strong>interés compuesto</strong> (interés sobre interés). No se calculan con interés simple.
         </TarjetaMini>
@@ -2005,10 +1978,10 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <Interpretacion>
           La fórmula de anualidades solo entiende un tipo de tasa: lista para usar, del mismo tamaño que las cuotas. Todo lo demás se traduce primero con la sección 4.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 5 */}
-      <Acordeon title="5 · ¿Por qué el resultado cambia frente a una anualidad vencida?">
+      <Modulo title="5 · ¿Por qué el resultado cambia frente a una anualidad vencida?">
         <p><strong>¿Qué pasa?</strong> Con los mismos datos, la anticipada cambia el resultado porque cada cuota se paga antes.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
           Como pagas antes, cada cuota tiene un pedacito de tiempo más para moverse en el tiempo. Es como correr toda la fila un puesto hacia el inicio.
@@ -2043,10 +2016,10 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
             Las cuotas anticipadas valen {formatPctMilesCO(eVPa / eVPv - 1, 0)} más que las vencidas, tanto hoy como al final. Ese 5 % no es casualidad: es la tasa de un pedacito de tiempo, porque cada cuota se adelantó un pedacito de tiempo.
           </Interpretacion>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 6 */}
-      <Acordeon title="6 · Valor de hoy: cuánto valen hoy cuotas que se pagan al inicio">
+      <Modulo title="6 · Valor de hoy: cuánto valen hoy cuotas que se pagan al inicio">
         <p><strong>¿Qué es?</strong> El valor de hoy anticipado responde: <strong>¿cuánto valen hoy las cuotas que se pagan al inicio?</strong></p>
         <p><strong>¿Cómo funciona?</strong> Como las cuotas se pagan antes, su valor de hoy cambia.</p>
         <p style={{ color: C.slate }}><strong>¿Por qué importa?</strong> Sirve para saber cuánto valen hoy pagos que haces desde el inicio, como arriendo, colegio o gimnasio.</p>
@@ -2080,10 +2053,10 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
             Pagarás COP 3.000 en total, pero hoy esas cuotas valen COP {formatMilesCO(eVPa)}. Con cuotas vencidas valían COP {formatMilesCO(eVPv)}. La diferencia de COP {formatMilesCO(eVPa - eVPv)} existe porque la primera cuota se paga hoy mismo y todas las demás se pagan un pedacito de tiempo antes.
           </Interpretacion>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 7 */}
-      <Acordeon title="7 · Valor del final: cuánto valen al final cuotas pagadas al inicio">
+      <Modulo title="7 · Valor del final: cuánto valen al final cuotas pagadas al inicio">
         <p><strong>¿Qué es?</strong> El valor del final anticipado responde: <strong>¿cuánto valen al final las cuotas pagadas al inicio?</strong></p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
           Es como meter monedas a una alcancía al comienzo de cada mes. Como entran antes, tienen más tiempo para crecer.
@@ -2119,10 +2092,10 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
             Pusiste COP 3.000 en total y al final tienes COP {formatMilesCO(eVFa)}. Con cuotas vencidas habrías tenido COP {formatMilesCO(eVFv)}. Cada cuota tuvo un pedacito de tiempo más para crecer, y por eso ganaste COP {formatMilesCO(eVFa - eVFv)} adicionales.
           </Interpretacion>
         </div>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 8 */}
-      <Acordeon title="8 · Cómo hallar la cuota A desde VP o VF">
+      <Modulo title="8 · Cómo hallar la cuota A desde VP o VF">
         <p>A veces sabemos el valor total, pero no sabemos la cuota anticipada.</p>
         <p style={{ color: C.slate }}>Entonces buscamos <strong>A</strong>, que es el valor de cada cuota.</p>
 
@@ -2172,10 +2145,10 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
           Aportarías en total unos COP {formatMilesCO(c2Total / 1e6, 2)} millones y llegarías a COP 150 millones: el resto lo ponen los intereses. Guarda todos los decimales de la tasa mientras haces las cuentas; si usas la tasa redondeada a 7,89 %, el resultado se mueve un poco.
         </Interpretacion>
         <p style={{ color: C.slate, marginTop: 10 }}><strong>Diferencia entre los dos casos:</strong> desde VP la cuota paga una deuda que existe hoy; desde VF la cuota construye un ahorro que existirá en el final.</p>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 9 */}
-      <Acordeon title="9 · Error común: usar una tasa nominal o anticipada directamente">
+      <Modulo title="9 · Error común: usar una tasa nominal o anticipada directamente">
         <div style={{ padding: 16, background: C.dangerBg, border: `1px solid ${C.danger}55`, borderRadius: 10, marginBottom: 14 }}>
           <div style={{ fontFamily: F_MONO, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: C.danger, fontWeight: 700, marginBottom: 6 }}>
             Advertencia
@@ -2212,10 +2185,10 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <Interpretacion>
           Si la anualidad es mensual, se usa {formatPctMilesCO(x3EM, 2)} mensual vencida, no 25 % nominal anticipada. Fíjate qué diferencia: con la tasa mal usada el VP sale en ${formatMilesCO(xVPerror, 0)} y con la correcta en ${formatMilesCO(xVPcorrecto, 0)}. Todo el error viene de no traducir la tasa.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 10 */}
-      <Acordeon title="10 · Pagos adicionales extraordinarios en anualidades anticipadas">
+      <Modulo title="10 · Pagos adicionales extraordinarios en anualidades anticipadas">
         <p><strong>¿Qué es?</strong> En las anticipadas también puede haber pagos extra: pagos diferentes a las cuotas iguales.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "12px 0" }}>
           <TarjetaMini titulo="Pago grande al inicio">Un pago grande al comienzo.</TarjetaMini>
@@ -2259,10 +2232,10 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <Interpretacion>
           Una anualidad anticipada con pagos extra tiene dos partes: la fila de cuotas iguales y los pagos sueltos. Se calculan aparte y al final se suman en la misma fecha.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 11 */}
-      <Acordeon title="11 · Ejemplo completo con pagos adicionales: la casa">
+      <Modulo title="11 · Ejemplo completo con pagos adicionales: la casa">
         <p>Una pareja compró una casa hoy por COP 720.000.000. Pagaron cuotas bimestrales anticipadas de COP 8.906.829,51 durante 15 años. La tasa es 5,73 % NACA, es decir, nominal anual capitalizable cuatrimestral anticipada. Además, hicieron 2 pagos adicionales en los bimestres 20 y 40, ambos por el mismo valor. ¿Cuál fue el valor de esos desembolsos?</p>
         <TarjetaMini titulo="Qué es qué" tono="azul">
           Las 90 cuotas son la fila de pagos iguales. Los dos X son pagos aparte. La foto es hoy, porque la casa se compró hoy.
@@ -2285,10 +2258,10 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <Interpretacion>
           Cada pago adicional fue de aproximadamente COP {formatMilesCO(hX)}. Las 90 cuotas aportan COP {formatMilesCO(hVPanual / 1e6, 1)} millones al valor de la casa de hoy, y los COP {formatMilesCO(hResto / 1e6, 1)} millones que faltan los cubren los dos pagos extra, que traídos a hoy valen menos que cuando se pagaron. En clase los factores se redondean a 0,82 y 0,68 (suman unos 1,50); aquí usamos más decimales ({formatMilesCO(hFsuma, 4)}). Este ejemplo usa la tasa cuatrimestral redondeada a 1,95 %; si se conservan todos sus decimales, X sale cerca de COP {formatMilesCO(hXexacto, 2)}. Por eso conviene guardar todos los decimales de las tasas.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 12 */}
-      <Acordeon title="12 · Ejemplo del carro">
+      <Modulo title="12 · Ejemplo del carro">
         <p>Hace 5 años compraste un carro. Lo pagas con cuotas mensuales anticipadas de COP 3.078.925,79 y una tasa del 0,71 % mensual. ¿Cuánto costó el carro el día de la compra?</p>
         <TarjetaMini titulo="Pista" tono="azul">
           Queremos saber cuánto costó el día de la compra, o sea hoy en la línea de tiempo. Eso es un valor de hoy.
@@ -2305,10 +2278,10 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <Interpretacion>
           Con cuotas anticipadas el carro costó unos COP {formatMilesCO(kVPa / 1e6, 3)} millones el día de la compra; con cuotas vencidas habría costado COP {formatMilesCO(kVPv / 1e6, 3)} millones. La diferencia es de unos COP {formatMilesCO(kDif, 0)}, exactamente el 0,71 % de la cifra anterior: el (1 + i) de un pedacito de tiempo.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 13 */}
-      <Acordeon title="13 · Cierre y preguntas de repaso">
+      <Modulo title="13 · Cierre y preguntas de repaso">
         <div style={{ padding: 16, background: "#FDF3E7", border: `1px solid ${C.gold}55`, borderRadius: 10, marginBottom: 12 }}>
           <div style={{ fontWeight: 700, color: C.navy, marginBottom: 8 }}>Antes de terminar, intenta responder sin mirar los apuntes:</div>
           <ol style={{ margin: 0, paddingLeft: 20 }}>
@@ -2337,9 +2310,9 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         <Interpretacion>
           Idea final: en una anticipada, la cuota se paga al inicio. Esa es la diferencia más importante frente a una vencida.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
-    </RecorridoSubmodulos>
+    </div>
   );
 }
 
@@ -2528,8 +2501,9 @@ function Gradientes() {
   const pr2n = c3Serie({ A1: 1200000, paso: 0.0095, tipo: "geometrico", signo: -1, n: 15, i: iB });
 
   return (
-    <RecorridoSubmodulos>
+    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
+      <IntroTema>
       <NivelCinco titulo="🧸 Nivel 5 años">
         {`Imagina que tu mamá te da una mesada todos los meses.
 
@@ -2552,9 +2526,10 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
         "Primero convertimos la tasa a efectiva vencida del mismo tiempo de los pagos. Por ejemplo, si los pagos son mensuales, usamos una tasa efectiva mensual vencida.",
         "En estos ejemplos los pagos se hacen al final de cada periodo. Por eso el primero aparece en el periodo 1.",
       ]} />
+      </IntroTema>
 
       {/* SECCIÓN 1 */}
-      <Acordeon title="1 · De una cuota igual a una cuota que cambia" defaultOpen>
+      <Modulo title="1 · De una cuota igual a una cuota que cambia">
         <p><strong>¿Qué es un gradiente?</strong> Es una fila de pagos que va cambiando. Cada pago es un poquito mayor o menor que el anterior, siguiendo siempre la misma regla.</p>
         <FilaMini>
           <TarjetaMini titulo="Anualidad: la fila plana" tono="azul">Todas las cuotas valen lo mismo, como una mesada fija. El cambio entre una cuota y otra es cero.</TarjetaMini>
@@ -2574,10 +2549,10 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
         <Interpretacion>
           Si el gradiente es cero, la serie vuelve a ser una anualidad. Compruébalo: con cuota de COP 1.000.000 durante 12 meses al 16,2 % EA (i mensual = {m8(iM)}), una anualidad da un valor de hoy de COP {m2(anual0.VP)}.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 2 */}
-      <Acordeon title="2 · Gradiente aritmético: sube o baja siempre lo mismo en pesos">
+      <Modulo title="2 · Gradiente aritmético: sube o baja siempre lo mismo en pesos">
         <p><strong>¿Qué es?</strong> Es una serie de pagos en la que cada nuevo pago aumenta o disminuye siempre la misma cantidad de pesos.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">Es una escalera de escalones parejos: cada escalón sube exactamente 80.000 pesos. Ni más, ni menos.</TarjetaMini>
         <p style={{ marginTop: 12 }}><strong>¿Cómo funciona?</strong> Empiezas con el primer pago. Para encontrar el siguiente, sumas o restas la misma cantidad de pesos. Repites el paso para cada pago nuevo.</p>
@@ -2602,10 +2577,10 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
         <Interpretacion>
           La última cuota se calcula así: A(12) = 1.000.000 + (12 − 1) × 80.000 = COP {m2(a1.ultima)}. Fíjate que se suma el gradiente 11 veces, no 12, porque la primera cuota todavía no ha cambiado.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 3 */}
-      <Acordeon title="3 · Gradiente geométrico: sube o baja siempre el mismo porcentaje">
+      <Modulo title="3 · Gradiente geométrico: sube o baja siempre el mismo porcentaje">
         <p><strong>¿Qué es?</strong> Es una serie de pagos en la que cada nuevo pago aumenta o disminuye siempre el mismo porcentaje.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
           Es como una planta que crece un 10 % cada semana: la primera semana crece poquito, pero como ya es más grande, la siguiente crece más centímetros. El porcentaje es el mismo; los centímetros (los pesos) cada vez son más.
@@ -2632,10 +2607,10 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
         <Interpretacion>
           A(12) = 1.000.000 × (1,015)^11 = COP {m2(g1.ultima)}. Cada mes la cuota sube un 1,5 % de lo que valía el mes anterior, por eso los escalones en pesos van creciendo un poquito cada vez.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 4 */}
-      <Acordeon title="4 · Aritmético vs geométrico: ¿cuál es cuál?">
+      <Modulo title="4 · Aritmético vs geométrico: ¿cuál es cuál?">
         <FilaMini>
           <TarjetaMini titulo="Aritmético (G, en pesos)" tono="azul">
             Siempre el mismo valor en pesos. Ejemplo: +80.000 cada mes. Los escalones son todos del mismo tamaño.
@@ -2656,10 +2631,10 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
         <Interpretacion>
           En el aritmético el escalón siempre es de COP 80.000. En el geométrico empieza en COP {m2(g1.filas[1].cuota - g1.filas[0].cuota)} y llega a COP {m2(g1.filas[11].cuota - g1.filas[10].cuota)}: el porcentaje es igual, pero se aplica sobre una cuota cada vez más grande.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 5 */}
-      <Acordeon title="5 · Crecientes y decrecientes: ¿qué cambia en el resultado?">
+      <Modulo title="5 · Crecientes y decrecientes: ¿qué cambia en el resultado?">
         <p><strong>Gradiente positivo o creciente:</strong> cada pago aumenta. <strong>Gradiente negativo o decreciente:</strong> cada pago disminuye.</p>
         <TarjetaMini titulo="Mira la diferencia" tono="azul">
           Si empiezas con COP 1.000.000 y sumas COP 80.000, los pagos van subiendo: 1.000.000, 1.080.000, 1.160.000... Si empiezas con el mismo millón y restas COP 80.000, van bajando: 1.000.000, 920.000, 840.000... La regla es la misma; lo que cambia es si sumas o restas.
@@ -2684,10 +2659,10 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
         <Interpretacion>
           El gradiente creciente da un valor presente de COP {m2(a1.VP)}, mayor que el de la anualidad (COP {m2(anual0.VP)}), porque en total entra más plata. El decreciente da COP {m2(a1n.VP)}, menor. Si el gradiente suma, el resultado sube; si resta, baja.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 6 */}
-      <Acordeon title="6 · Valor presente y valor futuro de un gradiente">
+      <Modulo title="6 · Valor presente y valor futuro de un gradiente">
         <p><strong>¿Qué es?</strong> El valor presente (VP) dice cuánto valen hoy todos los pagos. El valor futuro (VF) dice cuánto valdrán cuando llegue el último periodo.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
           Es como traer cada galleta de la escalera a la mesa de hoy. Las galletas lejanas se encogen un poquito (se dividen); luego juntas todas las galletas encogidas. Para el valor del final, en vez de encoger, las agrandas y también las juntas.
@@ -2707,10 +2682,10 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
         <TarjetaMini titulo="Recuerda" tono="azul">
           Primero convierte la tasa para que tenga el mismo periodo que los pagos. Después usa interés compuesto para mover cada pago y, al final, suma los resultados. No redondees la tasa demasiado pronto.
         </TarjetaMini>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 7 */}
-      <Acordeon title="7 · Ejemplo: ahorro programado con gradiente aritmético">
+      <Modulo title="7 · Ejemplo: ahorro programado con gradiente aritmético">
         <p>Un inversionista ahorra COP 1.000.000 el primer mes. Cada mes aumenta su aporte en COP 80.000 durante 12 meses, en un fondo que le da 16,2 % EA. ¿Cuánto vale hoy y cuánto vale al final esa escalera? Hazlo con gradiente positivo y negativo.</p>
         <FichaProcedimiento pasos={[
           { label: "Paso 1 — Datos", content: "A(1) = 1.000.000 · G = 80.000 · n = 12 meses · tasa = 16,2 % EA" },
@@ -2731,10 +2706,10 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
         <Interpretacion>
           Con el gradiente positivo la escalera vale hoy COP {m2(a1.VP)}; con el negativo, COP {m2(a1n.VP)}. Comprobación: llevar el VP de {m2(a1.VP)} doce meses adelante con (1 + i) da COP {m2(a1.VP * Math.pow(1 + iM, 12))}, que es el VF: la misma plata vista en dos fechas.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 8 */}
-      <Acordeon title="8 · Ejemplo: aporte que sube con la inflación (gradiente geométrico)">
+      <Modulo title="8 · Ejemplo: aporte que sube con la inflación (gradiente geométrico)">
         <p>El mismo inversionista aporta COP 1.000.000 el primer mes y ahora sube su aporte un 1,5 % cada mes, durante 12 meses, con la misma tasa de 16,2 % EA. Halla VP y VF con gradiente positivo y negativo.</p>
         <FichaProcedimiento pasos={[
           { label: "Paso 1 — Datos", content: "A(1) = 1.000.000 · g = 1,5 % = 0,015 · n = 12 · tasa = 16,2 % EA" },
@@ -2750,10 +2725,10 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
         <Interpretacion>
           El aporte que sube 1,5 % vale hoy COP {m2(g1.VP)} y al final COP {m2(g1.VF)}. Si en cambio baja 1,5 % cada mes, vale hoy COP {m2(g1n.VP)}. Ahorrar más cada mes se nota: la diferencia entre subir y bajar es de COP {m2(g1.VP - g1n.VP)} en valor de hoy.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 9 */}
-      <Acordeon title="9 · Ejemplo: el crédito del estudiante (cuotas trimestrales)">
+      <Modulo title="9 · Ejemplo: el crédito del estudiante (cuotas trimestrales)">
         <p>Un estudiante debe pagar cuotas trimestrales de COP 800.000 por un crédito que le cobra 17,85 % EA. El crédito dura 5 años. Primero tiene un gradiente aritmético de COP 30.000 por trimestre; después, un gradiente geométrico de 0,5 % por trimestre. Halla VP y VF, con gradientes positivos y negativos.</p>
         <FichaProcedimiento pasos={[
           { label: "Paso 1 — ¿Cuántas cuotas hay?", content: "5 años = 20 trimestres, así que n = 20" },
@@ -2778,10 +2753,10 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
         <Interpretacion>
           Con gradiente aritmético creciente, la última cuota llega a COP {m2(e1.ultima)}; con el geométrico apenas a COP {m2(e2.ultima)}, porque 0,5 % por trimestre es un cambio mucho más suave que 30.000 pesos. Por eso el valor presente aritmético (COP {m2(e1.VP)}) es mayor que el geométrico (COP {m2(e2.VP)}).
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 10 */}
-      <Acordeon title="10 · Cuando el gradiente no cambia cada periodo">
+      <Modulo title="10 · Cuando el gradiente no cambia cada periodo">
         <p><strong>¿Qué pasa?</strong> A veces la cuota es mensual, pero el aumento ocurre solo una vez al año. Entonces durante 12 meses la cuota es igual y en el mes 13 salta.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
           Es una escalera con descansos: te quedas 12 escalones en el mismo nivel y luego subes. Como tu cumpleaños: tu estatura "oficial" cambia una vez al año, aunque tú crezcas todos los días.
@@ -2804,10 +2779,10 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
         <Interpretacion>
           Tu ahorro vale hoy COP {m2(anVP)} y al final COP {m2(anVF)}. Cada bloque de 12 cuotas iguales es una anualidad (que ya sabes calcular); el gradiente solo cambia el valor de la cuota de un bloque a otro.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 11 */}
-      <Acordeon title="11 · ¿Cuánto vale la última cuota? Ejercicio resuelto y para practicar">
+      <Modulo title="11 · ¿Cuánto vale la última cuota? Ejercicio resuelto y para practicar">
         <p>Un inversionista paga COP 12.000.000 mensuales durante 12 meses. Halla el valor de la última cuota con cada gradiente, positivo y negativo.</p>
         <FichaProcedimiento pasos={[
           { label: "Aritmético, G = 200.000 (creciente)", content: `A(12) = 12.000.000 + 11 × 200.000 = COP ${m2(u1)}` },
@@ -2834,10 +2809,10 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
             ]}
           />
         </Acordeon>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 12 */}
-      <Acordeon title="12 · Errores comunes">
+      <Modulo title="12 · Errores comunes">
         <FilaMini>
           <TarjetaMini titulo="Mezclar G con g" tono="alerta">G (pesos) se suma. g (porcentaje) se multiplica por (1 + g). No se pueden cambiar entre sí.</TarjetaMini>
           <TarjetaMini titulo="Sumar el gradiente n veces" tono="alerta">La primera cuota no cambia. El gradiente se aplica (t − 1) veces, no t.</TarjetaMini>
@@ -2845,10 +2820,10 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
           <TarjetaMini titulo="Redondear la tasa muy pronto" tono="alerta">Guarda al menos 6 decimales de la tasa y de los factores. Redondea solo la respuesta final.</TarjetaMini>
           <TarjetaMini titulo="Usar la fórmula de anualidades directo" tono="alerta">Solo sirve si las cuotas son iguales. Un gradiente distinto de cero necesita mover cada cuota (o cada bloque de cuotas iguales).</TarjetaMini>
         </FilaMini>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 13 */}
-      <Acordeon title="13 · Cierre y preguntas de repaso">
+      <Modulo title="13 · Cierre y preguntas de repaso">
         <CierreRepaso
           intro="Antes de continuar, comprueba lo que aprendiste:"
           preguntas={[
@@ -2867,9 +2842,9 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
           ]}
           idea="Idea final: un gradiente es una anualidad cuya cuota cambia. Todo lo que ya sabes (tasa efectiva del periodo, interés compuesto, momento de cada cuota) sigue valiendo."
         />
-      </Acordeon>
+      </Modulo>
 
-    </RecorridoSubmodulos>
+    </div>
   );
 }
 
@@ -2919,8 +2894,9 @@ function Perpetuidades() {
   const rMal = 2500000 / (rb - 0.0065);
 
   return (
-    <RecorridoSubmodulos>
+    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
+      <IntroTema>
       <NivelCinco titulo="🧸 Nivel 5 años">
         {`Imagina un árbol mágico que te regala una manzana todos los meses, para siempre. Nunca se acaba.
 
@@ -2940,9 +2916,10 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
         "La tasa debe ser efectiva vencida y tener el mismo periodo que cada pago. Si recibes un pago cada cuatro meses, necesitas una tasa efectiva vencida de cuatro meses.",
         "Si los pagos cambian, usamos un gradiente aritmético o geométrico, pero la serie continúa sin terminar.",
       ]} />
+      </IntroTema>
 
       {/* SECCIÓN 1 */}
-      <Acordeon title="1 · Una anualidad que nunca termina" defaultOpen>
+      <Modulo title="1 · Una anualidad que nunca termina">
         <p><strong>¿Qué es?</strong> Una perpetuidad es una serie de pagos que <strong>no termina</strong>. Siempre llega otro pago y no existe una última cuota.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
           Una anualidad es una fila de galletas con un final. Una perpetuidad es una fila de galletas que nunca se acaba: siempre llega otra.
@@ -2960,10 +2937,10 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
         <Interpretacion>
           Una perpetuidad es una anualidad con n que crece sin parar. Todo lo que sabías de anualidades vencidas (cuota al final de cada periodo, tasa del periodo de la cuota) sigue valiendo.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 2 */}
-      <Acordeon title="2 · ¿Cómo puede valer algo finito una serie infinita de pagos?">
+      <Modulo title="2 · ¿Cómo puede valer algo finito una serie infinita de pagos?">
         <p>Puede parecer extraño, pero vamos a verlo con un ejemplo sencillo.</p>
         <TarjetaMini titulo="La pregunta" tono="azul">
           Imagina que tienes un local y otra persona te paga COP 1.000.000 cada mes para poder usarlo. Ese pago se llama arriendo. Si lo recibes para siempre, ¿cuánto vale hoy? No vale infinito.
@@ -2986,10 +2963,10 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
         <Interpretacion>
           Una serie infinita de pagos tiene valor presente finito porque cada pago vale menos hoy que el anterior y los pagos lejanos valen casi nada. El tope es COP {m2(pVP)}.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 3 */}
-      <Acordeon title="3 · La fórmula del valor presente de una perpetuidad">
+      <Modulo title="3 · La fórmula del valor presente de una perpetuidad">
         <p><strong>¿Cómo funciona?</strong> Usamos la fórmula del valor presente de una anualidad y pensamos qué pasa cuando seguimos agregando pagos sin que exista uno último.</p>
         <BloqueFormula>VP = A × [ (1 − (1 + i)^−n) / i ]</BloqueFormula>
         <p>Cuando la cantidad de pagos crece sin parar, el término (1 + i)^−n se acerca a cero. Por eso la fórmula queda más sencilla:</p>
@@ -3009,10 +2986,10 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
         <Interpretacion>
           A mayor tasa, menor valor presente (la alcancía necesita menos plata para generar la misma cuota). Y a mayor cuota, mayor valor presente.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 4 */}
-      <Acordeon title="4 · Ejemplos resueltos de perpetuidades">
+      <Modulo title="4 · Ejemplos resueltos de perpetuidades">
         <SubT>Ejemplo 1 · El local de arriendo</SubT>
         <p>Imagina que eres dueño de un local en Colombia. Otra persona lo usa para vender sus productos y, a cambio, te entrega COP 1.000.000 cada mes. A ese pago por usar un lugar se le llama arriendo. Supongamos que recibes ese millón todos los meses para siempre y que la tasa es 1 % efectivo mensual. ¿Cuánto dinero necesitarías tener hoy para recibir ese millón cada mes sin gastar el dinero guardado?</p>
         <FichaProcedimiento pasos={[
@@ -3041,10 +3018,10 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
         <Interpretacion>
           Para recibir COP 150.000 cada cuatrimestre para siempre hoy necesitarías COP {m2(c1)}. Para COP 345.000 cada semestre, COP {m2(c2)}. Mira que lo importante no es solo la cuota: la tasa convertida al periodo correcto es la que decide el resultado.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 5 */}
-      <Acordeon title="5 · ¿Por qué una perpetuidad no tiene valor futuro?">
+      <Modulo title="5 · ¿Por qué una perpetuidad no tiene valor futuro?">
         <p>El valor futuro nos dice cuánto valen los pagos en una fecha final. Pero una perpetuidad no tiene una fecha final, porque sus pagos nunca terminan.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
           Es como preguntar cuántas galletas habrá cuando termine una fila que nunca se acaba. No existe ese momento final.
@@ -3057,10 +3034,10 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
         <Interpretacion>
           Una perpetuidad no tiene una fecha final. Por eso no calculamos su valor futuro; calculamos cuánto valen hoy sus pagos.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 6 */}
-      <Acordeon title="6 · Perpetuidad con gradiente aritmético">
+      <Modulo title="6 · Perpetuidad con gradiente aritmético">
         <p><strong>¿Qué es?</strong> Es una serie de pagos que continúa para siempre y en la que cada pago aumenta o disminuye la misma cantidad de pesos.</p>
         <BloqueFormula>VP = A / i + L / i²</BloqueFormula>
         <FilaMini>
@@ -3091,10 +3068,10 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
         <Interpretacion>
           En el primer ejemplo, el gradiente de apenas COP 5.000 aporta COP {m2(5000 / (mi * mi))} de los COP {m2(ar1)}: como los escalones nunca paran, aunque sean pequeños, pesan muchísimo. No hay restricción entre L y i en el aritmético, porque L está dividido entre i².
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 7 */}
-      <Acordeon title="7 · Perpetuidad con gradiente geométrico: ¿por qué i tiene que ser mayor que g?">
+      <Modulo title="7 · Perpetuidad con gradiente geométrico: ¿por qué i tiene que ser mayor que g?">
         <p><strong>¿Qué es?</strong> Es una serie de pagos que continúa para siempre y en la que cada pago aumenta el mismo porcentaje.</p>
         <BloqueFormula>VP = A / (i − g)</BloqueFormula>
         <FilaMini>
@@ -3133,10 +3110,10 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
         <Interpretacion>
           Fíjate lo sensible que es la fórmula: cuando g se acerca a i, el denominador se hace muy pequeño y el valor presente se dispara. Con i = {formatMilesCO(m2i * 100, 4)} % y g = 1,1 %, el denominador es de solo {formatMilesCO((m2i - 0.011) * 100, 4)} % y el VP es COP {m2(ge2)}.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 8 */}
-      <Acordeon title="8 · Reto: el gradiente se aplica cada 4 meses y la cuota es bimestral">
+      <Modulo title="8 · Reto: el gradiente se aplica cada 4 meses y la cuota es bimestral">
         <p>Imagina que una inversión te entrega COP 2.500.000 cada dos meses y continúa haciéndolo para siempre. La tasa es 12,35 % EA. El pago aumenta un 0,65 %, pero no cada dos meses: aumenta cada cuatro meses. Eso significa que recibes dos pagos del mismo valor y, después, el siguiente bloque de pagos sube. ¿Cuánto vale hoy esa serie de pagos?</p>
         <TarjetaMini titulo="La idea" tono="azul">
           La cuota es cada 2 meses, pero el aumento ocurre cada 4 meses. Entonces dos cuotas seguidas valen lo mismo y luego saltan: el aumento cae cada 2 cuotas. Agrupamos las cuotas de a dos y las tratamos como una sola cuota cuatrimestral equivalente.
@@ -3156,10 +3133,10 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
         <Interpretacion>
           El valor presente es COP {m2(rVP)}. Regla para recordar: si el ejercicio no dice cada cuánto cambia el gradiente, cambia al ritmo de la cuota; si lo dice, hay que agrupar las cuotas para que el gradiente y la tasa hablen el mismo idioma.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 9 */}
-      <Acordeon title="9 · Perpetuidad vs anualidad: lo que cambia y lo que no">
+      <Modulo title="9 · Perpetuidad vs anualidad: lo que cambia y lo que no">
         <TablaC3
           cols={["Característica", "Anualidad", "Perpetuidad"]}
           filas={[
@@ -3174,10 +3151,10 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
         <Interpretacion>
           Una perpetuidad es una anualidad que nunca termina: su valor presente es el "tope" al que se acercan las anualidades cuando n es muy grande (ejemplo: 100 años de cuotas de un millón al 1 % mensual valen COP {m2(pA * c3FactorVP(pi, 1200))}, casi lo mismo que la perpetuidad de COP {m2(pVP)}).
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 10 */}
-      <Acordeon title="10 · Errores comunes">
+      <Modulo title="10 · Errores comunes">
         <FilaMini>
           <TarjetaMini titulo="Pedir valor futuro" tono="alerta">Una perpetuidad no tiene valor futuro.</TarjetaMini>
           <TarjetaMini titulo="Tasa del periodo equivocado" tono="alerta">Si la cuota es mensual, i debe ser mensual (y g también). Convierte la tasa antes.</TarjetaMini>
@@ -3185,10 +3162,10 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
           <TarjetaMini titulo="Mezclar L con g" tono="alerta">L (pesos) va con i². g (porcentaje) va restando a i.</TarjetaMini>
           <TarjetaMini titulo="Redondear la tasa muy pronto" tono="alerta">Con perpetuidades un cambio pequeño en i cambia mucho el resultado. Guarda al menos 6 decimales.</TarjetaMini>
         </FilaMini>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 11 */}
-      <Acordeon title="11 · Cierre y preguntas de repaso">
+      <Modulo title="11 · Cierre y preguntas de repaso">
         <CierreRepaso
           intro="Antes de continuar, comprueba lo que aprendiste:"
           preguntas={[
@@ -3207,9 +3184,9 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
           ]}
           idea="Idea final: una perpetuidad es una anualidad que nunca termina. Se calcula con la tasa efectiva vencida del periodo de la cuota y solo tiene valor presente."
         />
-      </Acordeon>
+      </Modulo>
 
-    </RecorridoSubmodulos>
+    </div>
   );
 }
 
@@ -3293,8 +3270,9 @@ function SistemasAmortizacion() {
   ];
 
   return (
-    <RecorridoSubmodulos>
+    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
 
+      <IntroTema>
       <NivelCinco titulo="🧸 Nivel 5 años">
         {`Imagina que un amigo te presta 10 dulces y tú se los devuelves poco a poco.
 
@@ -3320,9 +3298,10 @@ Hay tres formas de devolverlos:
         "En el sistema alemán, la cuota va bajando porque devuelves la misma cantidad del préstamo en cada periodo.",
         "En el sistema americano y en algunos leasing puede quedar un pago pendiente para el final. Por eso el saldo final puede ser distinto de cero.",
       ]} />
+      </IntroTema>
 
       {/* SECCIÓN 1 */}
-      <Acordeon title="1 · ¿Qué es amortizar y qué es una tabla de amortización?" defaultOpen>
+      <Modulo title="1 · ¿Qué es amortizar y qué es una tabla de amortización?">
         <p><strong>¿Qué es?</strong> Amortizar es pagar una deuda poco a poco. La <strong>tabla de amortización</strong> muestra qué parte de cada cuota paga intereses, qué parte devuelve el dinero prestado y cuánto falta por pagar.</p>
         <FilaMini>
           <TarjetaMini titulo="Cuota" tono="azul">El pago que haces cada mes o periodo. Puede incluir intereses, devolución del préstamo y otros cobros.</TarjetaMini>
@@ -3345,10 +3324,10 @@ Hay tres formas de devolverlos:
         <Interpretacion>
           Sea cual sea el sistema, todas las tablas tienen las mismas columnas y las mismas reglas: interés = saldo anterior × i, y saldo nuevo = saldo anterior − abono. Lo único que cambia entre sistemas es cómo se decide la cuota o el abono.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 2 */}
-      <Acordeon title="2 · Los tres sistemas de un vistazo">
+      <Modulo title="2 · Los tres sistemas de un vistazo">
         <FilaMini>
           <TarjetaMini titulo="Francés (cuota fija)" tono="azul">Pagas la misma cantidad cada vez. Al principio, más dinero va a intereses; al final, más dinero reduce la deuda.</TarjetaMini>
           <TarjetaMini titulo="Alemán (abono fijo)" tono="azul">Devuelves la misma parte del préstamo en cada pago. Como cada vez debes menos, pagas menos intereses y la cuota baja.</TarjetaMini>
@@ -3360,10 +3339,10 @@ Hay tres formas de devolverlos:
         <Interpretacion>
           Francés: la cuota no cambia. Alemán: la parte del préstamo que devuelves es igual en cada pago. Americano: devuelves el préstamo al final. Si devuelves el dinero más rápido, normalmente pagas menos intereses en total.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 3 */}
-      <Acordeon title="3 · Sistema francés: la cuota fija">
+      <Modulo title="3 · Sistema francés: la cuota fija">
         <p><strong>¿Qué es?</strong> En el sistema francés pagas la misma cuota durante todo el crédito. Al principio, una parte grande paga intereses. Después, cada vez más dinero de la cuota sirve para bajar la deuda.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
           Es como pagar siempre el mismo precio por una fila de galletas, pero al principio casi todo el precio es "gracias" y al final casi todo es devolver la galleta prestada.
@@ -3409,10 +3388,10 @@ Hay tres formas de devolverlos:
         <Acordeon title="Ver las primeras y últimas filas de la tabla">
           <TablaAmort res={frT} ts={[1, 2, 3, 34, 35, 36]} />
         </Acordeon>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 4 */}
-      <Acordeon title="4 · Sistema alemán: el abono fijo a capital">
+      <Modulo title="4 · Sistema alemán: el abono fijo a capital">
         <p><strong>¿Qué es?</strong> En el sistema alemán devuelves la misma cantidad del préstamo en cada pago. Como cada vez debes menos, los intereses bajan y la cuota se hace más pequeña.</p>
         <TarjetaMini titulo="Para entenderlo fácil" tono="azul">
           Devuelves siempre la misma cantidad de dulces prestados cada vez. Como cada vez debes menos dulces, los "gracias" también bajan, y tu pago total baja.
@@ -3462,10 +3441,10 @@ Hay tres formas de devolverlos:
         <Acordeon title="Ver la tabla (36 cuotas)">
           <TablaAmort res={alT} />
         </Acordeon>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 5 */}
-      <Acordeon title="5 · Sistema americano: el préstamo se devuelve al final">
+      <Modulo title="5 · Sistema americano: el préstamo se devuelve al final">
         <p><strong>¿Qué es?</strong> En el sistema americano no devuelves el préstamo durante la mayor parte del tiempo. Lo devuelves en un pago grande al final. Puedes pagar los intereses cada periodo o dejarlos para el final:</p>
         <FilaMini>
           <TarjetaMini titulo="Sin pagar intereses durante el crédito" tono="azul">No haces pagos durante los periodos de espera. Al final devuelves el préstamo junto con todos los intereses que se acumularon.</TarjetaMini>
@@ -3515,10 +3494,10 @@ Hay tres formas de devolverlos:
           { label: "Sin pago de intereses", content: `Pago final en el mes 48 = 35.000.000 × (1 + i)^48 = COP ${m2(amT1.filas[47].cuota)} · Intereses: COP ${m2(amT1.totInt)}` },
           { label: "Con pago de intereses", content: `Cuota mensual de intereses = COP ${m2(amT2.filas[0].cuota)} · Último pago = COP ${m2(amT2.filas[47].cuota)} · Intereses: COP ${m2(amT2.totInt)}` },
         ]} />
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 6 */}
-      <Acordeon title="6 · Comparación: ¿cuál conviene?">
+      <Modulo title="6 · Comparación: ¿cuál conviene?">
         <p>Para saber qué cambia entre los sistemas, imaginemos que cuatro personas piden exactamente el mismo préstamo: COP 1.000.000, durante 24 meses y con la misma tasa mensual ({m8(iMes)}). Así la comparación es justa: lo único que cambia es la forma de devolver el dinero.</p>
         <TablaC3
           cols={["Sistema", "Primera cuota", "Última cuota", "Total de intereses", "Total pagado"]}
@@ -3546,10 +3525,10 @@ Hay tres formas de devolverlos:
         <Interpretacion>
           Ordenados de menos a más intereses en total: {interesOrden.map(([nom, r]) => `${nom} (COP ${m2(r.totInt)})`).join(" → ")}.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 7 */}
-      <Acordeon title="7 · ¿Cuál de estos créditos es más barato?">
+      <Modulo title="7 · ¿Cuál de estos créditos es más barato?">
         <p>Todos son a 12 meses y por COP 1.000.000:</p>
         <ol style={{ margin: "0 0 10px", paddingLeft: 20 }}>
           <li>Cuota fija y tasa 19,5 % EA.</li>
@@ -3579,10 +3558,10 @@ Hay tres formas de devolverlos:
         <Interpretacion>
           Sin costos extra, el costo efectivo anual coincide con la tasa EA del crédito. Los costos extra lo suben. Y el crédito 4 es el de menor costo por peso prestado, aunque sea el que más pesos de intereses suma (COP {m2(k4.totInt)}), porque tienes todo el millón durante los 12 meses.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 8 */}
-      <Acordeon title="8 · Otros costos: por qué encarecen el crédito y cómo hallar el costo real">
+      <Modulo title="8 · Otros costos: por qué encarecen el crédito y cómo hallar el costo real">
         <p><strong>¿Qué son?</strong> Son cobros adicionales al crédito, como seguros, cuota de manejo, estudio o emisión. No devuelven el dinero prestado, pero sí aumentan lo que pagas.</p>
         <TarjetaMini titulo="Cómo se incluyen en la tabla" tono="azul">
           Se agregan al pago total, pero no reducen la deuda. Para saber cuánto baja el préstamo, los restamos de la cuota: abono a capital = cuota − interés − otros cobros.
@@ -3618,10 +3597,10 @@ Hay tres formas de devolverlos:
         <Interpretacion>
           Una cuota de manejo de COP 12.000 sobre un crédito de COP 1.000.000 parece pequeña, pero hace que el costo real pase de {formatPctMilesCO(nac.EA, 2)} EA a {formatPctMilesCO(cmEA, 2)} EA. El costo real es el que debes comparar entre créditos.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 9 */}
-      <Acordeon title="9 · Cuando algo cambia en el crédito">
+      <Modulo title="9 · Cuando algo cambia en el crédito">
         <p>Durante un crédito pueden cambiar algunas condiciones. Por ejemplo, otro banco puede ofrecer una tasa distinta, puedes hacer un pago extra para bajar la deuda o puedes tener un tiempo de gracia antes de empezar a devolver el préstamo.</p>
         <TarjetaMini titulo="La idea para todos" tono="azul">
           Se arma la tabla normal hasta el momento del cambio. Desde ahí, se vuelve a calcular la cuota con el saldo que quedó, el tiempo que falta y la nueva condición.
@@ -3716,10 +3695,10 @@ Hay tres formas de devolverlos:
         <Interpretacion>
           Un periodo de gracia no es plata gratis. En el caso 1 la deuda creció de COP 560.000.000 a COP {m2(saldoGracia)} antes de la primera cuota. En el caso 2 la cuota de la gracia (COP {m2(gr2.filas[0].cuota)}) es mucho menor que la cuota completa (COP {m2(gr2.filas[60].cuota)}), pero el saldo no baja ni un peso durante 5 años.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 10 */}
-      <Acordeon title="10 · Leasing: ¿por qué el saldo final no es cero?">
+      <Modulo title="10 · Leasing: ¿por qué el saldo final no es cero?">
         <p><strong>¿Qué es?</strong> El leasing permite usar un bien, como un carro o una máquina, y pagar por usarlo. Al terminar el acuerdo, puedes tener la opción de pagar un valor adicional para quedártelo.</p>
         <FilaMini>
           <TarjetaMini titulo="Leasing financiero" tono="azul">Al final puedes pagar la opción de compra y quedarte con el bien.</TarjetaMini>
@@ -3758,10 +3737,10 @@ Hay tres formas de devolverlos:
         <Interpretacion>
           Con la opción de compra, la cuota es de COP {m2(lea.filas[0].cuota)}. Si no hubiera opción de compra (francés normal), la cuota sería COP {m2(leaSin)}. La diferencia está en los COP {m2(lea.filas[179].saldo)} que quedan pendientes al final y que la empresa paga si decide quedarse con el vehículo.
         </Interpretacion>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 11 */}
-      <Acordeon title="11 · Errores comunes y un reto">
+      <Modulo title="11 · Errores comunes y un reto">
         <FilaMini>
           <TarjetaMini titulo="Revisar los datos antes de calcular" tono="alerta">Antes de calcular una cuota, revisa que el monto del préstamo, la tasa y la cantidad de pagos sean los correctos.</TarjetaMini>
           <TarjetaMini titulo="Usar la tasa sin convertir" tono="alerta">Primero convierte la tasa a efectiva vencida y al mismo periodo de las cuotas. Después úsala en la fórmula.</TarjetaMini>
@@ -3774,10 +3753,10 @@ Hay tres formas de devolverlos:
         <TarjetaMini titulo="Datos que debes confirmar antes de calcular" tono="azul">
           Para resolverlo falta saber: (1) si durante los 10 periodos de gracia se pagan intereses o no, (2) cuánto vale la opción de compra y (3) si la tasa del 9,12 % es efectiva anual. Con esos datos puedes calcular el saldo después de la gracia, la cuota inicial y la nueva cuota desde el periodo 37.
         </TarjetaMini>
-      </Acordeon>
+      </Modulo>
 
       {/* SECCIÓN 12 */}
-      <Acordeon title="12 · Cierre y preguntas de repaso">
+      <Modulo title="12 · Cierre y preguntas de repaso">
         <CierreRepaso
           intro="Antes de terminar, comprueba lo que aprendiste:"
           preguntas={[
@@ -3798,261 +3777,703 @@ Hay tres formas de devolverlos:
           ]}
           idea="Idea final: todo el semestre converge aquí. La cuota francesa es una anualidad, el interés de cada periodo es interés compuesto y la tasa siempre es la efectiva vencida del periodo de la cuota."
         />
-      </Acordeon>
+      </Modulo>
 
-    </RecorridoSubmodulos>
+    </div>
   );
 }
 
 
-const AprendizajeContext = createContext(null);
+/* ============================================================
+   EDUCACIÓN FINANCIERA — NAVEGACIÓN POR TEMAS Y MÓDULOS INTERNOS
+   Primer nivel: nueve temas (menú lateral).
+   Segundo nivel: módulos numerados dentro de cada tema (se recorren
+   uno a uno con «Módulo anterior» / «Siguiente módulo»).
+   El contenido de cada módulo es exactamente el original: solo cambia
+   que se muestra de a uno.
+   ============================================================ */
+const ModuloActivoCtx = createContext({ activo: 1, total: 1 });
 
-function NavegacionTemas({ children, labels }) {
-  const temas = React.Children.toArray(children).filter((child) => React.isValidElement(child));
-  const [temaActivo, setTemaActivo] = useState(0);
-  const total = temas.length;
-  const avanzar = () => setTemaActivo((actual) => Math.min(total - 1, actual + 1));
-  const retroceder = () => setTemaActivo((actual) => Math.max(0, actual - 1));
-  const tema = temas[temaActivo];
-  const titulo = labels?.[temaActivo] || tema?.props?.title || `Tema ${temaActivo + 1}`;
+function partirTituloModulo(title) {
+  const m = /^(\d+)\s·\s([\s\S]*)$/.exec(String(title));
+  return m ? { n: parseInt(m[1], 10), texto: m[2] } : { n: NaN, texto: String(title) };
+}
 
+const eduTarjetaStyle = {
+  background: "linear-gradient(180deg, #FFFFFF 0%, #FFFEFC 100%)", border: `1px solid ${C.line}`, borderRadius: 20,
+  boxShadow: "0 18px 44px rgba(19,42,76,0.075)",
+  padding: "clamp(22px, 3.2vw, 38px)",
+};
+
+/* Un módulo interno: solo se pinta cuando es el módulo activo del tema. */
+function Modulo({ title, children }) {
+  const { activo, total } = useContext(ModuloActivoCtx);
+  const { n, texto } = partirTituloModulo(title);
+  if (n !== activo) return null;
   return (
-    <AprendizajeContext.Provider value={{ avanzar, retroceder, temaActivo, total }}>
-      <div className="numeris-learning-layout" style={{ display: "grid", gridTemplateColumns: "minmax(220px, 270px) minmax(0, 1fr)", gap: 22, alignItems: "start" }}>
-        <aside style={{
-          position: "sticky", top: 112, background: "rgba(255,255,255,0.88)",
-          border: `1px solid ${C.line}`, borderRadius: 18, padding: 16,
-          boxShadow: "0 16px 38px rgba(12,30,56,0.07)"
-        }}>
-          <div style={{ fontFamily: F_MONO, color: C.goldDeep, fontSize: 10.5, letterSpacing: ".12em", textTransform: "uppercase", fontWeight: 700, margin: "2px 8px 12px" }}>Ruta de aprendizaje</div>
-          <div style={{ height: 6, borderRadius: 99, background: C.paperDark, overflow: "hidden", margin: "0 8px 14px" }}>
-            <div style={{ height: "100%", width: `${((temaActivo + 1) / total) * 100}%`, background: "linear-gradient(90deg, #B8863B, #D9AE63)", borderRadius: 99, transition: "width .25s ease" }} />
+    <article style={eduTarjetaStyle} aria-label={`Módulo ${n} de ${total}: ${texto}`}>
+      <header style={{ display: "flex", alignItems: "flex-start", gap: 16, paddingBottom: 22, marginBottom: 26, borderBottom: `1px solid ${C.line}` }}>
+        <span aria-hidden="true" style={{
+          flexShrink: 0, width: 48, height: 48, borderRadius: 15, background: "linear-gradient(145deg, #24456F, #0C1E38)", color: C.goldLight,
+          fontFamily: F_MONO, fontWeight: 700, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center",
+        }}>{n}</span>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontFamily: F_MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: C.gold, fontWeight: 700 }}>
+            Módulo {n} de {total}
           </div>
-          <div style={{ color: C.slate, fontSize: 11.5, margin: "0 8px 12px" }}>Tema {temaActivo + 1} de {total}</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {temas.map((item, index) => {
-              const label = labels?.[index] || item.props.title || `Tema ${index + 1}`;
-              const active = index === temaActivo;
-              return (
-                <button key={index} type="button" onClick={() => setTemaActivo(index)} style={{
-                  width: "100%", display: "flex", alignItems: "center", gap: 10, textAlign: "left",
-                  padding: "10px 11px", borderRadius: 12,
-                  border: active ? `1px solid ${C.gold}88` : "1px solid transparent",
-                  background: active ? "linear-gradient(135deg, rgba(217,174,99,.24), rgba(255,255,255,.9))" : "transparent",
-                  color: active ? C.navy : C.slate, fontFamily: F_BODY, fontSize: 12.5,
-                  fontWeight: active ? 800 : 600, cursor: "pointer", lineHeight: 1.35
-                }}>
-                  <span style={{ width: 25, height: 25, borderRadius: 9, flexShrink: 0, display: "grid", placeItems: "center", background: active ? C.navy : C.paperDark, color: active ? C.goldLight : C.slate, fontFamily: F_MONO, fontSize: 10.5 }}>{String(index + 1).padStart(2, "0")}</span>
-                  <span>{label.replace(/^\d+\s*[·.)-]\s*/, "")}</span>
-                </button>
-              );
-            })}
-          </div>
-        </aside>
+          <h2 style={{ fontFamily: F_DISPLAY, fontSize: "clamp(23px, 3vw, 29px)", lineHeight: 1.28, color: C.navy, margin: "5px 0 0", fontWeight: 600 }}>{texto}</h2>
+        </div>
+      </header>
+      {children}
+    </article>
+  );
+}
 
-        <main style={{ minWidth: 0 }}>
-          <div style={{ marginBottom: 16, padding: "20px 22px", borderRadius: 18, color: C.white, background: "linear-gradient(135deg, #0C1E38, #24456F)", boxShadow: "0 16px 36px rgba(12,30,56,0.14)" }}>
-            <div style={{ color: C.goldLight, fontFamily: F_MONO, fontSize: 10.5, letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 7 }}>Etapa {temaActivo + 1} · Educación financiera</div>
-            <div style={{ fontFamily: F_DISPLAY, fontSize: 25, lineHeight: 1.2 }}>{titulo.replace(/^\d+\s*[·.)-]\s*/, "")}</div>
-            <div style={{ color: "#D8E0EA", fontSize: 12, marginTop: 8 }}>Avanza por los módulos de este tema y, al terminar, continúa con la siguiente etapa.</div>
-          </div>
-          <div style={{ background: "rgba(255,255,255,.5)", borderRadius: 18, padding: "8px 0" }}>
-            {tema?.props?.children}
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginTop: 20, paddingTop: 16, borderTop: `1px solid ${C.line}` }}>
-            <button type="button" disabled={temaActivo === 0} onClick={retroceder} style={{ border: `1px solid ${C.line}`, background: "rgba(255,255,255,.8)", color: temaActivo === 0 ? "#A6A6A6" : C.navy, borderRadius: 12, padding: "11px 16px", fontWeight: 700, cursor: temaActivo === 0 ? "not-allowed" : "pointer" }}>← Tema anterior</button>
-            <span style={{ color: C.slate, fontSize: 12 }}>Etapa {temaActivo + 1} / {total}</span>
-            <button type="button" disabled={temaActivo === total - 1} onClick={avanzar} style={{ border: "none", background: "linear-gradient(135deg, #D9AE63, #B8863B)", color: C.navyDeep, borderRadius: 12, padding: "11px 18px", fontWeight: 800, cursor: temaActivo === total - 1 ? "not-allowed" : "pointer", opacity: temaActivo === total - 1 ? .45 : 1, boxShadow: "0 10px 24px rgba(12,30,56,.10)" }}>Siguiente tema →</button>
-          </div>
-        </main>
+/* Introducción del tema (antes del módulo 1): solo se muestra con el módulo 1. */
+function IntroTema({ children }) {
+  const { activo } = useContext(ModuloActivoCtx);
+  return activo === 1 ? <>{children}</> : null;
+}
+
+function useMediaQuery(query) {
+  const leer = () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia(query).matches;
+  const [coincide, setCoincide] = useState(leer);
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return undefined;
+    const mq = window.matchMedia(query);
+    const alCambiar = () => setCoincide(mq.matches);
+    alCambiar();
+    if (mq.addEventListener) mq.addEventListener("change", alCambiar); else mq.addListener(alCambiar);
+    return () => { if (mq.removeEventListener) mq.removeEventListener("change", alCambiar); else mq.removeListener(alCambiar); };
+  }, [query]);
+  return coincide;
+}
+
+/* Temas 1 a 3: contenido original, sin cambios (cada uno es un único bloque, sin módulos numerados). */
+function InteresSimpleContenido() {
+  return (
+      <BloqueInteres
+        queEs="El interés simple es la forma más fácil de ganar o pagar intereses. Siempre se calcula sobre el mismo capital inicial. Ese capital inicial no cambia."
+        analogia={`Imagina que le prestas tu bicicleta a un amigo.
+
+  Cada mes, tu amigo te regala UNA moneda de las gracias.
+  Pase el tiempo que pase, siempre te da la MISMA moneda.
+
+  ¿Por qué? Porque siempre te está pagando por la MISMA bicicleta.
+
+  El interés simple es igual: siempre se calcula sobre el mismo capital inicial, sin importar cuántos meses pasen.`}
+        comoFunciona="Cada mes se cobra el mismo interés. Ese interés NO se junta con el numerito del principio. Se queda guardado aparte, como moneditas sueltas en un frasco."
+        usoLabel="¿Cuándo se usa?"
+        usoRespuesta="En préstamos cortos, y en cuentas donde lo que ganas no se vuelve a sumar para ganar más."
+        formula="VF = VP · (1 + i · n)"
+        despejes={["VP = VF / (1 + i·n)", "i = (VF/VP − 1) / n", "n = (VF/VP − 1) / i"]}
+        ejemploTexto="Un capital de $ 1.000.000,00 COP se invierte al 2,00 % mensual simple durante 10 meses."
+        pasosEjemplo={[
+          { label: "Datos", content: "VP = $1.000.000,00 · i = 2,00 % mensual · n = 10 periodos" },
+          { label: "Incógnita", content: "VF (Valor Futuro)" },
+          { label: "Fórmula", content: "VF = VP · (1 + i·n)" },
+          { label: "Conversión de tasa", content: "2,00 % → 0,02" },
+          { label: "Sustitución", content: "VF = 1.000.000 · (1 + 0,02 × 10)" },
+          { label: "Desarrollo", content: "VF = 1.000.000 × 1,2" },
+          { label: "Resultado sin redondear", content: "1200000" },
+          { label: "Resultado presentado", content: formatCurrencyCO(1200000, "COP") },
+          { label: "Interpretación", content: "Bajo estas condiciones, el capital alcanzaría un valor del final de $ 1.200.000,00 COP." },
+        ]}
+      />
+  );
+}
+
+function InteresCompuestoContenido() {
+  return (
+      <BloqueInteres
+        queEs="El interés compuesto es cuando los intereses generados se incorporan al capital. Dicho fácil: es interés sobre interés, porque el dinero crece y los intereses también empiezan a producir más intereses."
+        analogia={`Imagina una bola de nieve.
+
+  La empujas cuesta abajo y empieza chiquitica.
+  Mientras rueda, se le va pegando más nieve.
+  Y esa nieve nueva hace que se le pegue TODAVÍA más nieve.
+
+  Cada vuelta, la bola es más grande que la vuelta de antes.
+
+  El dinero hace lo mismo: gana intereses, esos intereses se vuelven parte del dinero, y ese dinero más grande gana más intereses todavía.`}
+        comoFunciona="Al final de cada mes, el interés se suma al dinero que ya tenías. Al mes siguiente, el interés se calcula sobre ese dinero más grande. Por eso crece cada vez más rápido."
+        usoLabel="¿Por qué es diferente al interés simple?"
+        usoRespuesta="En el simple, siempre calculas sobre el capital inicial. En el compuesto, el capital va creciendo. Con una tasa positiva y durante más de un periodo, el compuesto genera más valor porque los intereses acumulados también producen intereses."
+        formula="VF = VP · (1 + i)ⁿ"
+        despejes={["VP = VF / (1+i)ⁿ", "i = (VF/VP)^(1/n) − 1", "n = ln(VF/VP) / ln(1+i)"]}
+        ejemploTexto="Un capital de $ 1.000.000,00 COP se invierte al 3,00 % trimestral compuesto durante 4 trimestres."
+        pasosEjemplo={[
+          { label: "Datos", content: "VP = $1.000.000,00 · i = 3,00 % trimestral · n = 4 periodos" },
+          { label: "Incógnita", content: "VF (Valor Futuro)" },
+          { label: "Fórmula", content: "VF = VP · (1+i)ⁿ" },
+          { label: "Sustitución", content: "VF = 1.000.000 × (1,03)⁴" },
+          { label: "Resultado sin redondear", content: String(futureValueCompound(1000000, 0.03, 4)) },
+          { label: "Resultado presentado", content: formatCurrencyCO(futureValueCompound(1000000, 0.03, 4), "COP") },
+          { label: "Interpretación", content: "El saldo puede crecer más que en interés simple porque cada trimestre los intereses se suman al capital y generan más intereses." },
+        ]}
+      />
+  );
+}
+
+function InteresContinuoContenido() {
+  return (
+      <BloqueInteres
+        queEs="El interés continuo es como el compuesto, pero sin esperar nada. En vez de sumar los intereses cada mes, los va sumando todo el tiempo, sin parar nunca."
+        analogia={`¿Te acuerdas de la bola de nieve de hace un momento?
+
+  Ahora imagina que no espera a dar una vuelta completa para que se le pegue nieve.
+  Se le va pegando nieve en CADA segundito, sin parar.
+
+  Por eso esta bola crece un poquito más rápido que la del interés compuesto normal.`}
+        comoFunciona="El dinero no espera a que termine el mes para crecer. Va creciendo poquito a poquito, todo el tiempo, sin pausas. Para calcular esto usamos un número especial que se llama 'e'."
+        usoLabel="¿Dónde se usa y en qué se diferencia del compuesto?"
+        usoRespuesta="Se usa más en cuentas avanzadas de bancos y en estudios de dinero, no tanto en la vida diaria. La diferencia con el compuesto es que el compuesto suma los intereses cada cierto tiempo (cada mes, por ejemplo), y el continuo los va sumando sin parar nunca."
+        notaEspecial="En interés continuo, t siempre se expresa en años. Ejemplo: 2 años y 6 meses = 2 + 6/12 = 2,5 años."
+        formula="VF = VP · e^(r·t)"
+        despejes={["VP = VF · e^(−r·t)", "r = ln(VF/VP) / t", "t = ln(VF/VP) / r"]}
+        ejemploTexto="Un capital de $ 850.000,00 COP se invierte al 8,95 % continuo durante 2 años y 6 meses (t = 2,5 años)."
+        pasosEjemplo={[
+          { label: "Datos", content: "VP = $850.000,00 · r = 8,95 % anual de tasa continua · tiempo = 2 años 6 meses" },
+          { label: "Conversión temporal", content: "t = 2 + 6/12 = 2,5 años" },
+          { label: "Incógnita", content: "VF (Valor Futuro)" },
+          { label: "Fórmula", content: "VF = VP · e^(r·t)" },
+          { label: "Sustitución", content: "VF = 850.000 × e^(0,0895 × 2,5)" },
+          { label: "Resultado sin redondear", content: String(futureValueContinuous(850000, 0.0895, 2.5)) },
+          { label: "Resultado presentado", content: formatCurrencyCO(futureValueContinuous(850000, 0.0895, 2.5), "COP") },
+        ]}
+      />
+  );
+}
+
+
+/* Registro de los nueve temas y de sus módulos internos reales (nombres tal como están en el contenido). */
+const TEMAS_EDU = [
+  { id: "interes-simple", titulo: "Interés simple", modulos: [], Componente: InteresSimpleContenido },
+  { id: "interes-compuesto", titulo: "Interés compuesto: interés sobre interés", modulos: [], Componente: InteresCompuestoContenido },
+  { id: "interes-continuo", titulo: "Interés continuo", modulos: [], Componente: InteresContinuoContenido },
+  { id: "conversion-tasas", titulo: "Conversión de tasas", Componente: ConversionTasas, modulos: [
+      "Las tasas tienen nombre y apellido",
+      "¿Qué es una tasa nominal?",
+      "Pasar de nominal a periódica (repartir la tasa)",
+      "Pasar de periódica a nominal (juntar los pedacitos)",
+      "¿Qué es una tasa efectiva?",
+      "Cambiar una tasa efectiva de tamaño (mes → año, etc.)",
+      "Capitalización (cuando el interés hace más interés)",
+      "Tasa vencida y tasa anticipada (¿cuándo se paga?)",
+      "Pasar de vencida a anticipada (y al revés)",
+      "Un ejemplo completo, paso a pasito (23,54 % NAC → NAS)",
+      "Errores comunes (para no caer en la trampa)",
+    ] },
+  { id: "anualidades-vencidas", titulo: "Anualidades vencidas", Componente: AnualidadesVencidas, modulos: [
+      "De un solo pago a muchas cuotas",
+      "¿Qué es una anualidad? Las 4 condiciones",
+      "¿Qué significa vencida?",
+      "La línea de tiempo de una anualidad vencida",
+      "Valor de hoy: cuánto valen hoy varias cuotas futuras",
+      "Valor del final: cuánto tendré al final si pago o ahorro lo mismo cada vez",
+      "¿De cuánto es la cuota? Hallar A desde VP o VF",
+      "El error más común: la tasa y las cuotas no hablan el mismo idioma",
+      "Anualidades + pagos extra: la galleta grande fuera de la fila",
+      "Ejemplo completo: la casa con dos pagos extra",
+      "Ejemplo del carro",
+      "Cierre y preguntas de repaso",
+    ] },
+  { id: "anualidades-anticipadas", titulo: "Anualidades anticipadas", Componente: AnualidadesAnticipadas, modulos: [
+      "¿Qué cambia frente a una anualidad vencida?",
+      "¿Qué significa \"anticipada\"?",
+      "No es lo mismo tasa anticipada que anualidad anticipada",
+      "Conexión con interés compuesto y conversión de tasas",
+      "¿Por qué el resultado cambia frente a una anualidad vencida?",
+      "Valor de hoy: cuánto valen hoy cuotas que se pagan al inicio",
+      "Valor del final: cuánto valen al final cuotas pagadas al inicio",
+      "Cómo hallar la cuota A desde VP o VF",
+      "Error común: usar una tasa nominal o anticipada directamente",
+      "Pagos adicionales extraordinarios en anualidades anticipadas",
+      "Ejemplo completo con pagos adicionales: la casa",
+      "Ejemplo del carro",
+      "Cierre y preguntas de repaso",
+    ] },
+  { id: "gradientes", titulo: "Gradientes", Componente: Gradientes, modulos: [
+      "De una cuota igual a una cuota que cambia",
+      "Gradiente aritmético: sube o baja siempre lo mismo en pesos",
+      "Gradiente geométrico: sube o baja siempre el mismo porcentaje",
+      "Aritmético vs geométrico: ¿cuál es cuál?",
+      "Crecientes y decrecientes: ¿qué cambia en el resultado?",
+      "Valor presente y valor futuro de un gradiente",
+      "Ejemplo: ahorro programado con gradiente aritmético",
+      "Ejemplo: aporte que sube con la inflación (gradiente geométrico)",
+      "Ejemplo: el crédito del estudiante (cuotas trimestrales)",
+      "Cuando el gradiente no cambia cada periodo",
+      "¿Cuánto vale la última cuota? Ejercicio resuelto y para practicar",
+      "Errores comunes",
+      "Cierre y preguntas de repaso",
+    ] },
+  { id: "perpetuidades", titulo: "Perpetuidades", Componente: Perpetuidades, modulos: [
+      "Una anualidad que nunca termina",
+      "¿Cómo puede valer algo finito una serie infinita de pagos?",
+      "La fórmula del valor presente de una perpetuidad",
+      "Ejemplos resueltos de perpetuidades",
+      "¿Por qué una perpetuidad no tiene valor futuro?",
+      "Perpetuidad con gradiente aritmético",
+      "Perpetuidad con gradiente geométrico: ¿por qué i tiene que ser mayor que g?",
+      "Reto: el gradiente se aplica cada 4 meses y la cuota es bimestral",
+      "Perpetuidad vs anualidad: lo que cambia y lo que no",
+      "Errores comunes",
+      "Cierre y preguntas de repaso",
+    ] },
+  { id: "sistemas-amortizacion", titulo: "Sistemas de amortización", Componente: SistemasAmortizacion, modulos: [
+      "¿Qué es amortizar y qué es una tabla de amortización?",
+      "Los tres sistemas de un vistazo",
+      "Sistema francés: la cuota fija",
+      "Sistema alemán: el abono fijo a capital",
+      "Sistema americano: el préstamo se devuelve al final",
+      "Comparación: ¿cuál conviene?",
+      "¿Cuál de estos créditos es más barato?",
+      "Otros costos: por qué encarecen el crédito y cómo hallar el costo real",
+      "Cuando algo cambia en el crédito",
+      "Leasing: ¿por qué el saldo final no es cero?",
+      "Errores comunes y un reto",
+      "Cierre y preguntas de repaso",
+    ] },
+];
+
+
+const EDU_CSS = `
+@keyframes eduFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.edu-fade { animation: eduFade .35s ease both; }
+.edu-side-item { transition: background .15s, color .15s; }
+.edu-side-item:hover:not([aria-current="true"]) { background: ${C.paperDark}; }
+.edu-side-item:focus-visible, .edu-pill:focus-visible, .edu-menu-btn:focus-visible { outline: 2px solid ${C.gold}; outline-offset: 2px; }
+.edu-pill { transition: transform .15s, background .15s; }
+.edu-pill:hover { transform: translateY(-1px); }
+.edu-bar { transition: width .4s ease; }
+@media (max-width: 680px) {
+  .edu-fade { min-width: 0; }
+  .edu-fade p { overflow-wrap: anywhere; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .edu-fade { animation: none; }
+  .edu-bar, .edu-pill, .edu-side-item { transition: none; }
+}
+`;
+
+const NUMERIS_VISUAL_CSS = `
+  html { scroll-behavior: smooth; }
+  input, select, textarea { border-radius: 12px !important; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid rgba(184,134,59,0.42) !important; outline-offset: 1px; border-color: #B8863B !important; }
+  button { -webkit-tap-highlight-color: transparent; }
+  table th { letter-spacing: .015em; }
+  table tbody tr:hover { background: rgba(217,174,99,0.075) !important; }
+  details > summary { cursor: pointer; }
+  @media (max-width: 680px) {
+    input, select, textarea { font-size: 16px !important; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+`;
+
+const REPASO_FLASHCARDS = [
+  { t: "VP", d: "Valor presente. Es lo que vale hoy un dinero que recibes o pagas hoy o más adelante." },
+  { t: "VF", d: "Valor futuro. Es lo que valdrá un dinero cuando llegue la fecha final." },
+  { t: "Tasa efectiva", d: "El porcentaje que realmente corresponde a un periodo, teniendo en cuenta cómo se acumulan los intereses." },
+  { t: "Anualidad vencida", d: "Una serie de pagos iguales que se hacen al final de cada periodo." },
+  { t: "Gradiente aritmético", d: "Cuando cada pago sube o baja siempre la misma cantidad de pesos. G es esa cantidad." },
+  { t: "Gradiente geométrico", d: "Cuando cada pago sube o baja siempre el mismo porcentaje. g es ese porcentaje." },
+  { t: "Perpetuidad", d: "Una fila de pagos que sigue para siempre: no hay un último pago. Aunque no termina, podemos calcular cuánto vale hoy." },
+  { t: "Abono a capital", d: "La parte del pago que devuelve el dinero que te prestaron y hace que la deuda baje." },
+  { t: "TIR", d: "Tasa interna de retorno. Es un porcentaje que compara el dinero que recibes con todos los pagos que haces. Ayuda a conocer cuánto cuesta realmente un crédito." },
+  { t: "Saldo", d: "El dinero que todavía debes después de hacer un pago." },
+];
+
+const REPASO_QUIZ = [
+  { q: "¿Qué significa VP?", options: ["Valor presente: lo que vale hoy un dinero.", "Valor futuro: lo que valdrá al final.", "Cantidad de periodos o pagos."], correct: 0, explain: "VP es el valor presente: cuánto vale hoy el dinero." },
+  { q: "¿Cuándo se paga una anualidad vencida?", options: ["Al inicio de cada periodo.", "Al final de cada periodo.", "Solamente al final del crédito."], correct: 1, explain: "Una anualidad vencida tiene pagos al final de cada periodo." },
+  { q: "¿Qué caracteriza a un gradiente aritmético?", options: ["Cada pago cambia el mismo porcentaje.", "Cada pago cambia la misma cantidad de pesos.", "Todos los pagos son iguales."], correct: 1, explain: "En el gradiente aritmético, la variación es una cantidad fija de pesos." },
+  { q: "¿Qué representa el abono a capital?", options: ["La parte del pago que reduce la deuda.", "El cobro del seguro.", "El interés del periodo."], correct: 0, explain: "El abono a capital devuelve parte del dinero prestado y disminuye el saldo." },
+  { q: "¿Qué es una perpetuidad?", options: ["Una serie de pagos que termina en un periodo definido.", "Una fila de pagos que continúa para siempre.", "Un único pago en el momento cero."], correct: 1, explain: "Una perpetuidad es una serie de pagos sin último periodo." },
+];
+
+function RepasoInteractivo() {
+  const [modo, setModo] = useState("flashcards");
+  const [indice, setIndice] = useState(0);
+  const [volteada, setVolteada] = useState(false);
+  const [pregunta, setPregunta] = useState(0);
+  const [seleccion, setSeleccion] = useState(null);
+  const [respuestas, setRespuestas] = useState([]);
+  const [terminado, setTerminado] = useState(false);
+  const tarjeta = REPASO_FLASHCARDS[indice];
+  const q = REPASO_QUIZ[pregunta];
+  const responder = (op) => {
+    if (seleccion !== null) return;
+    setSeleccion(op);
+    setRespuestas((prev) => [...prev, op === q.correct]);
+  };
+  const siguientePregunta = () => {
+    if (pregunta === REPASO_QUIZ.length - 1) setTerminado(true);
+    else { setPregunta((v) => v + 1); setSeleccion(null); }
+  };
+  const reiniciarQuiz = () => { setPregunta(0); setSeleccion(null); setRespuestas([]); setTerminado(false); };
+  return (
+    <div className="edu-fade" style={{ display: "grid", gap: 20 }}>
+      <div style={{ background: "linear-gradient(135deg,#0C1E38,#24456F)", borderRadius: 20, padding: "clamp(22px,4vw,34px)", color: C.white, boxShadow: "0 18px 38px rgba(12,30,56,0.15)" }}>
+        <div style={{ fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.13em", color: C.goldLight, fontWeight: 800 }}>REPASO INTERACTIVO</div>
+        <h2 style={{ fontFamily: F_DISPLAY, fontSize: "clamp(25px,3.5vw,34px)", margin: "8px 0", fontWeight: 600 }}>Pon a prueba lo que aprendiste</h2>
+        <p style={{ color: "#D8E0EA", margin: 0, lineHeight: 1.65 }}>Repasa conceptos de Numeris con tarjetas y preguntas cortas. El contenido se basa en las definiciones del glosario.</p>
       </div>
-      <style>{`@media (max-width: 760px) { .numeris-learning-layout { grid-template-columns: 1fr !important; } .numeris-learning-layout aside { position: static !important; } .numeris-learning-layout aside > div:last-child { display: grid !important; grid-template-columns: repeat(2, minmax(0,1fr)); } }`}</style>
-    </AprendizajeContext.Provider>
-  );
-}
-
-function RecorridoSubmodulos({ children }) {
-  const items = React.Children.toArray(children);
-  const first = items.findIndex((child) => React.isValidElement(child) && child.type === Acordeon);
-  const last = items.reduce((found, child, index) => React.isValidElement(child) && child.type === Acordeon ? index : found, -1);
-  const intro = first < 0 ? items : items.slice(0, first);
-  const modulos = first < 0 ? [] : items.slice(first, last + 1).filter((child) => React.isValidElement(child) && child.type === Acordeon);
-  const cierre = last < 0 ? [] : items.slice(last + 1);
-  const [activo, setActivo] = useState(0);
-  const contexto = useContext(AprendizajeContext);
-  const total = Math.max(modulos.length, 1);
-  const actual = modulos[activo];
-  const irAnterior = () => {
-    if (activo > 0) setActivo((n) => n - 1);
-    else contexto?.retroceder?.();
-  };
-  const irSiguiente = () => {
-    if (activo < total - 1) setActivo((n) => n + 1);
-    else contexto?.avanzar?.();
-  };
-
-  return (
-    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
-      {intro}
-      {modulos.length > 0 && <div style={{ margin: "18px 0 10px", padding: 18, borderRadius: 18, background: "rgba(255,255,255,.9)", border: `1px solid ${C.line}`, boxShadow: "0 14px 32px rgba(12,30,56,.06)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
-          <div>
-            <div style={{ color: C.goldDeep, fontFamily: F_MONO, fontSize: 10.5, letterSpacing: ".12em", textTransform: "uppercase", fontWeight: 700 }}>Módulos del tema</div>
-            <div style={{ color: C.navy, fontWeight: 800, fontSize: 13, marginTop: 4 }}>Módulo {activo + 1} de {total}</div>
+      <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
+        <Boton variant={modo === "flashcards" ? "gold" : "outline"} onClick={() => setModo("flashcards")}>Flashcards</Boton>
+        <Boton variant={modo === "quiz" ? "gold" : "outline"} onClick={() => setModo("quiz")}>Mini quiz</Boton>
+      </div>
+      {modo === "flashcards" ? (
+        <Tarjeta style={{ padding: "clamp(20px,4vw,34px)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: 18 }}>
+            <Etiqueta>Tarjeta {indice + 1} de {REPASO_FLASHCARDS.length}</Etiqueta>
+            <span style={{ fontSize: 12, color: C.slate }}>Selecciona la tarjeta para ver la definición</span>
           </div>
-          <div style={{ minWidth: 120, flex: "0 1 220px", height: 6, borderRadius: 99, background: C.paperDark, overflow: "hidden" }}><div style={{ height: "100%", width: `${((activo + 1) / total) * 100}%`, background: "linear-gradient(90deg, #B8863B, #D9AE63)", transition: "width .2s ease" }} /></div>
-        </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
-          {modulos.map((modulo, index) => <button key={index} type="button" onClick={() => setActivo(index)} title={modulo.props.title} style={{ width: 31, height: 31, borderRadius: 10, border: index === activo ? `1px solid ${C.gold}` : `1px solid ${C.line}`, background: index === activo ? C.navy : C.paper, color: index === activo ? C.goldLight : C.slate, fontWeight: 800, fontSize: 11, cursor: "pointer" }}>{index + 1}</button>)}
-        </div>
-        <div style={{ color: C.navy, fontFamily: F_DISPLAY, fontSize: 21, lineHeight: 1.25, marginBottom: 14 }}>{actual?.props?.title?.replace(/^\d+\s*[·.)-]\s*/, "") || "Contenido del tema"}</div>
-        <div>{actual?.props?.children || items}</div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", borderTop: `1px solid ${C.line}`, marginTop: 20, paddingTop: 15 }}>
-          <button type="button" onClick={irAnterior} disabled={activo === 0 && (!contexto || contexto.temaActivo === 0)} style={{ border: `1px solid ${C.line}`, background: "#fff", color: C.navy, borderRadius: 11, padding: "10px 14px", fontWeight: 700, cursor: "pointer", opacity: activo === 0 && (!contexto || contexto.temaActivo === 0) ? .4 : 1 }}>← Anterior</button>
-          <span style={{ color: C.slate, fontSize: 11.5 }}>{activo + 1} / {total} módulos</span>
-          <button type="button" onClick={irSiguiente} disabled={activo === total - 1 && (!contexto || contexto.temaActivo === contexto.total - 1)} style={{ border: "none", background: "linear-gradient(135deg, #D9AE63, #B8863B)", color: C.navyDeep, borderRadius: 11, padding: "10px 16px", fontWeight: 800, cursor: "pointer", opacity: activo === total - 1 && (!contexto || contexto.temaActivo === contexto.total - 1) ? .4 : 1 }}>{activo === total - 1 ? "Siguiente tema →" : "Siguiente módulo ↓"}</button>
-        </div>
-      </div>}
-      {cierre}
+          <button type="button" onClick={() => setVolteada((v) => !v)} aria-label={volteada ? "Mostrar concepto" : "Mostrar definición"} style={{ width: "100%", minHeight: 245, padding: "30px 24px", borderRadius: 20, border: `1px solid ${volteada ? C.gold : C.line}`, background: volteada ? "linear-gradient(145deg,#FFF7E8,#F8EBD4)" : "linear-gradient(145deg,#F4F6FA,#FFFFFF)", color: C.navy, cursor: "pointer", display: "grid", placeItems: "center", textAlign: "center", boxShadow: "0 14px 30px rgba(12,30,56,0.07)" }}>
+            <span>
+              <span style={{ display: "block", fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.14em", color: C.goldDeep, fontWeight: 800, marginBottom: 14 }}>{volteada ? "DEFINICIÓN" : "CONCEPTO"}</span>
+              <span style={{ display: "block", fontFamily: F_DISPLAY, fontSize: "clamp(24px,4vw,34px)", lineHeight: 1.25, fontWeight: 600 }}>{volteada ? tarjeta.d : tarjeta.t}</span>
+              <span style={{ display: "block", fontSize: 12, color: C.slate, marginTop: 22 }}>{volteada ? "Pulsa para volver al concepto" : "Pulsa para descubrir la definición"}</span>
+            </span>
+          </button>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 18 }}>
+            <Boton variant="outline" disabled={indice === 0} onClick={() => { setIndice((v) => v - 1); setVolteada(false); }}><ArrowLeft size={16}/> Anterior</Boton>
+            <Boton variant="gold" onClick={() => { setIndice((v) => (v + 1) % REPASO_FLASHCARDS.length); setVolteada(false); }}>Siguiente tarjeta <ArrowRight size={16}/></Boton>
+          </div>
+        </Tarjeta>
+      ) : (
+        <Tarjeta style={{ padding: "clamp(20px,4vw,34px)" }}>
+          {!terminado ? <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 18 }}>
+              <Etiqueta>Pregunta {pregunta + 1} de {REPASO_QUIZ.length}</Etiqueta>
+              <span style={{ fontFamily: F_MONO, fontSize: 12, color: C.slate }}>{Math.round((pregunta / REPASO_QUIZ.length) * 100)} %</span>
+            </div>
+            <div style={{ height: 7, borderRadius: 99, background: C.paperDark, overflow: "hidden", marginBottom: 24 }}><div style={{ height: "100%", width: `${((pregunta + 1) / REPASO_QUIZ.length) * 100}%`, background: `linear-gradient(90deg,${C.gold},${C.goldLight})`, transition: "width .25s" }}/></div>
+            <h3 style={{ fontFamily: F_DISPLAY, fontSize: "clamp(21px,3vw,28px)", color: C.navy, margin: "0 0 20px", lineHeight: 1.35 }}>{q.q}</h3>
+            <div style={{ display: "grid", gap: 11 }}>
+              {q.options.map((op, i) => {
+                const elegida = seleccion === i;
+                const correcta = seleccion !== null && i === q.correct;
+                return <button key={op} type="button" onClick={() => responder(i)} disabled={seleccion !== null} style={{ textAlign: "left", padding: "15px 17px", borderRadius: 13, border: `1px solid ${correcta ? C.success : elegida ? C.danger : C.line}`, background: correcta ? C.successBg : elegida ? C.dangerBg : "#FFFFFF", color: C.navy, fontFamily: F_BODY, fontSize: 14, lineHeight: 1.55, cursor: seleccion === null ? "pointer" : "default" }}>{op}</button>;
+              })}
+            </div>
+            {seleccion !== null && <div style={{ marginTop: 16, padding: 15, borderRadius: 13, background: seleccion === q.correct ? C.successBg : C.dangerBg, color: C.navy, lineHeight: 1.6 }}><strong>{seleccion === q.correct ? "¡Correcto!" : "No exactamente."}</strong> {q.explain}</div>}
+            {seleccion !== null && <div style={{ marginTop: 18, textAlign: "right" }}><Boton variant="gold" onClick={siguientePregunta}>{pregunta === REPASO_QUIZ.length - 1 ? "Ver resultado" : "Siguiente pregunta"} <ArrowRight size={16}/></Boton></div>}
+          </> : <div style={{ textAlign: "center", padding: "24px 10px" }}>
+            <div style={{ width: 66, height: 66, borderRadius: "50%", background: C.successBg, color: C.success, display: "grid", placeItems: "center", margin: "0 auto 16px" }}><Check size={32}/></div>
+            <Etiqueta>Repaso terminado</Etiqueta>
+            <h3 style={{ fontFamily: F_DISPLAY, fontSize: 30, color: C.navy, margin: "8px 0" }}>Obtuviste {respuestas.filter(Boolean).length} de {REPASO_QUIZ.length}</h3>
+            <p style={{ color: C.slate, lineHeight: 1.65 }}>Puedes volver a intentarlo para reforzar los conceptos.</p>
+            <Boton variant="gold" onClick={reiniciarQuiz}><RotateCcw size={16}/> Repetir mini quiz</Boton>
+          </div>}
+        </Tarjeta>
+      )}
     </div>
   );
 }
 
 function Aprender() {
-  return (
-    <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
-      <Etiqueta>Educación financiera</Etiqueta>
-      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 32, color: C.navy, margin: "0 0 26px" }}>Conceptos fundamentales de matemáticas financieras</h1>
+  const esMovil = useMediaQuery("(max-width: 860px)");
+  const [tema, setTema] = useState(0);
+  const [modulo, setModulo] = useState(1);
+  const [vista, setVista] = useState("modulo"); // "modulo" | "fin"
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const [vistaAprendizaje, setVistaAprendizaje] = useState("temas");
+  const [completados, setCompletados] = useState(() => new Set());
+  const [visitados, setVisitados] = useState(() => new Set(["0-1"]));
+  const raizRef = useRef(null);
+  const columnaRef = useRef(null);
+  const ultimaClave = useRef("0|1|modulo");
 
-      <NavegacionTemas labels={["Interés simple", "Interés compuesto", "Interés continuo", "Conversión de tasas", "Anualidades vencidas", "Anualidades anticipadas", "Gradientes", "Perpetuidades", "Sistemas de amortización"]}>
-      <Acordeon title="1 · Interés simple" defaultOpen>
-        <RecorridoSubmodulos>
+  const t = TEMAS_EDU[tema];
+  const Contenido = t.Componente;
+  const unico = t.modulos.length === 0;
+  const total = unico ? 1 : t.modulos.length;
+  const esUltimoModulo = modulo === total;
+  const temaAnterior = tema > 0 ? TEMAS_EDU[tema - 1] : null;
+  const temaSiguiente = tema < TEMAS_EDU.length - 1 ? TEMAS_EDU[tema + 1] : null;
+  const enFin = vista === "fin";
+  const progreso = enFin ? 100 : Math.round((modulo / total) * 100);
+  const tituloModuloActual = unico ? t.titulo : t.modulos[modulo - 1];
 
-        <BloqueInteres
-          queEs="El interés simple es la forma más fácil de ganar o pagar intereses. Siempre se calcula sobre el mismo capital inicial. Ese capital inicial no cambia."
-          analogia={`Imagina que le prestas tu bicicleta a un amigo.
+  // Al cambiar de tema, módulo o pantalla, la vista vuelve al inicio del contenido.
+  useEffect(() => {
+    const clave = `${tema}|${modulo}|${vista}`;
+    if (ultimaClave.current === clave) return;
+    ultimaClave.current = clave;
+    const el = columnaRef.current;
+    if (!el || typeof window === "undefined") return;
+    const barra = raizRef.current && raizRef.current.previousElementSibling;
+    const alto = barra ? barra.getBoundingClientRect().height : 80;
+    const y = el.getBoundingClientRect().top + window.pageYOffset - alto - 12;
+    window.scrollTo(0, Math.max(0, y));
+  }, [tema, modulo, vista]);
 
-Cada mes, tu amigo te regala UNA moneda de las gracias.
-Pase el tiempo que pase, siempre te da la MISMA moneda.
+  const marcarVisitado = (ti, m) => setVisitados((prev) => {
+    const k = `${ti}-${m}`;
+    if (prev.has(k)) return prev;
+    const nuevo = new Set(prev); nuevo.add(k); return nuevo;
+  });
+  const irTema = (ti) => {
+    if (ti < 0 || ti >= TEMAS_EDU.length) return;
+    setTema(ti); setModulo(1); setVista("modulo"); setMenuAbierto(false); marcarVisitado(ti, 1);
+  };
+  const irModulo = (m) => {
+    if (m < 1 || m > total) return;
+    setModulo(m); setVista("modulo"); marcarVisitado(tema, m);
+  };
+  const finalizarTema = () => {
+    setCompletados((prev) => { const nuevo = new Set(prev); nuevo.add(tema); return nuevo; });
+    setVista("fin");
+  };
 
-¿Por qué? Porque siempre te está pagando por la MISMA bicicleta.
+  const etiquetaMono = { fontFamily: F_MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 };
+  const botonGrande = { padding: "13px 26px", fontSize: 15.5 };
 
-El interés simple es igual: siempre se calcula sobre el mismo capital inicial, sin importar cuántos meses pasen.`}
-          comoFunciona="Cada mes se cobra el mismo interés. Ese interés NO se junta con el numerito del principio. Se queda guardado aparte, como moneditas sueltas en un frasco."
-          usoLabel="¿Cuándo se usa?"
-          usoRespuesta="En préstamos cortos, y en cuentas donde lo que ganas no se vuelve a sumar para ganar más."
-          formula="VF = VP · (1 + i · n)"
-          despejes={["VP = VF / (1 + i·n)", "i = (VF/VP − 1) / n", "n = (VF/VP − 1) / i"]}
-          ejemploTexto="Un capital de $ 1.000.000,00 COP se invierte al 2,00 % mensual simple durante 10 meses."
-          pasosEjemplo={[
-            { label: "Datos", content: "VP = $1.000.000,00 · i = 2,00 % mensual · n = 10 periodos" },
-            { label: "Incógnita", content: "VF (Valor Futuro)" },
-            { label: "Fórmula", content: "VF = VP · (1 + i·n)" },
-            { label: "Conversión de tasa", content: "2,00 % → 0,02" },
-            { label: "Sustitución", content: "VF = 1.000.000 · (1 + 0,02 × 10)" },
-            { label: "Desarrollo", content: "VF = 1.000.000 × 1,2" },
-            { label: "Resultado sin redondear", content: "1200000" },
-            { label: "Resultado presentado", content: formatCurrencyCO(1200000, "COP") },
-            { label: "Interpretación", content: "Bajo estas condiciones, el capital alcanzaría un valor del final de $ 1.200.000,00 COP." },
-          ]}
-        />
-              </RecorridoSubmodulos>
-      </Acordeon>
+  /* ---------- Lista de los nueve temas (menú lateral / desplegable móvil) ---------- */
+  const listaTemas = (
+    <nav aria-label="Temas de Educación Financiera">
+      <ol style={{ listStyle: "none", margin: 0, padding: 0 }}>
+        {TEMAS_EDU.map((tm, idx) => {
+          const actual = idx === tema;
+          const hecho = completados.has(idx);
+          const nMod = tm.modulos.length || 1;
+          return (
+            <li key={tm.id} style={{ marginBottom: 3 }}>
+              <button type="button" className="edu-side-item" aria-current={actual ? "true" : undefined}
+                onClick={() => irTema(idx)}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", gap: 11, textAlign: "left", cursor: "pointer",
+                  padding: "10px 11px", borderRadius: 8, border: "none", fontFamily: F_BODY,
+                  background: actual ? C.navy : "transparent", color: actual ? C.white : C.ink,
+                }}>
+                <span aria-hidden="true" style={{
+                  flexShrink: 0, width: 26, height: 26, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                  fontFamily: F_MONO, fontSize: 12, fontWeight: 700,
+                  background: actual ? C.gold : hecho ? C.successBg : C.paperDark,
+                  color: actual ? C.navyDeep : hecho ? C.success : C.navy,
+                }}>
+                  {hecho && !actual ? <Check size={14} /> : idx + 1}
+                </span>
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 13.5, fontWeight: 600, lineHeight: 1.3 }}>{tm.titulo}</span>
+                  <span style={{ display: "block", fontSize: 11.5, marginTop: 2, color: actual ? C.goldLight : C.slate }}>
+                    {nMod === 1 ? "1 módulo" : `${nMod} módulos`}{hecho ? " · completado" : ""}
+                  </span>
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
 
-      <Acordeon title="2 · Interés compuesto: interés sobre interés">
-        <RecorridoSubmodulos>
+  /* ---------- Encabezado del tema: título, progreso e indicadores numerados ---------- */
+  const encabezadoTema = (
+    <div style={{
+      background: `linear-gradient(135deg, ${C.navyDeep} 0%, ${C.navy} 100%)`, borderRadius: 12,
+      padding: "clamp(18px, 3vw, 26px)", marginBottom: 16, color: C.white,
+      boxShadow: "0 10px 28px rgba(12,30,56,0.18)",
+    }}>
+      <div style={{ ...etiquetaMono, color: C.goldLight }}>Tema {tema + 1} de {TEMAS_EDU.length}</div>
+      <h2 style={{ fontFamily: F_DISPLAY, fontSize: "clamp(22px, 3.4vw, 28px)", fontWeight: 600, margin: "6px 0 16px", lineHeight: 1.25 }}>{t.titulo}</h2>
 
-        <BloqueInteres
-          queEs="El interés compuesto es cuando los intereses generados se incorporan al capital. Dicho fácil: es interés sobre interés, porque el dinero crece y los intereses también empiezan a producir más intereses."
-          analogia={`Imagina una bola de nieve.
+      {unico ? (
+        <div style={{ fontSize: 13.5, color: "#C9D2DF" }}>
+          <span style={{ color: C.goldLight, fontWeight: 700 }}>{enFin ? "Tema completado" : "Módulo único"}</span>
+          {enFin ? "" : " · este tema se estudia en un solo módulo"}
+        </div>
+      ) : (
+        <>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ fontWeight: 700, color: C.white }}>
+              {enFin ? "Tema completado" : `Módulo ${modulo} de ${total}`}
+            </span>
+            <span style={{ color: C.goldLight, fontFamily: F_MONO }}>Progreso: {progreso} %</span>
+          </div>
+          <div role="progressbar" aria-label={`Progreso en ${t.titulo}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progreso}
+            style={{ height: 8, borderRadius: 999, background: "rgba(255,255,255,0.14)", overflow: "hidden" }}>
+            <div className="edu-bar" style={{ height: "100%", width: `${progreso}%`, borderRadius: 999, background: `linear-gradient(90deg, ${C.gold}, ${C.goldLight})` }} />
+          </div>
+          <div role="group" aria-label="Módulos del tema" style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 16 }}>
+            {t.modulos.map((nombre, idx) => {
+              const n = idx + 1;
+              const actual = !enFin && n === modulo;
+              const visto = enFin || visitados.has(`${tema}-${n}`);
+              return (
+                <button key={n} type="button" className="edu-pill" onClick={() => irModulo(n)}
+                  aria-current={actual ? "step" : undefined} aria-label={`Ir al módulo ${n}: ${nombre}`} title={`${n} · ${nombre}`}
+                  style={{
+                    width: 34, height: 34, borderRadius: "50%", cursor: "pointer", fontFamily: F_MONO, fontSize: 12.5, fontWeight: 700,
+                    border: actual ? `1px solid ${C.gold}` : visto ? `1px solid ${C.goldLight}88` : "1px solid rgba(255,255,255,0.18)",
+                    background: actual ? C.gold : visto ? "rgba(217,174,99,0.16)" : "rgba(255,255,255,0.06)",
+                    color: actual ? C.navyDeep : visto ? C.goldLight : "#C9D2DF",
+                  }}>{n}</button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
 
-La empujas cuesta abajo y empieza chiquitica.
-Mientras rueda, se le va pegando más nieve.
-Y esa nieve nueva hace que se le pegue TODAVÍA más nieve.
-
-Cada vuelta, la bola es más grande que la vuelta de antes.
-
-El dinero hace lo mismo: gana intereses, esos intereses se vuelven parte del dinero, y ese dinero más grande gana más intereses todavía.`}
-          comoFunciona="Al final de cada mes, el interés se suma al dinero que ya tenías. Al mes siguiente, el interés se calcula sobre ese dinero más grande. Por eso crece cada vez más rápido."
-          usoLabel="¿Por qué es diferente al interés simple?"
-          usoRespuesta="En el simple, siempre calculas sobre el capital inicial. En el compuesto, el capital va creciendo. Con una tasa positiva y durante más de un periodo, el compuesto genera más valor porque los intereses acumulados también producen intereses."
-          formula="VF = VP · (1 + i)ⁿ"
-          despejes={["VP = VF / (1+i)ⁿ", "i = (VF/VP)^(1/n) − 1", "n = ln(VF/VP) / ln(1+i)"]}
-          ejemploTexto="Un capital de $ 1.000.000,00 COP se invierte al 3,00 % trimestral compuesto durante 4 trimestres."
-          pasosEjemplo={[
-            { label: "Datos", content: "VP = $1.000.000,00 · i = 3,00 % trimestral · n = 4 periodos" },
-            { label: "Incógnita", content: "VF (Valor Futuro)" },
-            { label: "Fórmula", content: "VF = VP · (1+i)ⁿ" },
-            { label: "Sustitución", content: "VF = 1.000.000 × (1,03)⁴" },
-            { label: "Resultado sin redondear", content: String(futureValueCompound(1000000, 0.03, 4)) },
-            { label: "Resultado presentado", content: formatCurrencyCO(futureValueCompound(1000000, 0.03, 4), "COP") },
-            { label: "Interpretación", content: "El saldo puede crecer más que en interés simple porque cada trimestre los intereses se suman al capital y generan más intereses." },
-          ]}
-        />
-              </RecorridoSubmodulos>
-      </Acordeon>
-
-      <Acordeon title="3 · Interés continuo">
-        <RecorridoSubmodulos>
-
-        <BloqueInteres
-          queEs="El interés continuo es como el compuesto, pero sin esperar nada. En vez de sumar los intereses cada mes, los va sumando todo el tiempo, sin parar nunca."
-          analogia={`¿Te acuerdas de la bola de nieve de hace un momento?
-
-Ahora imagina que no espera a dar una vuelta completa para que se le pegue nieve.
-Se le va pegando nieve en CADA segundito, sin parar.
-
-Por eso esta bola crece un poquito más rápido que la del interés compuesto normal.`}
-          comoFunciona="El dinero no espera a que termine el mes para crecer. Va creciendo poquito a poquito, todo el tiempo, sin pausas. Para calcular esto usamos un número especial que se llama 'e'."
-          usoLabel="¿Dónde se usa y en qué se diferencia del compuesto?"
-          usoRespuesta="Se usa más en cuentas avanzadas de bancos y en estudios de dinero, no tanto en la vida diaria. La diferencia con el compuesto es que el compuesto suma los intereses cada cierto tiempo (cada mes, por ejemplo), y el continuo los va sumando sin parar nunca."
-          notaEspecial="En interés continuo, t siempre se expresa en años. Ejemplo: 2 años y 6 meses = 2 + 6/12 = 2,5 años."
-          formula="VF = VP · e^(r·t)"
-          despejes={["VP = VF · e^(−r·t)", "r = ln(VF/VP) / t", "t = ln(VF/VP) / r"]}
-          ejemploTexto="Un capital de $ 850.000,00 COP se invierte al 8,95 % continuo durante 2 años y 6 meses (t = 2,5 años)."
-          pasosEjemplo={[
-            { label: "Datos", content: "VP = $850.000,00 · r = 8,95 % anual de tasa continua · tiempo = 2 años 6 meses" },
-            { label: "Conversión temporal", content: "t = 2 + 6/12 = 2,5 años" },
-            { label: "Incógnita", content: "VF (Valor Futuro)" },
-            { label: "Fórmula", content: "VF = VP · e^(r·t)" },
-            { label: "Sustitución", content: "VF = 850.000 × e^(0,0895 × 2,5)" },
-            { label: "Resultado sin redondear", content: String(futureValueContinuous(850000, 0.0895, 2.5)) },
-            { label: "Resultado presentado", content: formatCurrencyCO(futureValueContinuous(850000, 0.0895, 2.5), "COP") },
-          ]}
-        />
-              </RecorridoSubmodulos>
-      </Acordeon>
-
-      <Acordeon title="4 · Conversión de tasas">
-        <ConversionTasas />
-      </Acordeon>
-
-      <Acordeon title="5 · Anualidades vencidas">
-        <AnualidadesVencidas />
-      </Acordeon>
-
-      <Acordeon title="6 · Anualidades anticipadas">
-        <AnualidadesAnticipadas />
-      </Acordeon>
-
-      <Acordeon title="7 · Gradientes">
-        <Gradientes />
-      </Acordeon>
-
-      <Acordeon title="8 · Perpetuidades">
-        <Perpetuidades />
-      </Acordeon>
-
-      <Acordeon title="9 · Sistemas de amortización">
-        <SistemasAmortizacion />
-      </Acordeon>
-      </NavegacionTemas>
-
-      <div style={{ marginTop: 18, padding: 16, background: C.paperDark, borderRadius: 8, fontSize: 13, color: C.slate }}>
-        <strong style={{ color: C.navy }}>Notación:</strong> para interés simple y compuesto usamos <em>i</em> (tasa por periodo) y <em>n</em> (número de periodos). Para interés continuo usamos <em>r</em> (tasa continua) y <em>t</em> (tiempo en años). Nunca usamos una "T" aislada: siempre indicamos "Momento del flujo" con su unidad explícita.
+  /* ---------- Navegación inferior de módulos ---------- */
+  const navegacionInferior = (
+    <div style={{ marginTop: 20 }}>
+      <div style={{
+        display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between",
+        flexDirection: esMovil ? "column-reverse" : "row",
+      }}>
+        <Boton variant="outline" onClick={() => irModulo(modulo - 1)} disabled={modulo === 1}
+          style={esMovil ? { width: "100%", justifyContent: "center" } : undefined}>
+          <ArrowLeft size={17} /> Módulo anterior
+        </Boton>
+        {esUltimoModulo ? (
+          <Boton variant="gold" onClick={finalizarTema}
+            style={{ ...botonGrande, ...(esMovil ? { width: "100%", justifyContent: "center" } : null) }}>
+            Finalizar tema <Check size={18} />
+          </Boton>
+        ) : (
+          <Boton variant="primary" onClick={() => irModulo(modulo + 1)}
+            style={{ ...botonGrande, ...(esMovil ? { width: "100%", justifyContent: "center" } : null) }}>
+            Siguiente módulo <ArrowRight size={18} />
+          </Boton>
+        )}
       </div>
-      
-    </Section>
+      {!esUltimoModulo && !unico && (
+        <div style={{ marginTop: 8, fontSize: 12.5, color: C.slate, textAlign: esMovil ? "center" : "right" }}>
+          Sigue: {modulo + 1} · {t.modulos[modulo]}
+        </div>
+      )}
+      {modulo === 1 && temaAnterior && (
+        <div style={{ marginTop: 10 }}>
+          <Boton variant="ghost" small onClick={() => irTema(tema - 1)}>
+            <ArrowLeft size={14} /> Tema anterior: {temaAnterior.titulo}
+          </Boton>
+        </div>
+      )}
+    </div>
+  );
+
+  /* ---------- Pantalla de finalización del tema ---------- */
+  const pantallaFin = (
+    <div style={{ ...eduTarjetaStyle, textAlign: "center", padding: "clamp(28px, 5vw, 56px) clamp(18px, 4vw, 40px)" }}>
+      <div aria-hidden="true" style={{
+        width: 68, height: 68, borderRadius: "50%", margin: "0 auto 18px", background: C.gold, color: C.navyDeep,
+        display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 8px 20px ${C.gold}55`,
+      }}>
+        <Check size={34} strokeWidth={3} />
+      </div>
+      <div style={{ ...etiquetaMono, color: C.gold }}>Tema {tema + 1} de {TEMAS_EDU.length} completado</div>
+      <h2 style={{ fontFamily: F_DISPLAY, fontSize: "clamp(24px, 4vw, 32px)", fontWeight: 600, color: C.navy, margin: "8px 0 10px", lineHeight: 1.25 }}>
+        {temaSiguiente ? "¡Has terminado este tema!" : "¡Has completado el recorrido de Educación Financiera!"}
+      </h2>
+      <p style={{ fontSize: 15.5, color: C.slate, lineHeight: 1.6, maxWidth: 520, margin: "0 auto 26px" }}>
+        ¡Excelente! Has completado <strong style={{ color: C.navy }}>{t.titulo}</strong>.
+        {temaSiguiente ? "" : " Es el último de los nueve temas. Puedes repasar el que quieras desde el menú de temas."}
+      </p>
+
+      {temaSiguiente && (
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontSize: 13, color: C.slate, marginBottom: 10 }}>
+            Tema completado · Pasar a <strong style={{ color: C.navy }}>{temaSiguiente.titulo}</strong>
+          </div>
+          <Boton variant="gold" onClick={() => irTema(tema + 1)} style={{ ...botonGrande, padding: "15px 32px", fontSize: 16.5 }}>
+            Pasar al siguiente tema <ArrowRight size={19} />
+          </Boton>
+        </div>
+      )}
+
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10, marginTop: temaSiguiente ? 0 : 6 }}>
+        <Boton variant="outline" small onClick={() => irModulo(1)}>Repasar este tema</Boton>
+        {temaAnterior && (
+          <Boton variant="ghost" small onClick={() => irTema(tema - 1)}>
+            <ArrowLeft size={14} /> Tema anterior: {temaAnterior.titulo}
+          </Boton>
+        )}
+        {!temaSiguiente && (
+          <Boton variant="ghost" small onClick={() => irTema(0)}>Volver al primer tema: {TEMAS_EDU[0].titulo}</Boton>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div ref={raizRef}>
+      <style>{EDU_CSS}</style>
+      <Section style={{ maxWidth: 1180, paddingTop: 44, paddingBottom: 60 }}>
+        <Etiqueta>Educación financiera</Etiqueta>
+        <h1 style={{ fontFamily: F_DISPLAY, fontSize: 32, color: C.navy, margin: "0 0 20px" }}>Conceptos fundamentales de matemáticas financieras</h1>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 24, padding: 7, background: "rgba(255,255,255,0.72)", border: `1px solid ${C.line}`, borderRadius: 15, width: "fit-content", maxWidth: "100%" }}>
+          <Boton small variant={vistaAprendizaje === "temas" ? "gold" : "outline"} onClick={() => setVistaAprendizaje("temas")}><BookOpen size={15}/> Recorrer temas</Boton>
+          <Boton small variant={vistaAprendizaje === "repaso" ? "gold" : "outline"} onClick={() => setVistaAprendizaje("repaso")}><Library size={15}/> Repaso interactivo</Boton>
+        </div>
+
+        {vistaAprendizaje === "repaso" ? <RepasoInteractivo /> : <div style={{
+          display: "grid", gap: 24, alignItems: "start",
+          gridTemplateColumns: esMovil ? "minmax(0, 1fr)" : "270px minmax(0, 1fr)",
+        }}>
+          {/* Menú de los nueve temas */}
+          {esMovil ? (
+            <div>
+              <button type="button" className="edu-menu-btn" aria-expanded={menuAbierto} aria-controls="edu-lista-temas"
+                onClick={() => setMenuAbierto((v) => !v)}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, textAlign: "left",
+                  padding: "12px 16px", background: C.white, border: `1px solid ${C.line}`, borderRadius: 10, cursor: "pointer",
+                  fontFamily: F_BODY, boxShadow: "0 1px 2px rgba(19,42,76,0.05)",
+                }}>
+                <span>
+                  <span style={{ display: "block", ...etiquetaMono, fontSize: 10.5, color: C.gold }}>Tema {tema + 1} de {TEMAS_EDU.length} · ver todos los temas</span>
+                  <span style={{ display: "block", fontSize: 15, fontWeight: 600, color: C.navy, marginTop: 2 }}>{t.titulo}</span>
+                </span>
+                {menuAbierto ? <ChevronUp size={19} color={C.navy} /> : <ChevronDown size={19} color={C.navy} />}
+              </button>
+              {menuAbierto && (
+                <div id="edu-lista-temas" style={{ marginTop: 8, padding: 8, background: C.white, border: `1px solid ${C.line}`, borderRadius: 10 }}>
+                  {listaTemas}
+                </div>
+              )}
+            </div>
+          ) : (
+            <aside style={{
+              position: "sticky", top: 96, alignSelf: "start", maxHeight: "calc(100vh - 116px)", overflowY: "auto",
+              background: C.white, border: `1px solid ${C.line}`, borderRadius: 12, padding: 12,
+              boxShadow: "0 1px 2px rgba(19,42,76,0.05), 0 10px 28px rgba(19,42,76,0.06)",
+            }}>
+              <div style={{ ...etiquetaMono, fontSize: 10.5, color: C.gold, padding: "6px 11px 10px" }}>Temas · {TEMAS_EDU.length}</div>
+              {listaTemas}
+            </aside>
+          )}
+
+          {/* Contenido del tema */}
+          <div ref={columnaRef} style={{ minWidth: 0 }}>
+            {encabezadoTema}
+            <div role="status" aria-live="polite" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}>
+              {enFin ? `Tema completado: ${t.titulo}` : unico ? `${t.titulo}` : `Módulo ${modulo} de ${total}: ${tituloModuloActual}`}
+            </div>
+            <div key={`${tema}-${modulo}-${vista}`} className="edu-fade">
+              {enFin ? pantallaFin : (
+                <ModuloActivoCtx.Provider value={{ activo: modulo, total }}>
+                  {unico ? (
+                    <article style={eduTarjetaStyle}><Contenido /></article>
+                  ) : (
+                    <Contenido />
+                  )}
+                  {navegacionInferior}
+                </ModuloActivoCtx.Provider>
+              )}
+            </div>
+          </div>
+        </div>}
+
+      {vistaAprendizaje === "temas" && <div style={{ marginTop: 22, padding: "18px 22px", background: "linear-gradient(135deg,#F1EFE8,#FBFAF6)", border: `1px solid ${C.line}`, borderRadius: 16, fontSize: 13, color: C.slate, lineHeight: 1.7 }}>
+        <strong style={{ color: C.navy }}>Notación:</strong> para interés simple y compuesto usamos <em>i</em> (tasa por periodo) y <em>n</em> (número de periodos). Para interés continuo usamos <em>r</em> (tasa continua) y <em>t</em> (tiempo en años). Nunca usamos una "T" aislada: siempre indicamos "Momento del flujo" con su unidad explícita.
+      </div>}
+
+      </Section>
+    </div>
   );
 }
 
@@ -4411,8 +4832,8 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
         <Etiqueta>Configuración</Etiqueta>
         <Campo label="Tipo de operación" help="La interpretación de entradas, salidas e intereses cambia según sea crédito o inversión.">
           <Selector value={operacion} onChange={(e) => setOperacion(e.target.value)} options={[{ value: "credito", label: "Crédito" }, { value: "inversion", label: "Inversión" }]} />
-          <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "6px 11px", background: operacion === "credito" ? "#EEF2F8" : "#EAF3ED", color: operacion === "credito" ? C.navy : C.success, fontSize: 11.5, fontWeight: 800 }}><span style={{ width: 7, height: 7, borderRadius: 99, background: operacion === "credito" ? C.navyLight : C.success }} />Modo {operacion === "credito" ? "crédito" : "inversión"}</div>
         </Campo>
+        <IndicadorOperacion operacion={operacion} />
         <div style={{ padding: 12, background: C.paperDark, borderRadius: 8, fontSize: 12.5, color: C.slate, marginBottom: 14, lineHeight: 1.5 }}>
           {operacion === "credito"
             ? <><strong style={{ color: C.navy }}>Crédito:</strong> VP suele ser el dinero que recibes hoy; VF es lo que terminas pagando o debiendo; <strong>I = VF − VP</strong> representa los intereses pagados.</>
@@ -4870,8 +5291,8 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14 }}>
           <Campo label="Tipo de operación">
             <Selector value={operacion} onChange={(e) => setOperacion(e.target.value)} options={[{ value: "credito", label: "Crédito" }, { value: "inversion", label: "Inversión" }]} />
-            <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "6px 11px", background: operacion === "credito" ? "#EEF2F8" : "#EAF3ED", color: operacion === "credito" ? C.navy : C.success, fontSize: 11.5, fontWeight: 800 }}><span style={{ width: 7, height: 7, borderRadius: 99, background: operacion === "credito" ? C.navyLight : C.success }} />Modo {operacion === "credito" ? "crédito" : "inversión"}</div>
           </Campo>
+          <IndicadorOperacion operacion={operacion} />
           <Campo label="Régimen">
             <Selector value={regimen} onChange={(e) => setRegimen(e.target.value)} options={[{ value: "simple", label: "Simple" }, { value: "compuesto", label: "Compuesto" }, { value: "continuo", label: "Continuo" }]} />
           </Campo>
@@ -5672,7 +6093,8 @@ function SimuladorGradientes({ moneda, onGuardarHistorial }) {
     <Tarjeta>
       <Etiqueta>Configuración del gradiente</Etiqueta>
       <div style={{fontSize:12.5,color:C.slate,lineHeight:1.5,marginBottom:12}}>Construimos cada cuota y luego la llevamos a hoy o al final.</div>
-      <Campo label="Tipo de operación"><Selector value={operacion} onChange={e=>setOperacion(e.target.value)} options={[{value:"credito",label:"Crédito"},{value:"inversion",label:"Inversión"}]}/><div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "6px 11px", background: operacion === "credito" ? "#EEF2F8" : "#EAF3ED", color: operacion === "credito" ? C.navy : C.success, fontSize: 11.5, fontWeight: 800 }}><span style={{ width: 7, height: 7, borderRadius: 99, background: operacion === "credito" ? C.navyLight : C.success }} />Modo {operacion === "credito" ? "crédito" : "inversión"}</div></Campo>
+      <Campo label="Tipo de operación"><Selector value={operacion} onChange={e=>setOperacion(e.target.value)} options={[{value:"credito",label:"Crédito"},{value:"inversion",label:"Inversión"}]}/></Campo>
+      <IndicadorOperacion operacion={operacion} />
       <Campo label="Tipo de gradiente"><Selector value={tipo} onChange={e=>setTipo(e.target.value)} options={[{value:"aritmetico",label:"Aritmético · cambia en pesos"},{value:"geometrico",label:"Geométrico · cambia en porcentaje"}]}/></Campo>
       <Campo label="¿Las cuotas aumentan o disminuyen?"><Selector value={direccion} onChange={e=>setDireccion(e.target.value)} options={[{value:"creciente",label:"Creciente (+)"},{value:"decreciente",label:"Decreciente (−)"}]}/></Campo>
       <Campo label={`Primera cuota (A₁) · ${moneda}`}><Entrada value={A1} onChange={e=>setA1(e.target.value)} placeholder="800.000"/></Campo>
@@ -5863,7 +6285,8 @@ function SimuladorPerpetuidades({ moneda, onGuardarHistorial }) {
     <Tarjeta>
       <Etiqueta>Configuración de la perpetuidad</Etiqueta>
       <div style={{fontSize:12.5,color:C.slate,lineHeight:1.5,marginBottom:12}}>Una perpetuidad es una serie de pagos que no termina. Por eso calculamos cuánto vale hoy; no tiene valor futuro. La tabla muestra la cantidad n que elijas y agrega el valor presente de los pagos que siguen después, hasta el infinito.</div>
-      <Campo label="Tipo de operación"><Selector value={operacion} onChange={e=>setOperacion(e.target.value)} options={[{value:"credito",label:"Crédito"},{value:"inversion",label:"Inversión"}]}/><div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "6px 11px", background: operacion === "credito" ? "#EEF2F8" : "#EAF3ED", color: operacion === "credito" ? C.navy : C.success, fontSize: 11.5, fontWeight: 800 }}><span style={{ width: 7, height: 7, borderRadius: 99, background: operacion === "credito" ? C.navyLight : C.success }} />Modo {operacion === "credito" ? "crédito" : "inversión"}</div></Campo>
+      <Campo label="Tipo de operación"><Selector value={operacion} onChange={e=>setOperacion(e.target.value)} options={[{value:"credito",label:"Crédito"},{value:"inversion",label:"Inversión"}]}/></Campo>
+      <IndicadorOperacion operacion={operacion} />
       <Campo label="Tipo de perpetuidad"><Selector value={tipo} onChange={e=>{const v=e.target.value;setTipo(v);setMaxPagos(v==="constante"?"1000":v==="aritmetico"?"5000":"15000");setRes(null);setPaginaTabla(1);}} options={[{value:"constante",label:"Constante"},{value:"aritmetico",label:"Con gradiente aritmético"},{value:"geometrico",label:"Con gradiente geométrico"}]}/></Campo>
       <Campo label={`Valor de la cuota (A) · ${moneda}`}><Entrada value={A} onChange={e=>setA(e.target.value)} placeholder="150.000"/></Campo>
       {tipo!=="constante"&&<Campo label={tipo==="aritmetico"?`Gradiente aritmético (L) · ${moneda}`:"Gradiente geométrico (g) · %"}><Entrada value={grad} onChange={e=>setGrad(e.target.value)} placeholder={tipo==="aritmetico"?"5.000":"0,72"}/></Campo>}
@@ -6115,6 +6538,7 @@ function SimuladorAmortizaciones({moneda,onGuardarHistorial}){
   return <div style={{display:"grid",gridTemplateColumns:"minmax(290px,0.9fr) minmax(360px,1.3fr)",gap:20,alignItems:"start"}}>
     <Tarjeta>
       <Etiqueta>Datos del crédito</Etiqueta>
+      <IndicadorOperacion operacion="credito" />
       <Campo label="Sistema de amortización"><Selector value={sistema} onChange={e=>{setSistema(e.target.value);setRes(null)}} options={[{value:"frances",label:"Francés · cuota fija"},{value:"aleman",label:"Alemán · abono fijo a capital"},{value:"americano",label:"Americano · pago al final"}]}/></Campo>
       <Campo label={`Monto del crédito / valor del bien · ${moneda}`}><Entrada value={monto} onChange={e=>setMonto(e.target.value)} placeholder="1.000.000"/></Campo>
       <Campo label="Número total de cuotas (n)" help="Entero entre 1 y 100.000. Puedes escribirlo como 20000 o 20.000. La tabla se muestra por páginas de 100 filas."><Entrada type="text" inputMode="numeric" autoComplete="off" value={nTxt} onChange={e=>setNTxt(filtrarEnteroTexto(e.target.value))} placeholder="Ej. 24 o 20.000"/></Campo>
@@ -6151,13 +6575,16 @@ function SimuladorAmortizaciones({moneda,onGuardarHistorial}){
     <div>
       {!res&&!comparacion&&<Tarjeta style={{padding:30,textAlign:"center",color:C.slate}}>Completa los datos y construye la tabla para ver cuánto va a intereses, cuánto a capital y cuánto queda pendiente.</Tarjeta>}
       {res&&<>
-        <Tarjeta style={{marginBottom:12}}>
-          <Etiqueta>Resumen del crédito</Etiqueta>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(145px,1fr))",gap:10}}>
-            {[ ["Primera cuota",res.cuotaInicial], ["Intereses totales",res.totalInteres], ["Total de cuotas",res.totalPagado], ["Costo efectivo anual real",res.ea,"pct"] ].map(([label,val,kind])=><div key={label} style={{background:C.paperDark,borderRadius:8,padding:11}}><div style={{fontSize:11.5,color:C.slate}}>{label}</div><div style={{fontFamily:F_MONO,fontSize:16,fontWeight:700,color:C.navy,marginTop:5}}>{kind==="pct"?formatPercentCO(val,6):formatMoneyLong(val,moneda)}</div></div>)}
+        <Tarjeta style={{marginBottom:18, padding:"clamp(20px, 3vw, 30px)"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",marginBottom:18}}>
+            <Etiqueta>Resumen del crédito</Etiqueta>
+            <span style={{fontSize:11.5,color:C.slate,fontWeight:650}}>Indicadores principales</span>
           </div>
-          <div style={{marginTop:12,padding:11,background:Math.abs(res.saldoFinal-(res.leasing?res.opcion:0))<0.02?C.successBg:C.dangerBg,borderRadius:8,fontSize:13,color:C.navy}}><strong>Comprobación del saldo final:</strong> {formatMoneyLong(res.saldoFinal,moneda)}. {res.leasing?`Debe coincidir con la opción de compra (${formatMoneyLong(res.opcion,moneda)}).`:"Debe ser cero."}</div>
-          <div style={{fontSize:12,color:C.slate,marginTop:8}}>TIR periódica: {formatPercentCO(res.tir,8)} · Tasa efectiva anual real: {formatPercentCO(res.ea,8)}</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,190px),1fr))",gap:14}}>
+            {[ ["Primera cuota",res.cuotaInicial], ["Intereses totales",res.totalInteres], ["Total de cuotas",res.totalPagado], ["Costo efectivo anual real",res.ea,"pct"] ].map(([label,val,kind],idx)=><div key={label} style={{background:idx===3?"linear-gradient(145deg,#F8F0DF,#FDF9F0)":"linear-gradient(145deg,#F3F1EC,#FAF9F5)",border:`1px solid ${idx===3?C.gold+"66":C.line}`,borderRadius:15,padding:"17px 18px",minHeight:92,display:"flex",flexDirection:"column",justifyContent:"space-between",gap:10}}><div style={{fontSize:12,color:C.slate,lineHeight:1.35,fontWeight:650}}>{label}</div><div style={{fontFamily:F_MONO,fontSize:"clamp(15px,1.6vw,18px)",fontWeight:800,color:C.navy,lineHeight:1.35,overflowWrap:"anywhere"}}>{kind==="pct"?formatPercentCO(val,6):formatMoneyLong(val,moneda)}</div></div>)}
+          </div>
+          <div style={{marginTop:17,padding:"16px 18px",background:Math.abs(res.saldoFinal-(res.leasing?res.opcion:0))<0.02?"linear-gradient(135deg,#E8F3EC,#F5FAF6)":"linear-gradient(135deg,#F9EDEC,#FFF8F7)",border:`1px solid ${Math.abs(res.saldoFinal-(res.leasing?res.opcion:0))<0.02?C.success+"44":C.danger+"44"}`,borderRadius:14,fontSize:13.5,color:C.navy,lineHeight:1.65,display:"flex",gap:11,alignItems:"flex-start"}}><Check size={18} color={Math.abs(res.saldoFinal-(res.leasing?res.opcion:0))<0.02?C.success:C.danger} style={{flexShrink:0,marginTop:1}}/><div><strong>Comprobación del saldo final:</strong> {formatMoneyLong(res.saldoFinal,moneda)}. {res.leasing?`Debe coincidir con la opción de compra (${formatMoneyLong(res.opcion,moneda)}).`:"Debe ser cero."}</div></div>
+          <div style={{marginTop:14,padding:"11px 14px",borderRadius:11,background:"#F7F8FA",border:`1px solid ${C.line}`,fontSize:12.5,color:C.slate,lineHeight:1.7}}>TIR periódica: <strong style={{color:C.navy}}>{formatPercentCO(res.tir,8)}</strong><span style={{padding:"0 8px",color:C.gold}}>·</span>Tasa efectiva anual real: <strong style={{color:C.navy}}>{formatPercentCO(res.ea,8)}</strong></div>
           <Acordeon title="Ver procedimiento completo"><FichaProcedimiento pasos={res.pasos}/></Acordeon>
         </Tarjeta>
         <Tarjeta>
@@ -7014,11 +7441,8 @@ export default function App() {
   const [moneda, setMoneda] = useState("COP");
 
   return (
-    <div style={{
-      fontFamily: F_BODY,
-      background: "radial-gradient(circle at 8% 0%, rgba(217,174,99,0.17), transparent 27%), radial-gradient(circle at 96% 4%, rgba(36,69,111,0.11), transparent 24%), linear-gradient(180deg, #f8f6f0 0%, #f3f1ec 38%, #f7f4ee 100%)",
-      minHeight: "100vh", color: C.ink
-    }}>
+    <div style={{ fontFamily: F_BODY, background: "radial-gradient(circle at 4% 0%, rgba(217,174,99,0.14), transparent 25%), radial-gradient(circle at 96% 4%, rgba(36,69,111,0.10), transparent 23%), linear-gradient(180deg,#FAF9F5 0%,#F3F1EC 54%,#F8F6F1 100%)", minHeight: "100vh", color: C.ink }}>
+      <style>{NUMERIS_VISUAL_CSS}</style>
       <Nav activa={seccion} setActiva={setSeccion} moneda={moneda} setMoneda={setMoneda} />
       {seccion === "inicio" && <Inicio ir={setSeccion} />}
       {seccion === "aprender" && <Aprender />}
@@ -7026,8 +7450,8 @@ export default function App() {
       {seccion === "comparar" && <Comparar moneda={moneda} />}
       {seccion === "glosario" && <Glosario />}
       {seccion === "interacciones" && <Interacciones />}
-      <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 26, background: "rgba(255,255,255,0.48)" }}>
-        <Section style={{ padding: "24px 24px", fontSize: 11.5, color: C.slate, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+      <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 28, background: "rgba(255,255,255,0.48)" }}>
+        <Section style={{ padding: "26px 24px", fontSize: 11.5, color: C.slate, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
           <span>Numeris · Proyecto académico · Matemáticas Financieras · Tercer corte 2026-2</span>
           <span>Desarrollado con asistencia de Replit Agent, ChatGPT Business y Claude</span>
         </Section>
