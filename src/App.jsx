@@ -774,6 +774,30 @@ function Inicio({ ir }) {
         </div>
       </div>
 
+      <div style={{ marginTop: 42, borderTop: `1px solid ${C.line}`, paddingTop: 32 }}>
+        <Etiqueta>Nuevas herramientas</Etiqueta>
+        <h2 style={{ fontFamily: F_DISPLAY, fontSize: 27, color: C.navy, margin: "0 0 8px" }}>Explora nuevas formas de aprender y comparar</h2>
+        <p style={{ maxWidth: 760, color: C.slate, fontSize: 14, lineHeight: 1.65, margin: "0 0 20px" }}>Además de aprender y simular, puedes comparar el comportamiento de los gradientes y poner a prueba lo que sabes con actividades interactivas.</p>
+        <div className="new-tools-grid">
+          <Tarjeta style={{ background: "linear-gradient(145deg,#132A4C 0%,#24456F 100%)", border: "1px solid #24456F", color: C.white, minHeight: 190, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 18 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}><Etiqueta>Nuevo comparador</Etiqueta><BarChart3 size={25} color={C.goldLight}/></div>
+              <h3 style={{ fontFamily: F_DISPLAY, fontSize: 23, color: C.white, margin: "2px 0 8px" }}>Gradientes aritméticos y geométricos</h3>
+              <p style={{ color: "#D8E0EA", fontSize: 13.5, lineHeight: 1.6, margin: 0 }}>Observa cómo cambian las cuotas y compara sus valores presentes y futuros en distintos escenarios.</p>
+            </div>
+            <div><Boton variant="gold" onClick={() => ir("comparar")}>Explorar comparador <ArrowRight size={15}/></Boton></div>
+          </Tarjeta>
+          <Tarjeta style={{ background: "linear-gradient(145deg,#F8F4E9 0%,#FFFFFF 100%)", border: `1px solid ${C.gold}66`, minHeight: 190, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 18 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}><Etiqueta>Aprende pensando</Etiqueta><Brain size={25} color={C.goldDeep}/></div>
+              <h3 style={{ fontFamily: F_DISPLAY, fontSize: 23, color: C.navy, margin: "2px 0 8px" }}>Pon a prueba lo que sabes</h3>
+              <p style={{ color: C.slate, fontSize: 13.5, lineHeight: 1.6, margin: 0 }}>Repasa conceptos con flashcards y responde 15 preguntas con retroalimentación para reforzar lo aprendido.</p>
+            </div>
+            <div><Boton variant="primary" onClick={() => ir("repaso")}>Ir al repaso <ArrowRight size={15}/></Boton></div>
+          </Tarjeta>
+        </div>
+      </div>
+
       <div style={{ marginTop: 40, padding: 16, background: C.paperDark, borderRadius: 8, fontSize: 12.5, color: C.slate, lineHeight: 1.5 }}>
         Esta herramienta tiene fines educativos y de simulación. Es solo para estudiar y practicar. No es consejo de banco.
       </div>
@@ -4078,6 +4102,39 @@ const NUMERIS_VISUAL_CSS = `
     .result-metric { min-height: 88px; }
     .procedure-panel { padding: 18px !important; }
   }
+  /* Experiencia visual unificada para TODOS los simuladores */
+  .simulator-shell { gap: 24px !important; align-items: start !important; }
+  .simulator-flow { display: grid; gap: 20px; align-content: start; }
+  .simulator-flow > div { min-width: 0; }
+  .simulator-flow > div > div { border-radius: 16px; }
+  .simulator-shell > div:first-child > div,
+  .simulator-shell > div:first-child > section { margin-bottom: 14px; }
+  .simulator-shell > div:first-child { min-width: 0; }
+  .simulator-shell > div:last-child { min-width: 0; display: grid; gap: 18px; align-content: start; }
+  .simulator-shell > div:last-child > div,
+  .simulator-shell > div:last-child > section { min-width: 0; }
+  .simulator-shell > div:last-child > div[style*="border"],
+  .simulator-shell > div:last-child > div[style*="background"] { border-radius: 18px !important; }
+  .simulator-shell table { border-collapse: separate !important; border-spacing: 0; }
+  .simulator-shell table thead th { padding: 12px 11px !important; font-size: 11px; letter-spacing: .045em; text-transform: uppercase; }
+  .simulator-shell table tbody td { padding: 10px 11px !important; line-height: 1.45; }
+  .simulator-shell table tbody tr:nth-child(even) { background: rgba(243,241,236,.48); }
+  .simulator-shell > div:first-child button,
+  .simulator-shell > div:last-child button { min-height: 38px; }
+  .simulator-shell .procedure-panel { margin-top: 18px; }
+  .simulator-shell .result-panel { padding: clamp(22px,3vw,32px) !important; }
+  .simulator-shell .result-value { font-size: clamp(26px,3vw,36px) !important; line-height: 1.2; overflow-wrap: anywhere; }
+  .simulator-shell .result-support { margin-top: 14px !important; padding: 14px 16px !important; border-radius: 14px !important; line-height: 1.7 !important; }
+  .simulator-shell .simulator-section-heading { margin: 4px 0 16px; }
+  .simulator-shell .simulator-form-intro { padding: 14px 16px; border-radius: 14px; background: linear-gradient(135deg,#F4F0E6,#FBFAF7); border: 1px solid #DDD7C8; line-height: 1.65; }
+  .new-tools-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,280px),1fr)); gap: 18px; }
+  .new-tool-card { position: relative; overflow: hidden; min-height: 190px; display: flex; flex-direction: column; justify-content: space-between; transition: transform .2s ease, box-shadow .2s ease; }
+  .new-tool-card:hover { transform: translateY(-3px); box-shadow: 0 22px 44px rgba(12,30,56,.12) !important; }
+  @media (max-width: 760px) {
+    .simulator-shell { grid-template-columns: minmax(0,1fr) !important; gap: 18px !important; }
+    .simulator-shell > div:last-child { gap: 14px; }
+    .new-tool-card { min-height: 170px; }
+  }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 `;
 
@@ -4884,7 +4941,7 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
   const mostrarTasaTiempo = incognita !== "I" && !(usarI && (incognita === "VF" || incognita === "VP"));
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "minmax(300px,1fr) minmax(340px,1.3fr)", gap: 26, alignItems: "start" }}>
+    <div className="simulator-shell" style={{ display: "grid", gridTemplateColumns: "minmax(300px,1fr) minmax(340px,1.3fr)", gap: 26, alignItems: "start" }}>
       <Tarjeta>
         <Etiqueta>Configuración</Etiqueta>
         <Campo label="Tipo de operación" help="La interpretación de entradas, salidas e intereses cambia según sea crédito o inversión.">
@@ -5332,7 +5389,7 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
   const maxMomento = Math.max(focalParaTimeline, ...flujos.map((f) => momentoParaTimeline(f)), 1);
 
   return (
-    <div>
+    <div className="simulator-flow">
       <Tarjeta style={{ marginBottom: 20 }}>
         <Etiqueta>Motor general de ecuaciones de valor</Etiqueta>
         <p style={{ fontSize: 13.5, color: C.slate, margin: "0 0 16px" }}>
@@ -5598,7 +5655,7 @@ function CalculadoraTasas({ moneda, onGuardarHistorial }) {
   }
 
   return (
-    <div>
+    <div className="simulator-flow">
       <Tarjeta>
         <div style={{ fontSize: 13.5, color: C.slate, marginBottom: 16 }}>
           Convierte cualquier tasa en cualquier otra: nominal o efectiva, vencida o anticipada, con cualquier periodo. Año = 365 días = 52 semanas; quincenal = {QUINCENAS_ANIO} veces al año.
@@ -5804,7 +5861,7 @@ function SimuladorAnualidades({ moneda, onGuardarHistorial }) {
   const ok = res ? Math.abs(res.r.residual) < Math.max(1, Math.abs(res.r.valor)) * 1e-6 : true;
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "minmax(300px,1fr) minmax(340px,1.3fr)", gap: 26, alignItems: "start" }}>
+    <div className="simulator-shell" style={{ display: "grid", gridTemplateColumns: "minmax(300px,1fr) minmax(340px,1.3fr)", gap: 26, alignItems: "start" }}>
       <Tarjeta>
         <Etiqueta>Configuración</Etiqueta>
         <div style={{ padding: 12, background: C.paperDark, borderRadius: 8, fontSize: 12.5, color: C.slate, marginBottom: 14, lineHeight: 1.5 }}>
@@ -6146,7 +6203,7 @@ function SimuladorGradientes({ moneda, onGuardarHistorial }) {
   ].sort((a, b) => a.momento - b.momento || a.orden - b.orden) : [], [res]);
   const filasGradientePagina = filasGradiente.slice((paginaTabla - 1) * FILAS_POR_PAGINA, paginaTabla * FILAS_POR_PAGINA);
   const fT = (o) => formatMoneyGrande(o.valor, o.log, moneda);
-  return <div style={{ display:"grid", gridTemplateColumns:"minmax(290px,1fr) minmax(340px,1.25fr)", gap:20, alignItems:"start" }}>
+  return <div className="simulator-shell" style={{ display:"grid", gridTemplateColumns:"minmax(290px,1fr) minmax(340px,1.25fr)", gap:24, alignItems:"start" }}>
     <Tarjeta>
       <Etiqueta>Configuración del gradiente</Etiqueta>
       <div style={{fontSize:12.5,color:C.slate,lineHeight:1.5,marginBottom:12}}>Construimos cada cuota y luego la llevamos a hoy o al final.</div>
@@ -6338,7 +6395,7 @@ function SimuladorPerpetuidades({ moneda, onGuardarHistorial }) {
     }catch(e){setError(e.message||"No fue posible calcular la perpetuidad.");}
   }
   const filasPagina=res?res.filas.slice((paginaTabla-1)*FILAS_POR_PAGINA,paginaTabla*FILAS_POR_PAGINA):[];
-  return <div style={{display:"grid",gridTemplateColumns:"minmax(290px,1fr) minmax(320px,1fr)",gap:20,alignItems:"start"}}>
+  return <div className="simulator-shell" style={{display:"grid",gridTemplateColumns:"minmax(290px,1fr) minmax(320px,1fr)",gap:24,alignItems:"start"}}>
     <Tarjeta>
       <Etiqueta>Configuración de la perpetuidad</Etiqueta>
       <div style={{fontSize:12.5,color:C.slate,lineHeight:1.5,marginBottom:12}}>Una perpetuidad es una serie de pagos que no termina. Por eso calculamos cuánto vale hoy; no tiene valor futuro. La tabla muestra la cantidad n que elijas y agrega el valor presente de los pagos que siguen después, hasta el infinito.</div>
@@ -6592,7 +6649,7 @@ function SimuladorAmortizaciones({moneda,onGuardarHistorial}){
   const tabla=res?.filas||[];
   const hayAbonoAd=useMemo(()=>tabla.some(x=>x.abonoAdicional>0),[res]);
   const tablaPagina=tabla.slice((paginaTabla-1)*FILAS_POR_PAGINA,paginaTabla*FILAS_POR_PAGINA);
-  return <div style={{display:"grid",gridTemplateColumns:"minmax(290px,0.9fr) minmax(360px,1.3fr)",gap:20,alignItems:"start"}}>
+  return <div className="simulator-shell" style={{display:"grid",gridTemplateColumns:"minmax(290px,0.9fr) minmax(360px,1.3fr)",gap:24,alignItems:"start"}}>
     <Tarjeta>
       <Etiqueta>Datos del crédito</Etiqueta>
       <IndicadorOperacion operacion="credito" />
