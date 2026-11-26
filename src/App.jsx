@@ -4199,52 +4199,52 @@ function RepasoInteractivo() {
   };
   const reiniciarQuiz = () => { setPregunta(0); setSeleccion(null); setSelecciones([]); setRespuestas([]); setTerminado(false); };
   return (
-    <div className="edu-fade" style={{ display: "grid", gap: 20 }}>
-      <div style={{ background: "linear-gradient(135deg,#0C1E38,#24456F)", borderRadius: 20, padding: "clamp(22px,4vw,34px)", color: C.white, boxShadow: "0 18px 38px rgba(12,30,56,0.15)" }}>
-        <div style={{ fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.13em", color: C.goldLight, fontWeight: 800 }}>REPASO INTERACTIVO</div>
-        <h2 style={{ fontFamily: F_DISPLAY, fontSize: "clamp(25px,3.5vw,34px)", margin: "8px 0", fontWeight: 600 }}>Pon a prueba lo que aprendiste</h2>
-        <p style={{ color: "#D8E0EA", margin: 0, lineHeight: 1.65 }}>Repasa conceptos de Numeris con tarjetas y un cuestionario de 15 preguntas. Recibirás una explicación breve después de cada respuesta.</p>
+    <div className="edu-fade" style={{ maxWidth: 920, margin: "0 auto", padding: "8px 18px 34px", display: "grid", gap: 16 }}>
+      <div style={{ background: "linear-gradient(135deg,#0C1E38,#24456F)", borderRadius: 17, padding: "clamp(19px,3vw,26px)", color: C.white, boxShadow: "0 14px 30px rgba(12,30,56,0.13)", maxWidth: 860, width: "100%", margin: "0 auto" }}>
+        <div style={{ fontFamily: F_MONO, fontSize: 10, letterSpacing: "0.13em", color: C.goldLight, fontWeight: 800 }}>REPASO INTERACTIVO</div>
+        <h2 style={{ fontFamily: F_DISPLAY, fontSize: "clamp(23px,3vw,29px)", margin: "7px 0", fontWeight: 600 }}>Pon a prueba lo que aprendiste</h2>
+        <p style={{ color: "#D8E0EA", margin: 0, lineHeight: 1.6, fontSize: 14 }}>Repasa conceptos de Numeris con tarjetas y un cuestionario de 15 preguntas. Recibirás una explicación breve después de cada respuesta.</p>
       </div>
-      <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", margin: "2px 0 1px" }}>
         <Boton variant={modo === "flashcards" ? "gold" : "outline"} onClick={() => setModo("flashcards")}>Flashcards</Boton>
         <Boton variant={modo === "quiz" ? "gold" : "outline"} onClick={() => setModo("quiz")}>Mini quiz</Boton>
       </div>
       {modo === "flashcards" ? (
-        <Tarjeta style={{ padding: "clamp(20px,4vw,34px)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: 18 }}>
+        <Tarjeta style={{ padding: "clamp(17px,2.5vw,25px)", maxWidth: 800, width: "100%", margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
             <Etiqueta>Tarjeta {indice + 1} de {REPASO_FLASHCARDS.length}</Etiqueta>
             <span style={{ fontSize: 12, color: C.slate }}>Selecciona la tarjeta para ver la definición</span>
           </div>
-          <button type="button" onClick={() => setVolteada((v) => !v)} aria-label={volteada ? "Mostrar concepto" : "Mostrar definición"} style={{ width: "100%", minHeight: 245, padding: "30px 24px", borderRadius: 20, border: `1px solid ${volteada ? C.gold : C.line}`, background: volteada ? "linear-gradient(145deg,#FFF7E8,#F8EBD4)" : "linear-gradient(145deg,#F4F6FA,#FFFFFF)", color: C.navy, cursor: "pointer", display: "grid", placeItems: "center", textAlign: "center", boxShadow: "0 14px 30px rgba(12,30,56,0.07)" }}>
+          <button type="button" onClick={() => setVolteada((v) => !v)} aria-label={volteada ? "Mostrar concepto" : "Mostrar definición"} style={{ width: "100%", maxWidth: 680, minHeight: 190, margin: "0 auto", padding: "24px 22px", borderRadius: 17, border: `1px solid ${volteada ? C.gold : C.line}`, background: volteada ? "linear-gradient(145deg,#FFF7E8,#F8EBD4)" : "linear-gradient(145deg,#F4F6FA,#FFFFFF)", color: C.navy, cursor: "pointer", display: "grid", placeItems: "center", textAlign: "center", boxShadow: "0 10px 22px rgba(12,30,56,0.06)" }}>
             <span>
               <span style={{ display: "block", fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.14em", color: C.goldDeep, fontWeight: 800, marginBottom: 14 }}>{volteada ? "DEFINICIÓN" : "CONCEPTO"}</span>
-              <span style={{ display: "block", fontFamily: F_DISPLAY, fontSize: "clamp(24px,4vw,34px)", lineHeight: 1.25, fontWeight: 600 }}>{volteada ? tarjeta.d : tarjeta.t}</span>
-              <span style={{ display: "block", fontSize: 12, color: C.slate, marginTop: 22 }}>{volteada ? "Pulsa para volver al concepto" : "Pulsa para descubrir la definición"}</span>
+              <span style={{ display: "block", fontFamily: F_DISPLAY, fontSize: "clamp(21px,3vw,28px)", lineHeight: 1.3, fontWeight: 600 }}>{volteada ? tarjeta.d : tarjeta.t}</span>
+              <span style={{ display: "block", fontSize: 11.5, color: C.slate, marginTop: 16 }}>{volteada ? "Pulsa para volver al concepto" : "Pulsa para descubrir la definición"}</span>
             </span>
           </button>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 18 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 14 }}>
             <Boton variant="outline" disabled={indice === 0} onClick={() => { setIndice((v) => v - 1); setVolteada(false); }}><ArrowLeft size={16}/> Anterior</Boton>
             <Boton variant="gold" onClick={() => { setIndice((v) => (v + 1) % REPASO_FLASHCARDS.length); setVolteada(false); }}>Siguiente tarjeta <ArrowRight size={16}/></Boton>
           </div>
         </Tarjeta>
       ) : (
-        <Tarjeta style={{ padding: "clamp(20px,4vw,34px)" }}>
+        <Tarjeta style={{ padding: "clamp(17px,2.5vw,25px)", maxWidth: 800, width: "100%", margin: "0 auto" }}>
           {!terminado ? <>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 14 }}>
               <Etiqueta>Pregunta {pregunta + 1} de 15</Etiqueta>
               <span style={{ fontFamily: F_MONO, fontSize: 12, color: C.slate }}>{Math.round((pregunta / REPASO_QUIZ.length) * 100)} %</span>
             </div>
-            <div style={{ height: 7, borderRadius: 99, background: C.paperDark, overflow: "hidden", marginBottom: 24 }}><div style={{ height: "100%", width: `${((pregunta + 1) / REPASO_QUIZ.length) * 100}%`, background: `linear-gradient(90deg,${C.gold},${C.goldLight})`, transition: "width .25s" }}/></div>
-            <h3 style={{ fontFamily: F_DISPLAY, fontSize: "clamp(21px,3vw,28px)", color: C.navy, margin: "0 0 20px", lineHeight: 1.35 }}>{q.q}</h3>
-            <div style={{ display: "grid", gap: 11 }}>
+            <div style={{ height: 6, borderRadius: 99, background: C.paperDark, overflow: "hidden", marginBottom: 19 }}><div style={{ height: "100%", width: `${((pregunta + 1) / REPASO_QUIZ.length) * 100}%`, background: `linear-gradient(90deg,${C.gold},${C.goldLight})`, transition: "width .25s" }}/></div>
+            <h3 style={{ fontFamily: F_DISPLAY, fontSize: "clamp(20px,2.6vw,25px)", color: C.navy, margin: "0 0 17px", lineHeight: 1.35 }}>{q.q}</h3>
+            <div style={{ display: "grid", gap: 9 }}>
               {q.options.map((op, i) => {
                 const elegida = seleccion === i;
                 const correcta = seleccion !== null && i === q.correct;
-                return <button key={op} type="button" onClick={() => responder(i)} aria-pressed={elegida} style={{ textAlign: "left", padding: "15px 17px", borderRadius: 13, border: `1px solid ${correcta ? C.success : elegida ? C.danger : C.line}`, background: correcta ? C.successBg : elegida ? C.dangerBg : "#FFFFFF", color: C.navy, fontFamily: F_BODY, fontSize: 14, lineHeight: 1.55, cursor: "pointer", transition: "border .15s ease, background .15s ease, transform .15s ease" }}>{op}</button>;
+                return <button key={op} type="button" onClick={() => responder(i)} aria-pressed={elegida} style={{ textAlign: "left", padding: "12px 15px", borderRadius: 11, border: `1px solid ${correcta ? C.success : elegida ? C.danger : C.line}`, background: correcta ? C.successBg : elegida ? C.dangerBg : "#FFFFFF", color: C.navy, fontFamily: F_BODY, fontSize: 13.5, lineHeight: 1.5, cursor: "pointer", transition: "border .15s ease, background .15s ease, transform .15s ease" }}>{op}</button>;
               })}
             </div>
-            {seleccion !== null && <div style={{ marginTop: 16, padding: 15, borderRadius: 13, background: seleccion === q.correct ? C.successBg : C.dangerBg, color: C.navy, lineHeight: 1.6 }}><strong>{seleccion === q.correct ? "¡Correcto!" : "No exactamente."}</strong> {q.explain}</div>}
-            <div style={{ marginTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            {seleccion !== null && <div style={{ marginTop: 13, padding: "12px 14px", borderRadius: 11, background: seleccion === q.correct ? C.successBg : C.dangerBg, color: C.navy, lineHeight: 1.55, fontSize: 13.5 }}><strong>{seleccion === q.correct ? "¡Correcto!" : "No exactamente."}</strong> {q.explain}</div>}
+            <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
               <Boton variant="outline" disabled={pregunta === 0} onClick={preguntaAnterior}><ArrowLeft size={16}/> Volver a la pregunta anterior</Boton>
               {seleccion !== null ? (
                 <Boton variant="gold" onClick={siguientePregunta}>{pregunta === REPASO_QUIZ.length - 1 ? "Ver resultado" : "Siguiente pregunta"} <ArrowRight size={16}/></Boton>
@@ -4252,7 +4252,7 @@ function RepasoInteractivo() {
                 <span style={{ fontSize: 12, color: C.slate }}>Selecciona una respuesta para continuar.</span>
               )}
             </div>
-          </> : <div style={{ textAlign: "center", padding: "24px 10px" }}>
+          </> : <div style={{ textAlign: "center", padding: "20px 10px" }}>
             <div style={{ width: 66, height: 66, borderRadius: "50%", background: C.successBg, color: C.success, display: "grid", placeItems: "center", margin: "0 auto 16px" }}><Check size={32}/></div>
             <Etiqueta>Repaso terminado</Etiqueta>
             <h3 style={{ fontFamily: F_DISPLAY, fontSize: 30, color: C.navy, margin: "8px 0" }}>Obtuviste {respuestas.filter(Boolean).length} de {REPASO_QUIZ.length}</h3>
