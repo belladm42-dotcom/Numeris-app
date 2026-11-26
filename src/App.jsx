@@ -6087,6 +6087,15 @@ function Comparar({ moneda }) {
   const [tasaPct, setTasaPct] = useState(3);
   const [periodos, setPeriodos] = useState(12);
 
+  // Comparador adicional: gradiente aritmetico vs. geometrico.
+  const [primeraCuota, setPrimeraCuota] = useState(100000);
+  const [tasaGradientePct, setTasaGradientePct] = useState(1);
+  const [numeroCuotas, setNumeroCuotas] = useState(24);
+  const [gradienteAritmetico, setGradienteAritmetico] = useState(5000);
+  const [gradienteGeometricoPct, setGradienteGeometricoPct] = useState(2);
+  const [direccionGradiente, setDireccionGradiente] = useState("creciente");
+  const [paginaGradientes, setPaginaGradientes] = useState(1);
+
   const datos = useMemo(() => {
     const i = tasaPct / 100;
     const arr = [];
@@ -6103,10 +6112,64 @@ function Comparar({ moneda }) {
 
   const final = datos[datos.length - 1];
 
+  const comparacionGradientes = useMemo(() => {
+    const A = Number(primeraCuota);
+    const i = Number(tasaGradientePct) / 100;
+    const n = Number(numeroCuotas);
+    const G = Number(gradienteAritmetico);
+    const g = Number(gradienteGeometricoPct) / 100;
+    const creciente = direccionGradiente === "creciente";
+    const errores = [];
+
+    if (!Number.isFinite(A) || A <= 0) errores.push("La primera cuota debe ser mayor que cero.");
+    if (!Number.isFinite(i) || i < 0) errores.push("La tasa no puede ser negativa.");
+    if (!Number.isSafeInteger(n) || n < 1 || n > 100000) errores.push("El numero de cuotas debe ser un entero entre 1 y 100.000.");
+    if (!Number.isFinite(G) || G < 0) errores.push("El gradiente aritmetico debe ser cero o positivo.");
+    if (!Number.isFinite(g) || g < 0 || g >= 1) errores.push("El gradiente geometrico debe estar entre 0 % y menos de 100 %.");
+
+    if (errores.length) return { errores, filas: [], vpA: 0, vfA: 0, vpG: 0, vfG: 0, grafica: [] };
+
+    const signo = creciente ? 1 : -1;
+    const filas = [];
+    let vpA = 0, vfA = 0, vpG = 0, vfG = 0;
+    const pasoGrafica = Math.max(1, Math.ceil(n / 120));
+
+    for (let t = 1; t <= n; t++) {
+      const cuotaA = A + signo * (t - 1) * G;
+      const cuotaG = A * Math.pow(1 + signo * g, t - 1);
+      if (!(cuotaA > 0) || !(cuotaG > 0) || !Number.isFinite(cuotaA) || !Number.isFinite(cuotaG)) {
+        errores.push(`La cuota del periodo ${t} llega a cero, es negativa o no puede representarse. Ajusta los gradientes o el numero de cuotas.`);
+        break;
+      }
+      const factorVP = Math.pow(1 + i, -t);
+      const factorVF = Math.pow(1 + i, n - t);
+      const vpCuotaA = cuotaA * factorVP;
+      const vpCuotaG = cuotaG * factorVP;
+      const vfCuotaA = cuotaA * factorVF;
+      const vfCuotaG = cuotaG * factorVF;
+      vpA += vpCuotaA; vpG += vpCuotaG;
+      vfA += vfCuotaA; vfG += vfCuotaG;
+      const fila = { n: t, cuotaA, cuotaG, vpCuotaA, vpCuotaG, vfCuotaA, vfCuotaG };
+      filas.push(fila);
+    }
+
+    const grafica = filas.filter((f, idx) => idx % pasoGrafica === 0 || idx === filas.length - 1)
+      .map(f => ({ n: f.n, Aritmetico: f.cuotaA, Geometrico: f.cuotaG }));
+    return { errores, filas, vpA, vfA, vpG, vfG, grafica };
+  }, [primeraCuota, tasaGradientePct, numeroCuotas, gradienteAritmetico, gradienteGeometricoPct, direccionGradiente]);
+
+  const FILAS_GRADIENTES_POR_PAGINA = 20;
+  const totalPaginasGradientes = Math.max(1, Math.ceil(comparacionGradientes.filas.length / FILAS_GRADIENTES_POR_PAGINA));
+  const paginaGradientesSegura = Math.min(paginaGradientes, totalPaginasGradientes);
+  const filasGradientesPagina = comparacionGradientes.filas.slice(
+    (paginaGradientesSegura - 1) * FILAS_GRADIENTES_POR_PAGINA,
+    paginaGradientesSegura * FILAS_GRADIENTES_POR_PAGINA
+  );
+
   return (
     <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
       <Etiqueta>Comparador</Etiqueta>
-      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 30, color: C.navy, margin: "0 0 20px" }}>¿Por qué cambian los resultados?</h1>
+      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 30, color: C.navy, margin: "0 0 20px" }}>¿Por qu&#233; cambian los resultados?</h1>
 
       <Tarjeta style={{ marginBottom: 20 }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16 }}>
@@ -6146,8 +6209,102 @@ function Comparar({ moneda }) {
       <div style={{ fontSize: 13.5, color: C.ink, lineHeight: 1.6, marginBottom: 16 }}>
         El interés <strong>simple</strong> crece linealmente porque siempre calcula sobre el capital inicial. El interés <strong>compuesto</strong> puede crecer más rápido que el simple porque cada periodo capitaliza sobre el saldo anterior. El interés <strong>continuo</strong> es el límite del compuesto cuando la capitalización ocurre en cada instante, por lo que supera ligeramente al compuesto discreto para la misma tasa nominal.
       </div>
-      <div style={{ padding: 14, background: C.paperDark, borderRadius: 8, fontSize: 12, color: C.slate }}>
+      <div style={{ padding: 14, background: C.paperDark, borderRadius: 8, fontSize: 12, color: C.slate, marginBottom: 38 }}>
         Esta comparación es educativa y usa una misma tasa del periodo para observar cómo cambian los resultados entre interés simple, compuesto y continuo. La conversión automática de tasas se realiza en el simulador de interés compuesto, en la calculadora de tasas y en el simulador de anualidades.
+      </div>
+
+      <div style={{ borderTop: `1px solid ${C.line}`, paddingTop: 30 }}>
+        <Etiqueta>Nuevo comparador</Etiqueta>
+        <h2 style={{ fontFamily: F_DISPLAY, fontSize: 25, color: C.navy, margin: "0 0 10px" }}>Gradiente aritm&#233;tico vs. geom&#233;trico</h2>
+        <p style={{ fontSize: 14, color: C.slate, lineHeight: 1.6, maxWidth: 780, marginBottom: 20 }}>
+          Compara dos series que comienzan con la misma cuota. En el gradiente aritm&#233;tico, la cuota cambia una cantidad fija de dinero; en el geom&#233;trico, cambia un porcentaje. La tasa ingresada corresponde al periodo de cada cuota.
+        </p>
+
+        <Tarjeta style={{ marginBottom: 18 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 14 }}>
+            <Campo label={`Primera cuota (${moneda})`}><Entrada type="number" min="0" step="any" value={primeraCuota} onChange={e => setPrimeraCuota(e.target.value)} /></Campo>
+            <Campo label="Tasa efectiva por cuota (%)"><Entrada type="number" min="0" step="any" value={tasaGradientePct} onChange={e => setTasaGradientePct(e.target.value)} /></Campo>
+            <Campo label="N&#250;mero de cuotas (n)" help="Ingresa un entero entre 1 y 100.000, sin separadores de miles."><Entrada type="number" min="1" max="100000" step="1" value={numeroCuotas} onChange={e => { setNumeroCuotas(e.target.value); setPaginaGradientes(1); }} /></Campo>
+            <Campo label="Direcci&#243;n de los gradientes"><Selector value={direccionGradiente} onChange={e => { setDireccionGradiente(e.target.value); setPaginaGradientes(1); }} options={[{ value: "creciente", label: "Crecientes" }, { value: "decreciente", label: "Decrecientes" }]} /></Campo>
+            <Campo label={`Gradiente aritm&#233;tico (${moneda})`} help="Cambio fijo en pesos por cuota."><Entrada type="number" min="0" step="any" value={gradienteAritmetico} onChange={e => { setGradienteAritmetico(e.target.value); setPaginaGradientes(1); }} /></Campo>
+            <Campo label="Gradiente geom&#233;trico (%)" help="Cambio porcentual aplicado a cada cuota."><Entrada type="number" min="0" max="99.999999" step="any" value={gradienteGeometricoPct} onChange={e => { setGradienteGeometricoPct(e.target.value); setPaginaGradientes(1); }} /></Campo>
+          </div>
+        </Tarjeta>
+
+        {comparacionGradientes.errores.length > 0 ? (
+          <div style={{ padding: 14, borderRadius: 8, background: C.dangerBg, color: C.danger, fontSize: 13.5, lineHeight: 1.6, marginBottom: 18 }}>
+            <strong>Revisa los datos:</strong>
+            <ul style={{ margin: "6px 0 0", paddingLeft: 20 }}>{comparacionGradientes.errores.map((e, idx) => <li key={idx}>{e}</li>)}</ul>
+          </div>
+        ) : (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 14, marginBottom: 18 }}>
+              {[
+                ["VP aritm\u00e9tico", comparacionGradientes.vpA],
+                ["VP geom\u00e9trico", comparacionGradientes.vpG],
+                ["VF aritm\u00e9tico", comparacionGradientes.vfA],
+                ["VF geom\u00e9trico", comparacionGradientes.vfG],
+              ].map(([label, value], idx) => (
+                <Tarjeta key={idx}>
+                  <div style={{ fontSize: 12, color: C.slate, fontWeight: 700, marginBottom: 6 }}>{label}</div>
+                  <div style={{ fontFamily: F_MONO, fontSize: 17, color: C.navy }}>{formatCurrencyCO(value, moneda, 2)}</div>
+                </Tarjeta>
+              ))}
+            </div>
+
+            <Tarjeta style={{ marginBottom: 18 }}>
+              <div style={{ fontWeight: 700, color: C.navy, marginBottom: 4 }}>As&#237; cambian las cuotas</div>
+              <div style={{ fontSize: 12.5, color: C.slate, marginBottom: 10 }}>Se muestran hasta 120 puntos para que la gr&#225;fica siga siendo legible, aunque el c&#225;lculo incluya hasta 100.000 cuotas.</div>
+              <ResponsiveContainer width="100%" height={310}>
+                <LineChart data={comparacionGradientes.grafica} margin={{ top: 8, right: 18, left: 8, bottom: 8 }}>
+                  <CartesianGrid stroke={C.line} strokeDasharray="3 3" />
+                  <XAxis dataKey="n" tick={{ fontSize: 11, fill: C.slate }} label={{ value: "N&#250;mero de cuota", position: "insideBottom", offset: -4, fontSize: 11, fill: C.slate }} />
+                  <YAxis tick={{ fontSize: 11, fill: C.slate }} tickFormatter={v => formatNumberCO(v, 0, 0)} width={85} />
+                  <Tooltip formatter={v => formatCurrencyCO(v, moneda, 2)} labelFormatter={l => `Cuota ${l}`} />
+                  <Legend />
+                  <Line type="monotone" dataKey="Aritmetico" name="Gradiente aritmético" stroke={C.navy} strokeWidth={2.4} dot={false} />
+                  <Line type="monotone" dataKey="Geometrico" name="Gradiente geométrico" stroke={C.gold} strokeWidth={2.4} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </Tarjeta>
+
+            <Tarjeta>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+                <div>
+                  <div style={{ fontWeight: 700, color: C.navy }}>Detalle por cuota</div>
+                  <div style={{ fontSize: 12, color: C.slate }}>Se muestran {FILAS_GRADIENTES_POR_PAGINA} filas por p&#225;gina.</div>
+                </div>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <Boton small variant="outline" disabled={paginaGradientesSegura <= 1} onClick={() => setPaginaGradientes(p => Math.max(1, p - 1))}>Anterior</Boton>
+                  <span style={{ fontSize: 12, color: C.slate }}>P&#225;gina {paginaGradientesSegura} de {totalPaginasGradientes}</span>
+                  <Boton small variant="outline" disabled={paginaGradientesSegura >= totalPaginasGradientes} onClick={() => setPaginaGradientes(p => Math.min(totalPaginasGradientes, p + 1))}>Siguiente</Boton>
+                  <Boton small variant="ghost" disabled={paginaGradientesSegura === totalPaginasGradientes} onClick={() => setPaginaGradientes(totalPaginasGradientes)}>Ver final</Boton>
+                </div>
+              </div>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+                  <thead><tr style={{ background: C.paperDark, color: C.navy }}>
+                    {["n", "Cuota aritm\u00e9tica", "Cuota geom\u00e9trica", "VP aritm\u00e9tico", "VP geom\u00e9trico", "VF aritm\u00e9tico", "VF geom\u00e9trico"].map(h => <th key={h} style={{ padding: 9, textAlign: "right", whiteSpace: "nowrap" }}>{h}</th>)}
+                  </tr></thead>
+                  <tbody>{filasGradientesPagina.map(f => <tr key={f.n} style={{ borderBottom: `1px solid ${C.line}` }}>
+                    <td style={{ padding: 8, textAlign: "right" }}>{formatNumberCO(f.n, 0, 0)}</td>
+                    <td style={{ padding: 8, textAlign: "right", fontFamily: F_MONO }}>{formatCurrencyCO(f.cuotaA, moneda, 2)}</td>
+                    <td style={{ padding: 8, textAlign: "right", fontFamily: F_MONO }}>{formatCurrencyCO(f.cuotaG, moneda, 2)}</td>
+                    <td style={{ padding: 8, textAlign: "right", fontFamily: F_MONO }}>{formatCurrencyCO(f.vpCuotaA, moneda, 2)}</td>
+                    <td style={{ padding: 8, textAlign: "right", fontFamily: F_MONO }}>{formatCurrencyCO(f.vpCuotaG, moneda, 2)}</td>
+                    <td style={{ padding: 8, textAlign: "right", fontFamily: F_MONO }}>{formatCurrencyCO(f.vfCuotaA, moneda, 2)}</td>
+                    <td style={{ padding: 8, textAlign: "right", fontFamily: F_MONO }}>{formatCurrencyCO(f.vfCuotaG, moneda, 2)}</td>
+                  </tr>)}</tbody>
+                </table>
+              </div>
+              <div style={{ fontSize: 11.5, color: C.slate, marginTop: 10 }}>Cuotas calculadas: {formatNumberCO(comparacionGradientes.filas.length, 0, 0)} de {formatNumberCO(Number(numeroCuotas), 0, 0)}.</div>
+            </Tarjeta>
+
+            <div style={{ marginTop: 16, padding: 14, background: C.paperDark, borderRadius: 8, color: C.slate, fontSize: 13, lineHeight: 1.6 }}>
+              <strong style={{ color: C.navy }}>¿C&#243;mo leer la comparaci&#243;n?</strong> El gradiente aritm&#233;tico suma o resta siempre la misma cantidad de dinero. El geom&#233;trico aplica o descuenta el mismo porcentaje sobre la cuota anterior. Los VP se calculan llevando cada cuota a hoy y los VF llev&#225;ndolas al periodo final.
+            </div>
+          </>
+        )}
       </div>
     </Section>
   );
