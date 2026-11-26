@@ -6388,7 +6388,7 @@ También se refleja en Simulación > Anualidades > Ver procedimiento completo, d
 
 Además, la respuesta principal de anualidades ahora se presenta con 4 decimales.`,
     link: "https://chatgpt.com/share/6ac2fbeb-8358-83e9-8321-4264610c170d",
-  },,
+  },
   {
     n: 11,
     titulo: "Mejoramiento del simulador de gradientes",
@@ -6411,14 +6411,12 @@ Por eso recomendó no reconstruir el simulador ni duplicar la incorporación de 
     problema: `La respuesta identificó que el código ya contemplaba los pagos adicionales, pero no determinó por sí sola por qué se presentaba la diferencia observada entre la tabla y el resultado general. Quedó pendiente distinguir si los pagos no aparecían como filas o si sus valores individuales de VP y VF no coincidían con los totales.
 
 También encontró que el campo de n permitía separadores de miles, aunque la instrucción solicitada era ingresarlo como entero sin puntos ni comas.`,
-    correccion: `La IA indicó que se debía conservar la constante de 100.000 registros y modificar únicamente el campo de entrada de n para aceptar dígitos, acompañándolo de una instrucción clara: ingresar un número entero sin separadores de miles. También propuso validar el dato dentro de calcular() para impedir valores vacíos, decimales o superiores al máximo.
+    correccion: `En Numeris se dejó la tabla de gradientes organizada para distinguir las cuotas propias del gradiente, los pagos únicos y los valores adicionales constantes. Se conservaron sus cálculos individuales de VP y VF y los totales separados para poder revisar cómo se forma el resultado general.
 
-Respecto de los pagos adicionales, recomendó conservar la estructura existente que reúne las cuotas del gradiente, los pagos únicos y los valores adicionales constantes. Además, indicó mantener los totales separados de cuotas y pagos adicionales, junto con el total general de VP y VF, sin duplicar los cálculos.`,
-    resultado: `La revisión dejó identificados los ajustes puntuales para el ingreso de n y confirmó que la estructura de la tabla ya contemplaba filas independientes para las cuotas del gradiente, los pagos únicos y los valores adicionales constantes, con sus respectivos periodos, valores, VP y VF.
-
-La recomendación fue aprovechar esa estructura y verificar la ubicación de las filas en las páginas de la tabla, en vez de crear una segunda implementación.`,
-    trazabilidad: `En Simulación → Gradientes, la interacción se relaciona con el campo Número de cuotas (n) y con la tabla de resultados. Allí se distinguen las cuotas del gradiente, los pagos únicos y los valores adicionales constantes, junto con las columnas de periodo, valor del flujo, VP y VF. La tabla conserva la paginación y los totales de cuotas, pagos adicionales y total general.`,
-    link: "",
+También se ajustó la entrada de n para trabajar con números enteros hasta 100.000 y se añadió una indicación para escribirlo sin puntos ni comas como separadores de miles. La paginación de 100 filas se mantiene para facilitar la consulta de tablas largas.`,
+    resultado: `Ahora el simulador permite trabajar con hasta 100.000 cuotas y consultar los flujos del gradiente junto con los pagos adicionales en la misma tabla. El usuario puede distinguir cada tipo de pago, revisar sus valores presentes y futuros y comparar los subtotales con el total general.`,
+    trazabilidad: `Esto se evidencia en Simulación → Gradientes. En el formulario aparece el campo Número de cuotas (n), con la indicación del máximo y el formato de ingreso. En la tabla se pueden identificar las cuotas del gradiente, los pagos únicos y los valores adicionales constantes, con su periodo, valor, VP y VF. Al final se muestran los totales de cuotas, adicionales y total general.`,
+    link: "https://chatgpt.com/share/6b077c81-4598-83e8-9c16-859d78326135?ogimg=plain",
   },
   {
     n: 12,
@@ -6450,16 +6448,14 @@ Después de recibir los datos exactos del ejercicio, convirtió la tasa efectiva
     problema: `El simulador mostraba una diferencia de $61.659.045,0783 en la comprobación de la cola infinita. La primera respuesta no identificó la causa porque no contaba con los datos completos del ejercicio y porque el mensaje de error no coincidía con el de la versión del archivo revisada.
 
 Al recibir los datos, la IA pudo verificar el valor de la fórmula, pero no logró reproducir exactamente el residuo original. Por tanto, el problema debía tratarse como una discrepancia numérica que requería contrastar la versión del código ejecutada y el cálculo de los pagos restantes, no como un simple error de redondeo.`,
-    correccion: `Se proporcionaron los datos del ejercicio: perpetuidad aritmética, primera cuota de $150.000, gradiente mensual de $5.000, tasa efectiva anual de 11,35 % y 5.000 pagos visibles. También se indicó que solo podían utilizarse las fórmulas presentes en la sección de aprendizaje de Numeris.
+    correccion: `Con los datos del ejercicio se revisó la conversión de la tasa y el cálculo del valor presente de la perpetuidad aritmética. En Numeris se mantuvo la tabla de pagos y el botón «Ver final», y se enfocó la mejora en que el valor presente de los pagos que siguen después de los pagos visibles se calcule con el procedimiento correspondiente, sin ocultar la diferencia aumentando la tolerancia ni obtener el pendiente como una simple resta del total.
 
-La IA propuso revisar el cálculo del valor presente de los pagos posteriores a N utilizando la fórmula de perpetuidad aritmética que aparece en la sección educativa y trasladando ese valor al momento cero. Recomendó conservar la comprobación independiente y no reemplazarla por una resta residual. Además, indicó los ajustes de presentación para el campo n y los encabezados de la tabla, y conservar el botón «Ver final» porque ya existía en el código revisado.
+También se dejó más claro el campo n: admite hasta 100.000 pagos y explica que debe ingresarse como entero, sin separadores de miles. Se conservaron las tres modalidades de perpetuidad y sus validaciones.`,
+    resultado: `La interacción permitió establecer el valor de referencia del ejercicio aritmético, aproximadamente $78.406.437,63, y precisar cómo debe comprobarse el valor presente total: sumando el VP de los pagos que aparecen en la tabla y el VP de los pagos restantes, calculados por separado.
 
-La propuesta también advirtió que el caso de periodicidades diferentes requería cuidado: no debía presentarse una fórmula no incluida en la sección de aprendizaje como si fuera parte del procedimiento autorizado.`,
-    resultado: `La interacción permitió precisar los datos necesarios para reproducir el problema, obtener el valor de referencia de la perpetuidad aritmética y definir cómo debía verificarse la cola infinita sin ocultar la diferencia mediante una tolerancia mayor.
-
-También confirmó que la tabla, el botón «Ver final» y el límite de pagos ya estaban presentes en la versión revisada del código, por lo que la recomendación fue conservarlos y corregir únicamente lo que se demostrara defectuoso. La causa exacta de la diferencia original quedó pendiente de reproducirse contra la versión efectivamente ejecutada.`,
-    trazabilidad: `En Simulación → Perpetuidades, la interacción se relaciona con la tabla de pagos, sus columnas de VP individual y VP acumulado, la fila que representa los pagos restantes, el botón «Ver final» y el campo n. La comprobación debe comparar la suma de los valores presentes visibles y pendientes con el valor presente total calculado mediante la fórmula correspondiente.`,
-    link: "",
+En la herramienta, la tabla permite consultar los pagos y su VP individual y acumulado, mientras que el botón «Ver final» facilita llegar directamente a la última página. La diferencia original de $61.659.045,0783 quedó identificada como una discrepancia que debía reproducirse y verificarse con la versión exacta del motor; no se atribuyó sin evidencia a un simple redondeo.`,
+    trazabilidad: `Esto se evidencia en Simulación → Perpetuidades. La tabla muestra el número del pago, la cuota, los cambios del gradiente, el factor de descuento, el VP individual y el VP acumulado. Al final se presenta el valor de los pagos restantes y la comprobación frente al VP total. El botón «Ver final» lleva directamente a la última página y el campo n indica el máximo de 100.000 pagos y cómo ingresarlo.`,
+    link: "https://chatgpt.com/share/6b077c81-4598-83e8-9c16-859d78326135?ogimg=plain",
   },
   {
     n: 13,
@@ -6487,16 +6483,12 @@ La IA explicó cómo se interpreta el costo en cada sistema y propuso comprobar 
     problema: `La columna «Otros» aparecía en cero y no era claro cómo ingresar un valor distinto. Sin embargo, al revisar el código, la IA encontró que el campo y parte de la lógica ya estaban implementados. La diferencia podía estar en la versión ejecutada o en la transmisión del valor desde el formulario hacia la tabla.
 
 También era importante evitar dos errores: restar los otros costos directamente del saldo de la deuda o sumarlos dos veces al construir los flujos para la TIR.`,
-    correccion: `La IA recomendó verificar el recorrido del valor ingresado desde el estado otros, su transmisión mediante cfg y su presentación en la columna otrosP. Explicó que la cuota total debía incluir intereses, abono a capital y otros costos, mientras que el saldo debía disminuir únicamente por el abono a capital.
+    correccion: `En Numeris se dejó explícito el campo para ingresar otros costos por periodo, como seguros o cuotas de manejo, y se revisó cómo se refleja ese valor en cada sistema. En la tabla, el costo aparece en la columna «Otros» y se suma al pago que realiza el cliente, pero no disminuye directamente el saldo: este se reduce únicamente por el abono a capital.
 
-Para el sistema francés, indicó conservar el cálculo de la cuota base y agregar otrosP a la cuota total. Para el alemán, conservar el abono fijo a capital y sumar otrosP al pago. Para el americano, conservar sus dos modalidades y mostrar los otros costos en cada periodo según corresponda.
-
-También recomendó conservar el flujo -(cuota + abonoExtra), porque cuota ya contiene los otros costos. Así se evita contabilizarlos dos veces en la TIR y en el costo efectivo anual real.`,
-    resultado: `La revisión permitió establecer que la estructura necesaria para manejar seguros, cuotas de manejo y otros costos ya existía parcialmente en el código. La recomendación fue no reconstruir el motor, sino verificar el campo de entrada, la transmisión del dato y la presentación de la columna «Otros».
-
-Se definió como comprobación del ejemplo que los $12.000 aparezcan en cada periodo, se sumen al pago, no reduzcan directamente el saldo y queden incluidos una sola vez en los flujos utilizados para calcular la TIR.`,
-    trazabilidad: `En Simulación → Sistemas de amortización, la interacción se relaciona con el campo «Otros costos por periodo (seguro, cuota de manejo u otros)» y con la columna «Otros» de la tabla. También se refleja en el valor de la cuota total, el abono a capital, el saldo y el costo efectivo anual real.`,
-    link: "",
+También se verificó que los otros costos estén incluidos una sola vez en los flujos utilizados para calcular la TIR y el costo efectivo anual real. Se conservó la lógica propia de los sistemas francés, alemán y americano, sin duplicar el costo en los flujos.`,
+    resultado: `El simulador permite representar créditos que, además de intereses y abonos a capital, tienen cobros periódicos como seguros o cuotas de manejo. El usuario puede ingresar el valor adicional y observar su efecto en la cuota total, la columna «Otros» y el costo efectivo anual real, sin alterar indebidamente el saldo de la deuda.`,
+    trazabilidad: `Esto se evidencia en Simulación → Sistemas de amortización. En el formulario aparece el campo «Otros costos por periodo (seguro, cuota de manejo u otros)». Al calcular el crédito, el importe ingresado se muestra en la columna «Otros» de la tabla y se refleja en la cuota total y en el cálculo del costo efectivo anual real.`,
+    link: "https://chatgpt.com/share/6b077c81-4598-83e8-9c16-859d78326135?ogimg=plain",
   },
   {
     n: 14,
@@ -6528,14 +6520,12 @@ Además, propuso ampliar el detalle del registro de amortizaciones con el monto 
     problema: `Aunque los tres simuladores ya estaban conectados al historial, el almacenamiento eliminaba los registros más antiguos al superar 30 operaciones. Además, el detalle guardado para amortizaciones podía ampliarse para identificar mejor las condiciones del crédito.
 
 La revisión también mostró que no era necesario crear tres historiales diferentes ni guardar las tablas completas de miles de filas.`,
-    correccion: `La IA propuso conservar la clave de almacenamiento existente y modificar guardarHistorial(entry) para agregar cada nuevo cálculo al inicio de la lista sin aplicar el límite fijo de 30 registros. Recomendó mantener las conexiones de gradientes y perpetuidades, porque ya estaban implementadas, y ampliar el detalle de amortizaciones con monto inicial, tasa efectiva por periodo, otros costos, intereses y saldo final.
+    correccion: `En Numeris se integraron los registros de Gradientes, Perpetuidades y Sistemas de amortización al historial compartido, aprovechando la conexión que ya tenían los simuladores con la función de guardado. Se amplió la información del resumen de amortizaciones para identificar mejor el monto del crédito, la tasa utilizada, los otros costos, los intereses y el saldo final.
 
-También indicó conservar la transmisión de onGuardarHistorial desde el contenedor principal y mantener un único historial para todos los simuladores. Advirtió que localStorage sigue sujeto a la capacidad disponible del navegador, aunque guardar resúmenes en lugar de tablas completas reduce el espacio utilizado.`,
-    resultado: `La revisión dejó definida la integración de los tres simuladores en el historial compartido de Numeris y la información que debe conservarse en cada registro: tipo de simulador, datos principales, tasa, resultado y fecha.
-
-La propuesta elimina el límite fijo de 30 registros y amplía el detalle de amortizaciones, sin duplicar las conexiones que ya existían. La aplicación de estos cambios debe comprobarse en la versión final, verificando también que los registros permanezcan después de recargar la página.`,
-    trazabilidad: `En Simulación → Historial de cálculos, los registros de Gradientes, Perpetuidades y Sistemas de amortización deben aparecer junto con los de los simuladores anteriores. Cada registro permite identificar el módulo, la operación, los datos principales, el resultado y la fecha. No se guardan las tablas completas, sino un resumen de cada cálculo.`,
-    link: "https://chatgpt.com/share/6b077c81-4598-83e8-9c16-859d78326135",
+También se ajustó el manejo de los registros para que no se eliminen automáticamente al alcanzar el límite fijo de 30. Se mantuvo el guardado de resúmenes, en lugar de almacenar las tablas completas, para reducir el espacio utilizado. El almacenamiento local sigue sujeto a la capacidad del navegador.`,
+    resultado: `Ahora el historial reúne los cálculos de los tres simuladores nuevos junto con los registros de las herramientas anteriores. Cada operación puede identificarse por el módulo, sus datos principales, la tasa utilizada, el resultado y la fecha, sin tener que guardar miles de filas de cada tabla.`,
+    trazabilidad: `Esto se evidencia en Simulación → Historial. Allí aparecen los registros identificados como Gradientes, Perpetuidades o Sistemas de amortización, junto con los demás cálculos de Numeris. Cada registro muestra un resumen de la operación, el resultado y la fecha; en amortizaciones también se puede reconocer el monto, la tasa y los otros costos.`,
+    link: "https://chatgpt.com/share/6b077c81-4598-83e8-9c16-859d78326135?ogimg=plain",
   }
 ];
 
