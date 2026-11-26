@@ -552,12 +552,19 @@ function formatearResultadoHistorial(h) {
    COMPONENTES DE UTILIDAD
    ============================================================ */
 function Section({ children, style }) {
-  return <div style={{ maxWidth: 980, margin: "0 auto", padding: "0 20px", ...style }}>{children}</div>;
+  return <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px", ...style }}>{children}</div>;
 }
 
 function Etiqueta({ children }) {
   return (
-    <div style={{ fontFamily: F_MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: C.gold, fontWeight: 700, marginBottom: 8 }}>
+    <div style={{
+      display: "inline-flex", alignItems: "center", gap: 8,
+      fontFamily: F_MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase",
+      color: C.goldDeep, fontWeight: 700, marginBottom: 10,
+      background: "linear-gradient(135deg, rgba(217,174,99,0.22), rgba(255,255,255,0.72))",
+      border: `1px solid ${C.gold}55`, borderRadius: 999, padding: "7px 12px",
+      boxShadow: "0 8px 24px rgba(19,42,76,0.08)"
+    }}>
       {children}
     </div>
   );
@@ -565,7 +572,15 @@ function Etiqueta({ children }) {
 
 function Tarjeta({ children, style }) {
   return (
-    <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 10, padding: 22, ...style }}>
+    <div style={{
+      background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.92))",
+      border: `1px solid ${C.line}`,
+      borderRadius: 18,
+      padding: 24,
+      boxShadow: "0 18px 45px rgba(12,30,56,0.08)",
+      backdropFilter: "blur(6px)",
+      ...style
+    }}>
       {children}
     </div>
   );
@@ -573,21 +588,36 @@ function Tarjeta({ children, style }) {
 
 function Boton({ children, onClick, variant = "primary", type = "button", small, style, disabled }) {
   const base = {
-    fontFamily: F_BODY, fontWeight: 600, fontSize: small ? 13 : 14.5, cursor: disabled ? "not-allowed" : "pointer",
-    borderRadius: 7, padding: small ? "7px 13px" : "11px 20px", border: "1px solid transparent",
-    display: "inline-flex", alignItems: "center", gap: 7, transition: "opacity .15s", opacity: disabled ? 0.5 : 1,
+    fontFamily: F_BODY, fontWeight: 700, fontSize: small ? 13 : 14.5,
+    cursor: disabled ? "not-allowed" : "pointer",
+    borderRadius: 12, padding: small ? "8px 14px" : "12px 22px",
+    border: "1px solid transparent", display: "inline-flex", alignItems: "center",
+    justifyContent: "center", gap: 7,
+    transition: "transform .18s ease, box-shadow .18s ease, opacity .15s ease",
+    opacity: disabled ? 0.5 : 1,
+    boxShadow: "0 10px 24px rgba(12,30,56,0.08)",
   };
   const variants = {
-    primary: { background: C.navy, color: C.white },
-    gold: { background: C.gold, color: C.navyDeep },
-    outline: { background: "transparent", color: C.navy, border: `1px solid ${C.navy}` },
-    ghost: { background: "transparent", color: C.slate },
-    danger: { background: "transparent", color: C.danger, border: `1px solid ${C.danger}55` },
+    primary: { background: "linear-gradient(135deg, #24456F 0%, #132A4C 100%)", color: C.white },
+    gold: { background: "linear-gradient(135deg, #D9AE63 0%, #B8863B 100%)", color: C.navyDeep },
+    outline: { background: "rgba(255,255,255,0.72)", color: C.navy, border: `1px solid ${C.navy}25` },
+    ghost: { background: "rgba(255,255,255,0.35)", color: C.slate },
+    danger: { background: "rgba(247,233,231,0.85)", color: C.danger, border: `1px solid ${C.danger}33` },
   };
   return (
-    <button type={type} disabled={disabled} onClick={disabled ? undefined : onClick} style={{ ...base, ...variants[variant], ...style }}
+    <button type={type} disabled={disabled} onClick={disabled ? undefined : onClick}
+      style={{ ...base, ...variants[variant], ...style }}
       onFocus={(e) => (e.target.style.outline = `2px solid ${C.gold}`)}
-      onBlur={(e) => (e.target.style.outline = "none")}>
+      onBlur={(e) => (e.target.style.outline = "none")}
+      onMouseEnter={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.transform = "translateY(-1px)";
+        e.currentTarget.style.boxShadow = "0 14px 28px rgba(12,30,56,0.14)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "0 10px 24px rgba(12,30,56,0.08)";
+      }}>
       {children}
     </button>
   );
@@ -595,17 +625,18 @@ function Boton({ children, onClick, variant = "primary", type = "button", small,
 
 function Campo({ label, children, help }) {
   return (
-    <label style={{ display: "block", marginBottom: 14 }}>
-      <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: C.navy, marginBottom: 5 }}>{label}</span>
+    <label style={{ display: "block", marginBottom: 16 }}>
+      <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: C.navy, marginBottom: 6 }}>{label}</span>
       {children}
-      {help && <span style={{ display: "block", fontSize: 11.5, color: C.slate, marginTop: 4 }}>{help}</span>}
+      {help && <span style={{ display: "block", fontSize: 11.5, color: C.slate, marginTop: 6, lineHeight: 1.45 }}>{help}</span>}
     </label>
   );
 }
 
 const inputStyle = {
-  width: "100%", boxSizing: "border-box", fontFamily: F_MONO, fontSize: 14.5, padding: "10px 12px",
-  border: `1px solid ${C.line}`, borderRadius: 6, background: C.paper, color: C.ink,
+  width: "100%", boxSizing: "border-box", fontFamily: F_MONO, fontSize: 14.5, padding: "12px 14px",
+  border: `1px solid ${C.line}`, borderRadius: 12, background: "rgba(255,255,255,0.9)", color: C.ink,
+  boxShadow: "inset 0 1px 2px rgba(12,30,56,0.04), 0 4px 14px rgba(12,30,56,0.03)",
 };
 const selectStyle = { ...inputStyle, fontFamily: F_BODY };
 
@@ -621,14 +652,18 @@ function Selector({ value, onChange, options, ...rest }) {
 function Acordeon({ title, defaultOpen, children }) {
   const [open, setOpen] = useState(!!defaultOpen);
   return (
-    <div style={{ border: `1px solid ${C.line}`, borderRadius: 8, marginBottom: 10, overflow: "hidden", background: C.white }}>
+    <div style={{
+      border: `1px solid ${C.line}`, borderRadius: 16, marginBottom: 12,
+      overflow: "hidden", background: "rgba(255,255,255,0.92)",
+      boxShadow: "0 14px 30px rgba(12,30,56,0.06)"
+    }}>
       <button onClick={() => setOpen(!open)} style={{
-        width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px",
-        background: "transparent", border: "none", cursor: "pointer", fontFamily: F_BODY, fontSize: 15, fontWeight: 600, color: C.navy,
+        width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px",
+        background: "transparent", border: "none", cursor: "pointer", fontFamily: F_BODY, fontSize: 15, fontWeight: 700, color: C.navy,
       }}>
         {title}{open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
       </button>
-      {open && <div style={{ padding: "0 18px 18px" }}>{children}</div>}
+      {open && <div style={{ padding: "0 20px 20px" }}>{children}</div>}
     </div>
   );
 }
@@ -636,7 +671,11 @@ function Acordeon({ title, defaultOpen, children }) {
 /* Ficha de procedimiento — elemento distintivo tipo "recibo" con pasos numerados */
 function FichaProcedimiento({ pasos }) {
   return (
-    <div style={{ background: C.navyDeep, borderRadius: 10, padding: "20px 22px", marginTop: 14 }}>
+    <div style={{
+      background: "linear-gradient(180deg, #10233f 0%, #0c1e38 100%)",
+      borderRadius: 18, padding: "22px 24px", marginTop: 14,
+      boxShadow: "0 18px 36px rgba(12,30,56,0.16)"
+    }}>
       <div style={{ fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.14em", textTransform: "uppercase", color: C.goldLight, marginBottom: 14 }}>
         Procedimiento completo
       </div>
@@ -656,8 +695,11 @@ function FichaProcedimiento({ pasos }) {
 function Verificacion({ ok, residual, mensaje }) {
   return (
     <div style={{
-      marginTop: 14, padding: "12px 16px", borderRadius: 8,
-      background: ok ? C.successBg : C.dangerBg, display: "flex", alignItems: "flex-start", gap: 10,
+      marginTop: 14, padding: "14px 16px", borderRadius: 14,
+      background: ok ? C.successBg : C.dangerBg,
+      border: ok ? `1px solid ${C.success}33` : `1px solid ${C.danger}33`,
+      display: "flex", alignItems: "flex-start", gap: 10,
+      boxShadow: "0 10px 22px rgba(12,30,56,0.05)",
     }}>
       {ok ? <Check size={17} color={C.success} style={{ marginTop: 2, flexShrink: 0 }} /> : <AlertTriangle size={17} color={C.danger} style={{ marginTop: 2, flexShrink: 0 }} />}
       <div style={{ fontSize: 13.5, color: ok ? C.success : C.danger }}>
@@ -682,8 +724,13 @@ const SECCIONES = [
 
 function Nav({ activa, setActiva, moneda, setMoneda }) {
   return (
-    <div style={{ position: "sticky", top: 0, zIndex: 20, background: C.navy, borderBottom: `3px solid ${C.gold}` }}>
-      <Section style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", flexWrap: "wrap", gap: 10 }}>
+    <div style={{
+      position: "sticky", top: 0, zIndex: 20,
+      background: "linear-gradient(135deg, #0c1e38 0%, #132A4C 60%, #1a3964 100%)",
+      borderBottom: `1px solid ${C.gold}55`,
+      boxShadow: "0 14px 32px rgba(12,30,56,0.18)"
+    }}>
+      <Section style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", flexWrap: "wrap", gap: 12 }}>
         <div>
           <div style={{ fontFamily: F_DISPLAY, fontSize: 24, color: C.white, letterSpacing: "0.01em" }}>Numeris</div>
           <div style={{ fontFamily: F_MONO, fontSize: 10.5, color: C.goldLight, letterSpacing: "0.08em", textTransform: "uppercase" }}>Educación y simulación financiera</div>
@@ -693,9 +740,13 @@ function Nav({ activa, setActiva, moneda, setMoneda }) {
             const Icon = s.icon; const activeSec = activa === s.id;
             return (
               <button key={s.id} onClick={() => setActiva(s.id)} aria-current={activeSec ? "page" : undefined} style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 6, border: "none", cursor: "pointer",
-                background: activeSec ? C.gold : "transparent", color: activeSec ? C.navyDeep : "#D8DEE9",
-                fontFamily: F_BODY, fontSize: 13, fontWeight: 600,
+                display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 999,
+                border: "1px solid transparent", cursor: "pointer",
+                background: activeSec ? "linear-gradient(135deg, #D9AE63 0%, #B8863B 100%)" : "rgba(255,255,255,0.08)",
+                color: activeSec ? C.navyDeep : "#F2F5FA",
+                fontFamily: F_BODY, fontSize: 13, fontWeight: 700,
+                boxShadow: activeSec ? "0 10px 24px rgba(0,0,0,0.18)" : "none",
+                backdropFilter: "blur(6px)",
               }}>
                 <Icon size={14} />{s.label}
               </button>
@@ -704,7 +755,7 @@ function Nav({ activa, setActiva, moneda, setMoneda }) {
         </div>
         <Selector value={moneda} onChange={(e) => setMoneda(e.target.value)}
           options={[{ value: "COP", label: "COP · $" }, { value: "EUR", label: "EUR · €" }, { value: "USD", label: "USD · US$" }]}
-          style={{ ...selectStyle, width: 130, background: C.navyLight, color: C.white, border: `1px solid ${C.navyLight}` }} />
+          style={{ ...selectStyle, width: 140, background: "rgba(255,255,255,0.12)", color: C.white, border: "1px solid rgba(255,255,255,0.14)", boxShadow: "none" }} />
       </Section>
     </div>
   );
@@ -715,8 +766,12 @@ function Nav({ activa, setActiva, moneda, setMoneda }) {
    ============================================================ */
 function Inicio({ ir }) {
   return (
-    <Section style={{ paddingTop: 56, paddingBottom: 60 }}>
-      <div style={{ maxWidth: 660 }}>
+    <Section style={{ paddingTop: 64, paddingBottom: 70 }}>
+      <div style={{
+        maxWidth: 760, padding: "34px 36px", borderRadius: 24,
+        background: "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.72))",
+        border: `1px solid ${C.line}`, boxShadow: "0 24px 60px rgba(12,30,56,0.08)"
+      }}>
         <Etiqueta>Caso aplicado · Matemáticas Financieras · Tercer corte 2026-2</Etiqueta>
         <h1 style={{ fontFamily: F_DISPLAY, fontSize: 44, lineHeight: 1.1, color: C.navy, margin: "0 0 18px" }}>
           Entiende tu dinero antes de decidir.
@@ -748,7 +803,13 @@ function Inicio({ ir }) {
         </div>
       </div>
 
-      <div style={{ marginTop: 40, padding: 16, background: C.paperDark, borderRadius: 8, fontSize: 12.5, color: C.slate, lineHeight: 1.5 }}>
+      <div style={{
+        marginTop: 40, padding: 18,
+        background: "linear-gradient(135deg, rgba(234,230,218,0.92), rgba(255,255,255,0.78))",
+        borderRadius: 16, border: `1px solid ${C.line}`,
+        fontSize: 12.5, color: C.slate, lineHeight: 1.6,
+        boxShadow: "0 10px 24px rgba(12,30,56,0.05)"
+      }}>
         Esta herramienta tiene fines educativos y de simulación. Es solo para estudiar y practicar. No es consejo de banco.
       </div>
 
@@ -6827,7 +6888,11 @@ export default function App() {
   const [moneda, setMoneda] = useState("COP");
 
   return (
-    <div style={{ fontFamily: F_BODY, background: C.paper, minHeight: "100vh", color: C.ink }}>
+    <div style={{
+      fontFamily: F_BODY,
+      background: "radial-gradient(circle at 8% 0%, rgba(217,174,99,0.17), transparent 27%), radial-gradient(circle at 96% 4%, rgba(36,69,111,0.11), transparent 24%), linear-gradient(180deg, #f8f6f0 0%, #f3f1ec 38%, #f7f4ee 100%)",
+      minHeight: "100vh", color: C.ink
+    }}>
       <Nav activa={seccion} setActiva={setSeccion} moneda={moneda} setMoneda={setMoneda} />
       {seccion === "inicio" && <Inicio ir={setSeccion} />}
       {seccion === "aprender" && <Aprender />}
@@ -6835,8 +6900,8 @@ export default function App() {
       {seccion === "comparar" && <Comparar moneda={moneda} />}
       {seccion === "glosario" && <Glosario />}
       {seccion === "interacciones" && <Interacciones />}
-      <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 20 }}>
-        <Section style={{ padding: "22px 20px", fontSize: 11.5, color: C.slate, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+      <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 26, background: "rgba(255,255,255,0.48)" }}>
+        <Section style={{ padding: "24px 24px", fontSize: 11.5, color: C.slate, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
           <span>Numeris · Proyecto académico · Matemáticas Financieras · Tercer corte 2026-2</span>
           <span>Desarrollado con asistencia de Replit Agent, ChatGPT Business y Claude</span>
         </Section>
