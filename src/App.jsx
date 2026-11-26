@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useContext, createContext } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
@@ -552,12 +552,19 @@ function formatearResultadoHistorial(h) {
    COMPONENTES DE UTILIDAD
    ============================================================ */
 function Section({ children, style }) {
-  return <div style={{ maxWidth: 980, margin: "0 auto", padding: "0 20px", ...style }}>{children}</div>;
+  return <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px", ...style }}>{children}</div>;
 }
 
 function Etiqueta({ children }) {
   return (
-    <div style={{ fontFamily: F_MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: C.gold, fontWeight: 700, marginBottom: 8 }}>
+    <div style={{
+      display: "inline-flex", alignItems: "center", gap: 8,
+      fontFamily: F_MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase",
+      color: C.goldDeep, fontWeight: 700, marginBottom: 10,
+      background: "linear-gradient(135deg, rgba(217,174,99,0.22), rgba(255,255,255,0.72))",
+      border: `1px solid ${C.gold}55`, borderRadius: 999, padding: "7px 12px",
+      boxShadow: "0 8px 24px rgba(19,42,76,0.08)"
+    }}>
       {children}
     </div>
   );
@@ -565,7 +572,15 @@ function Etiqueta({ children }) {
 
 function Tarjeta({ children, style }) {
   return (
-    <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 10, padding: 22, ...style }}>
+    <div style={{
+      background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.92))",
+      border: `1px solid ${C.line}`,
+      borderRadius: 18,
+      padding: 24,
+      boxShadow: "0 18px 45px rgba(12,30,56,0.08)",
+      backdropFilter: "blur(6px)",
+      ...style
+    }}>
       {children}
     </div>
   );
@@ -573,59 +588,55 @@ function Tarjeta({ children, style }) {
 
 function Boton({ children, onClick, variant = "primary", type = "button", small, style, disabled }) {
   const base = {
-    fontFamily: F_BODY, fontWeight: 600, fontSize: small ? 13 : 14.5, cursor: disabled ? "not-allowed" : "pointer",
-    borderRadius: 7, padding: small ? "7px 13px" : "11px 20px", border: "1px solid transparent",
-    display: "inline-flex", alignItems: "center", gap: 7, transition: "opacity .15s", opacity: disabled ? 0.5 : 1,
+    fontFamily: F_BODY, fontWeight: 700, fontSize: small ? 13 : 14.5,
+    cursor: disabled ? "not-allowed" : "pointer",
+    borderRadius: 12, padding: small ? "8px 14px" : "12px 22px",
+    border: "1px solid transparent", display: "inline-flex", alignItems: "center",
+    justifyContent: "center", gap: 7,
+    transition: "transform .18s ease, box-shadow .18s ease, opacity .15s ease",
+    opacity: disabled ? 0.5 : 1,
+    boxShadow: "0 10px 24px rgba(12,30,56,0.08)",
   };
   const variants = {
-    primary: { background: C.navy, color: C.white },
-    gold: { background: C.gold, color: C.navyDeep },
-    outline: { background: "transparent", color: C.navy, border: `1px solid ${C.navy}` },
-    ghost: { background: "transparent", color: C.slate },
-    danger: { background: "transparent", color: C.danger, border: `1px solid ${C.danger}55` },
+    primary: { background: "linear-gradient(135deg, #24456F 0%, #132A4C 100%)", color: C.white },
+    gold: { background: "linear-gradient(135deg, #D9AE63 0%, #B8863B 100%)", color: C.navyDeep },
+    outline: { background: "rgba(255,255,255,0.72)", color: C.navy, border: `1px solid ${C.navy}25` },
+    ghost: { background: "rgba(255,255,255,0.35)", color: C.slate },
+    danger: { background: "rgba(247,233,231,0.85)", color: C.danger, border: `1px solid ${C.danger}33` },
   };
   return (
-    <button type={type} disabled={disabled} onClick={disabled ? undefined : onClick} style={{ ...base, ...variants[variant], ...style }}
+    <button type={type} disabled={disabled} onClick={disabled ? undefined : onClick}
+      style={{ ...base, ...variants[variant], ...style }}
       onFocus={(e) => (e.target.style.outline = `2px solid ${C.gold}`)}
-      onBlur={(e) => (e.target.style.outline = "none")}>
+      onBlur={(e) => (e.target.style.outline = "none")}
+      onMouseEnter={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.transform = "translateY(-1px)";
+        e.currentTarget.style.boxShadow = "0 14px 28px rgba(12,30,56,0.14)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "0 10px 24px rgba(12,30,56,0.08)";
+      }}>
       {children}
     </button>
   );
 }
 
-function ModoOperacion({ operacion }) {
-  const esCredito = operacion === "credito";
-  return (
-    <div style={{
-      display: "flex", alignItems: "center", gap: 9, marginTop: -5, marginBottom: 13,
-      padding: "9px 12px", borderRadius: 10,
-      background: esCredito ? "#EEF2F8" : "#EAF3ED",
-      border: `1px solid ${esCredito ? "#C8D4E4" : "#C7DDCE"}`,
-      color: esCredito ? C.navy : C.success,
-      fontSize: 12.5, fontWeight: 700
-    }}>
-      <span style={{ width: 8, height: 8, borderRadius: 99, background: esCredito ? C.navyLight : C.success }} />
-      Modo {esCredito ? "crédito" : "inversión"}
-      <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 500, opacity: 0.78 }}>
-        {esCredito ? "Obligación de pago" : "Aporte y rendimiento"}
-      </span>
-    </div>
-  );
-}
-
 function Campo({ label, children, help }) {
   return (
-    <label style={{ display: "block", marginBottom: 14 }}>
-      <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: C.navy, marginBottom: 5 }}>{label}</span>
+    <label style={{ display: "block", marginBottom: 16 }}>
+      <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: C.navy, marginBottom: 6 }}>{label}</span>
       {children}
-      {help && <span style={{ display: "block", fontSize: 11.5, color: C.slate, marginTop: 4 }}>{help}</span>}
+      {help && <span style={{ display: "block", fontSize: 11.5, color: C.slate, marginTop: 6, lineHeight: 1.45 }}>{help}</span>}
     </label>
   );
 }
 
 const inputStyle = {
-  width: "100%", boxSizing: "border-box", fontFamily: F_MONO, fontSize: 14.5, padding: "10px 12px",
-  border: `1px solid ${C.line}`, borderRadius: 6, background: C.paper, color: C.ink,
+  width: "100%", boxSizing: "border-box", fontFamily: F_MONO, fontSize: 14.5, padding: "12px 14px",
+  border: `1px solid ${C.line}`, borderRadius: 12, background: "rgba(255,255,255,0.9)", color: C.ink,
+  boxShadow: "inset 0 1px 2px rgba(12,30,56,0.04), 0 4px 14px rgba(12,30,56,0.03)",
 };
 const selectStyle = { ...inputStyle, fontFamily: F_BODY };
 
@@ -638,18 +649,21 @@ function Selector({ value, onChange, options, ...rest }) {
   );
 }
 
-function Acordeon({ title, defaultOpen, children, moduleIndex, activeModule }) {
+function Acordeon({ title, defaultOpen, children }) {
   const [open, setOpen] = useState(!!defaultOpen);
-  if (moduleIndex !== undefined && moduleIndex !== activeModule) return null;
   return (
-    <div style={{ border: `1px solid ${C.line}`, borderRadius: 8, marginBottom: 10, overflow: "hidden", background: C.white }}>
+    <div style={{
+      border: `1px solid ${C.line}`, borderRadius: 16, marginBottom: 12,
+      overflow: "hidden", background: "rgba(255,255,255,0.92)",
+      boxShadow: "0 14px 30px rgba(12,30,56,0.06)"
+    }}>
       <button onClick={() => setOpen(!open)} style={{
-        width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px",
-        background: "transparent", border: "none", cursor: "pointer", fontFamily: F_BODY, fontSize: 15, fontWeight: 600, color: C.navy,
+        width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px",
+        background: "transparent", border: "none", cursor: "pointer", fontFamily: F_BODY, fontSize: 15, fontWeight: 700, color: C.navy,
       }}>
         {title}{open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
       </button>
-      {open && <div style={{ padding: "0 18px 18px" }}>{children}</div>}
+      {open && <div style={{ padding: "0 20px 20px" }}>{children}</div>}
     </div>
   );
 }
@@ -657,7 +671,11 @@ function Acordeon({ title, defaultOpen, children, moduleIndex, activeModule }) {
 /* Ficha de procedimiento — elemento distintivo tipo "recibo" con pasos numerados */
 function FichaProcedimiento({ pasos }) {
   return (
-    <div style={{ background: C.navyDeep, borderRadius: 10, padding: "20px 22px", marginTop: 14 }}>
+    <div style={{
+      background: "linear-gradient(180deg, #10233f 0%, #0c1e38 100%)",
+      borderRadius: 18, padding: "22px 24px", marginTop: 14,
+      boxShadow: "0 18px 36px rgba(12,30,56,0.16)"
+    }}>
       <div style={{ fontFamily: F_MONO, fontSize: 10.5, letterSpacing: "0.14em", textTransform: "uppercase", color: C.goldLight, marginBottom: 14 }}>
         Procedimiento completo
       </div>
@@ -677,8 +695,11 @@ function FichaProcedimiento({ pasos }) {
 function Verificacion({ ok, residual, mensaje }) {
   return (
     <div style={{
-      marginTop: 14, padding: "12px 16px", borderRadius: 8,
-      background: ok ? C.successBg : C.dangerBg, display: "flex", alignItems: "flex-start", gap: 10,
+      marginTop: 14, padding: "14px 16px", borderRadius: 14,
+      background: ok ? C.successBg : C.dangerBg,
+      border: ok ? `1px solid ${C.success}33` : `1px solid ${C.danger}33`,
+      display: "flex", alignItems: "flex-start", gap: 10,
+      boxShadow: "0 10px 22px rgba(12,30,56,0.05)",
     }}>
       {ok ? <Check size={17} color={C.success} style={{ marginTop: 2, flexShrink: 0 }} /> : <AlertTriangle size={17} color={C.danger} style={{ marginTop: 2, flexShrink: 0 }} />}
       <div style={{ fontSize: 13.5, color: ok ? C.success : C.danger }}>
@@ -703,8 +724,13 @@ const SECCIONES = [
 
 function Nav({ activa, setActiva, moneda, setMoneda }) {
   return (
-    <div style={{ position: "sticky", top: 0, zIndex: 20, background: C.navy, borderBottom: `3px solid ${C.gold}` }}>
-      <Section style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", flexWrap: "wrap", gap: 10 }}>
+    <div style={{
+      position: "sticky", top: 0, zIndex: 20,
+      background: "linear-gradient(135deg, #0c1e38 0%, #132A4C 60%, #1a3964 100%)",
+      borderBottom: `1px solid ${C.gold}55`,
+      boxShadow: "0 14px 32px rgba(12,30,56,0.18)"
+    }}>
+      <Section style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", flexWrap: "wrap", gap: 12 }}>
         <div>
           <div style={{ fontFamily: F_DISPLAY, fontSize: 24, color: C.white, letterSpacing: "0.01em" }}>Numeris</div>
           <div style={{ fontFamily: F_MONO, fontSize: 10.5, color: C.goldLight, letterSpacing: "0.08em", textTransform: "uppercase" }}>Educación y simulación financiera</div>
@@ -714,9 +740,13 @@ function Nav({ activa, setActiva, moneda, setMoneda }) {
             const Icon = s.icon; const activeSec = activa === s.id;
             return (
               <button key={s.id} onClick={() => setActiva(s.id)} aria-current={activeSec ? "page" : undefined} style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 6, border: "none", cursor: "pointer",
-                background: activeSec ? C.gold : "transparent", color: activeSec ? C.navyDeep : "#D8DEE9",
-                fontFamily: F_BODY, fontSize: 13, fontWeight: 600,
+                display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 999,
+                border: "1px solid transparent", cursor: "pointer",
+                background: activeSec ? "linear-gradient(135deg, #D9AE63 0%, #B8863B 100%)" : "rgba(255,255,255,0.08)",
+                color: activeSec ? C.navyDeep : "#F2F5FA",
+                fontFamily: F_BODY, fontSize: 13, fontWeight: 700,
+                boxShadow: activeSec ? "0 10px 24px rgba(0,0,0,0.18)" : "none",
+                backdropFilter: "blur(6px)",
               }}>
                 <Icon size={14} />{s.label}
               </button>
@@ -725,7 +755,7 @@ function Nav({ activa, setActiva, moneda, setMoneda }) {
         </div>
         <Selector value={moneda} onChange={(e) => setMoneda(e.target.value)}
           options={[{ value: "COP", label: "COP · $" }, { value: "EUR", label: "EUR · €" }, { value: "USD", label: "USD · US$" }]}
-          style={{ ...selectStyle, width: 130, background: C.navyLight, color: C.white, border: `1px solid ${C.navyLight}` }} />
+          style={{ ...selectStyle, width: 140, background: "rgba(255,255,255,0.12)", color: C.white, border: "1px solid rgba(255,255,255,0.14)", boxShadow: "none" }} />
       </Section>
     </div>
   );
@@ -736,8 +766,12 @@ function Nav({ activa, setActiva, moneda, setMoneda }) {
    ============================================================ */
 function Inicio({ ir }) {
   return (
-    <Section style={{ paddingTop: 56, paddingBottom: 60 }}>
-      <div style={{ maxWidth: 660 }}>
+    <Section style={{ paddingTop: 64, paddingBottom: 70 }}>
+      <div style={{
+        maxWidth: 760, padding: "34px 36px", borderRadius: 24,
+        background: "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.72))",
+        border: `1px solid ${C.line}`, boxShadow: "0 24px 60px rgba(12,30,56,0.08)"
+      }}>
         <Etiqueta>Caso aplicado · Matemáticas Financieras · Tercer corte 2026-2</Etiqueta>
         <h1 style={{ fontFamily: F_DISPLAY, fontSize: 44, lineHeight: 1.1, color: C.navy, margin: "0 0 18px" }}>
           Entiende tu dinero antes de decidir.
@@ -769,7 +803,13 @@ function Inicio({ ir }) {
         </div>
       </div>
 
-      <div style={{ marginTop: 40, padding: 16, background: C.paperDark, borderRadius: 8, fontSize: 12.5, color: C.slate, lineHeight: 1.5 }}>
+      <div style={{
+        marginTop: 40, padding: 18,
+        background: "linear-gradient(135deg, rgba(234,230,218,0.92), rgba(255,255,255,0.78))",
+        borderRadius: 16, border: `1px solid ${C.line}`,
+        fontSize: 12.5, color: C.slate, lineHeight: 1.6,
+        boxShadow: "0 10px 24px rgba(12,30,56,0.05)"
+      }}>
         Esta herramienta tiene fines educativos y de simulación. Es solo para estudiar y practicar. No es consejo de banco.
       </div>
 
@@ -903,7 +943,7 @@ function NivelCinco({ children, titulo = "🧸 Nivel 5 años" }) {
 
 function ConversionTasas() {
   return (
-    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
+    <RecorridoSubmodulos>
 
       <NivelCinco>
         {`Imagina que tienes una plantica y le echas agua todos los días.
@@ -1107,7 +1147,7 @@ Convertir una tasa significa expresar el mismo costo o rendimiento en otra forma
         </div>
       </Acordeon>
 
-    </div>
+    </RecorridoSubmodulos>
   );
 }
 
@@ -1159,7 +1199,7 @@ function AnualidadesVencidas() {
   const mVFtotal = mVFcuotas + mVFe1 + mVFe2;
 
   return (
-    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
+    <RecorridoSubmodulos>
 
       <NivelCinco titulo="🧸 Nivel 5 años">
         {`Imagina que compras una bicicleta, pero no la pagas toda hoy.
@@ -1696,7 +1736,7 @@ La regla es fácil:
         <p style={{ color: C.slate }}>Próximamente: ¿y si pagas todo al inicio del pedacito de tiempo? Eso será la anualidad anticipada.</p>
       </Acordeon>
 
-    </div>
+    </RecorridoSubmodulos>
   );
 }
 
@@ -1785,7 +1825,7 @@ function AnualidadesAnticipadas() {
   };
 
   return (
-    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
+    <RecorridoSubmodulos>
 
       <NivelCinco titulo="🧸 Nivel 5 años">
         {`Imagina que vas al cine.
@@ -2299,7 +2339,7 @@ Idea clave: como pagas antes, cada cuota queda un pedacito de tiempo más cerca 
         </Interpretacion>
       </Acordeon>
 
-    </div>
+    </RecorridoSubmodulos>
   );
 }
 
@@ -2488,7 +2528,7 @@ function Gradientes() {
   const pr2n = c3Serie({ A1: 1200000, paso: 0.0095, tipo: "geometrico", signo: -1, n: 15, i: iB });
 
   return (
-    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
+    <RecorridoSubmodulos>
 
       <NivelCinco titulo="🧸 Nivel 5 años">
         {`Imagina que tu mamá te da una mesada todos los meses.
@@ -2829,7 +2869,7 @@ Y como con las anualidades, podemos preguntar: ¿cuánto vale toda la escalera H
         />
       </Acordeon>
 
-    </div>
+    </RecorridoSubmodulos>
   );
 }
 
@@ -2879,7 +2919,7 @@ function Perpetuidades() {
   const rMal = 2500000 / (rb - 0.0065);
 
   return (
-    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
+    <RecorridoSubmodulos>
 
       <NivelCinco titulo="🧸 Nivel 5 años">
         {`Imagina un árbol mágico que te regala una manzana todos los meses, para siempre. Nunca se acaba.
@@ -3169,7 +3209,7 @@ Eso es una PERPETUIDAD: una anualidad que nunca termina.`}
         />
       </Acordeon>
 
-    </div>
+    </RecorridoSubmodulos>
   );
 }
 
@@ -3253,7 +3293,7 @@ function SistemasAmortizacion() {
   ];
 
   return (
-    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
+    <RecorridoSubmodulos>
 
       <NivelCinco titulo="🧸 Nivel 5 años">
         {`Imagina que un amigo te presta 10 dulces y tú se los devuelves poco a poco.
@@ -3760,60 +3800,134 @@ Hay tres formas de devolverlos:
         />
       </Acordeon>
 
-    </div>
+    </RecorridoSubmodulos>
   );
 }
 
 
+const AprendizajeContext = createContext(null);
+
+function NavegacionTemas({ children, labels }) {
+  const temas = React.Children.toArray(children).filter((child) => React.isValidElement(child));
+  const [temaActivo, setTemaActivo] = useState(0);
+  const total = temas.length;
+  const avanzar = () => setTemaActivo((actual) => Math.min(total - 1, actual + 1));
+  const retroceder = () => setTemaActivo((actual) => Math.max(0, actual - 1));
+  const tema = temas[temaActivo];
+  const titulo = labels?.[temaActivo] || tema?.props?.title || `Tema ${temaActivo + 1}`;
+
+  return (
+    <AprendizajeContext.Provider value={{ avanzar, retroceder, temaActivo, total }}>
+      <div className="numeris-learning-layout" style={{ display: "grid", gridTemplateColumns: "minmax(220px, 270px) minmax(0, 1fr)", gap: 22, alignItems: "start" }}>
+        <aside style={{
+          position: "sticky", top: 112, background: "rgba(255,255,255,0.88)",
+          border: `1px solid ${C.line}`, borderRadius: 18, padding: 16,
+          boxShadow: "0 16px 38px rgba(12,30,56,0.07)"
+        }}>
+          <div style={{ fontFamily: F_MONO, color: C.goldDeep, fontSize: 10.5, letterSpacing: ".12em", textTransform: "uppercase", fontWeight: 700, margin: "2px 8px 12px" }}>Ruta de aprendizaje</div>
+          <div style={{ height: 6, borderRadius: 99, background: C.paperDark, overflow: "hidden", margin: "0 8px 14px" }}>
+            <div style={{ height: "100%", width: `${((temaActivo + 1) / total) * 100}%`, background: "linear-gradient(90deg, #B8863B, #D9AE63)", borderRadius: 99, transition: "width .25s ease" }} />
+          </div>
+          <div style={{ color: C.slate, fontSize: 11.5, margin: "0 8px 12px" }}>Tema {temaActivo + 1} de {total}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {temas.map((item, index) => {
+              const label = labels?.[index] || item.props.title || `Tema ${index + 1}`;
+              const active = index === temaActivo;
+              return (
+                <button key={index} type="button" onClick={() => setTemaActivo(index)} style={{
+                  width: "100%", display: "flex", alignItems: "center", gap: 10, textAlign: "left",
+                  padding: "10px 11px", borderRadius: 12,
+                  border: active ? `1px solid ${C.gold}88` : "1px solid transparent",
+                  background: active ? "linear-gradient(135deg, rgba(217,174,99,.24), rgba(255,255,255,.9))" : "transparent",
+                  color: active ? C.navy : C.slate, fontFamily: F_BODY, fontSize: 12.5,
+                  fontWeight: active ? 800 : 600, cursor: "pointer", lineHeight: 1.35
+                }}>
+                  <span style={{ width: 25, height: 25, borderRadius: 9, flexShrink: 0, display: "grid", placeItems: "center", background: active ? C.navy : C.paperDark, color: active ? C.goldLight : C.slate, fontFamily: F_MONO, fontSize: 10.5 }}>{String(index + 1).padStart(2, "0")}</span>
+                  <span>{label.replace(/^\d+\s*[·.)-]\s*/, "")}</span>
+                </button>
+              );
+            })}
+          </div>
+        </aside>
+
+        <main style={{ minWidth: 0 }}>
+          <div style={{ marginBottom: 16, padding: "20px 22px", borderRadius: 18, color: C.white, background: "linear-gradient(135deg, #0C1E38, #24456F)", boxShadow: "0 16px 36px rgba(12,30,56,0.14)" }}>
+            <div style={{ color: C.goldLight, fontFamily: F_MONO, fontSize: 10.5, letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 7 }}>Etapa {temaActivo + 1} · Educación financiera</div>
+            <div style={{ fontFamily: F_DISPLAY, fontSize: 25, lineHeight: 1.2 }}>{titulo.replace(/^\d+\s*[·.)-]\s*/, "")}</div>
+            <div style={{ color: "#D8E0EA", fontSize: 12, marginTop: 8 }}>Avanza por los módulos de este tema y, al terminar, continúa con la siguiente etapa.</div>
+          </div>
+          <div style={{ background: "rgba(255,255,255,.5)", borderRadius: 18, padding: "8px 0" }}>
+            {tema?.props?.children}
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginTop: 20, paddingTop: 16, borderTop: `1px solid ${C.line}` }}>
+            <button type="button" disabled={temaActivo === 0} onClick={retroceder} style={{ border: `1px solid ${C.line}`, background: "rgba(255,255,255,.8)", color: temaActivo === 0 ? "#A6A6A6" : C.navy, borderRadius: 12, padding: "11px 16px", fontWeight: 700, cursor: temaActivo === 0 ? "not-allowed" : "pointer" }}>← Tema anterior</button>
+            <span style={{ color: C.slate, fontSize: 12 }}>Etapa {temaActivo + 1} / {total}</span>
+            <button type="button" disabled={temaActivo === total - 1} onClick={avanzar} style={{ border: "none", background: "linear-gradient(135deg, #D9AE63, #B8863B)", color: C.navyDeep, borderRadius: 12, padding: "11px 18px", fontWeight: 800, cursor: temaActivo === total - 1 ? "not-allowed" : "pointer", opacity: temaActivo === total - 1 ? .45 : 1, boxShadow: "0 10px 24px rgba(12,30,56,.10)" }}>Siguiente tema →</button>
+          </div>
+        </main>
+      </div>
+      <style>{`@media (max-width: 760px) { .numeris-learning-layout { grid-template-columns: 1fr !important; } .numeris-learning-layout aside { position: static !important; } .numeris-learning-layout aside > div:last-child { display: grid !important; grid-template-columns: repeat(2, minmax(0,1fr)); } }`}</style>
+    </AprendizajeContext.Provider>
+  );
+}
+
+function RecorridoSubmodulos({ children }) {
+  const items = React.Children.toArray(children);
+  const first = items.findIndex((child) => React.isValidElement(child) && child.type === Acordeon);
+  const last = items.reduce((found, child, index) => React.isValidElement(child) && child.type === Acordeon ? index : found, -1);
+  const intro = first < 0 ? items : items.slice(0, first);
+  const modulos = first < 0 ? [] : items.slice(first, last + 1).filter((child) => React.isValidElement(child) && child.type === Acordeon);
+  const cierre = last < 0 ? [] : items.slice(last + 1);
+  const [activo, setActivo] = useState(0);
+  const contexto = useContext(AprendizajeContext);
+  const total = Math.max(modulos.length, 1);
+  const actual = modulos[activo];
+  const irAnterior = () => {
+    if (activo > 0) setActivo((n) => n - 1);
+    else contexto?.retroceder?.();
+  };
+  const irSiguiente = () => {
+    if (activo < total - 1) setActivo((n) => n + 1);
+    else contexto?.avanzar?.();
+  };
+
+  return (
+    <div style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.65 }}>
+      {intro}
+      {modulos.length > 0 && <div style={{ margin: "18px 0 10px", padding: 18, borderRadius: 18, background: "rgba(255,255,255,.9)", border: `1px solid ${C.line}`, boxShadow: "0 14px 32px rgba(12,30,56,.06)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
+          <div>
+            <div style={{ color: C.goldDeep, fontFamily: F_MONO, fontSize: 10.5, letterSpacing: ".12em", textTransform: "uppercase", fontWeight: 700 }}>Módulos del tema</div>
+            <div style={{ color: C.navy, fontWeight: 800, fontSize: 13, marginTop: 4 }}>Módulo {activo + 1} de {total}</div>
+          </div>
+          <div style={{ minWidth: 120, flex: "0 1 220px", height: 6, borderRadius: 99, background: C.paperDark, overflow: "hidden" }}><div style={{ height: "100%", width: `${((activo + 1) / total) * 100}%`, background: "linear-gradient(90deg, #B8863B, #D9AE63)", transition: "width .2s ease" }} /></div>
+        </div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+          {modulos.map((modulo, index) => <button key={index} type="button" onClick={() => setActivo(index)} title={modulo.props.title} style={{ width: 31, height: 31, borderRadius: 10, border: index === activo ? `1px solid ${C.gold}` : `1px solid ${C.line}`, background: index === activo ? C.navy : C.paper, color: index === activo ? C.goldLight : C.slate, fontWeight: 800, fontSize: 11, cursor: "pointer" }}>{index + 1}</button>)}
+        </div>
+        <div style={{ color: C.navy, fontFamily: F_DISPLAY, fontSize: 21, lineHeight: 1.25, marginBottom: 14 }}>{actual?.props?.title?.replace(/^\d+\s*[·.)-]\s*/, "") || "Contenido del tema"}</div>
+        <div>{actual?.props?.children || items}</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", borderTop: `1px solid ${C.line}`, marginTop: 20, paddingTop: 15 }}>
+          <button type="button" onClick={irAnterior} disabled={activo === 0 && (!contexto || contexto.temaActivo === 0)} style={{ border: `1px solid ${C.line}`, background: "#fff", color: C.navy, borderRadius: 11, padding: "10px 14px", fontWeight: 700, cursor: "pointer", opacity: activo === 0 && (!contexto || contexto.temaActivo === 0) ? .4 : 1 }}>← Anterior</button>
+          <span style={{ color: C.slate, fontSize: 11.5 }}>{activo + 1} / {total} módulos</span>
+          <button type="button" onClick={irSiguiente} disabled={activo === total - 1 && (!contexto || contexto.temaActivo === contexto.total - 1)} style={{ border: "none", background: "linear-gradient(135deg, #D9AE63, #B8863B)", color: C.navyDeep, borderRadius: 11, padding: "10px 16px", fontWeight: 800, cursor: "pointer", opacity: activo === total - 1 && (!contexto || contexto.temaActivo === contexto.total - 1) ? .4 : 1 }}>{activo === total - 1 ? "Siguiente tema →" : "Siguiente módulo ↓"}</button>
+        </div>
+      </div>}
+      {cierre}
+    </div>
+  );
+}
+
 function Aprender() {
-  const [moduloActivo, setModuloActivo] = useState(0);
-  const modulos = [
-    "Interés simple", "Interés compuesto", "Interés continuo", "Conversión de tasas",
-    "Anualidades vencidas", "Anualidades anticipadas", "Gradientes", "Perpetuidades", "Sistemas de amortización"
-  ];
-  const avanzar = () => setModuloActivo((actual) => Math.min(actual + 1, modulos.length - 1));
-  const retroceder = () => setModuloActivo((actual) => Math.max(actual - 1, 0));
   return (
     <Section style={{ paddingTop: 44, paddingBottom: 60 }}>
       <Etiqueta>Educación financiera</Etiqueta>
-      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 32, color: C.navy, margin: "0 0 10px" }}>Conceptos fundamentales de matemáticas financieras</h1>
-      <p style={{ color: C.slate, fontSize: 14, lineHeight: 1.6, maxWidth: 780, margin: "0 0 24px" }}>
-        Explora los módulos de aprendizaje uno por uno. Puedes elegir un tema desde el menú o avanzar con las flechas al terminar.
-      </p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 230px), 1fr))", gap: 22, alignItems: "start" }}>
-        <aside style={{ position: "sticky", top: 105, background: "rgba(255,255,255,0.78)", border: `1px solid ${C.line}`, borderRadius: 16, padding: 14, boxShadow: "0 14px 34px rgba(12,30,56,0.06)" }}>
-          <div style={{ fontFamily: F_MONO, fontSize: 10.5, letterSpacing: ".1em", textTransform: "uppercase", color: C.goldDeep, fontWeight: 700, padding: "5px 8px 12px" }}>Ruta de aprendizaje</div>
-          {modulos.map((nombre, index) => {
-            const activo = moduloActivo === index;
-            return <button key={nombre} onClick={() => setModuloActivo(index)} aria-current={activo ? "step" : undefined} style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 10, textAlign: "left",
-              padding: "10px 11px", marginBottom: 5, borderRadius: 10,
-              border: activo ? `1px solid ${C.gold}88` : "1px solid transparent",
-              background: activo ? "linear-gradient(135deg, #F7EEDC, #FFF9EF)" : "transparent",
-              color: activo ? C.navy : C.slate, cursor: "pointer", fontFamily: F_BODY,
-              fontSize: 12.5, fontWeight: activo ? 800 : 600
-            }}>
-              <span style={{ width: 25, height: 25, flexShrink: 0, display: "grid", placeItems: "center", borderRadius: 8,
-                background: activo ? C.navy : C.paperDark, color: activo ? C.white : C.slate,
-                fontFamily: F_MONO, fontSize: 10.5 }}>{String(index + 1).padStart(2, "0")}</span>
-              <span style={{ flex: 1 }}>{nombre}</span>
-              {activo && <span style={{ color: C.goldDeep, fontSize: 16 }}>›</span>}
-            </button>;
-          })}
-          <div style={{ margin: "12px 8px 4px", height: 5, borderRadius: 99, background: C.paperDark, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${((moduloActivo + 1) / modulos.length) * 100}%`, background: `linear-gradient(90deg, ${C.gold}, ${C.goldLight})`, borderRadius: 99, transition: "width .2s ease" }} />
-          </div>
-          <div style={{ fontSize: 10.5, color: C.slate, padding: "5px 8px 0" }}>Módulo {moduloActivo + 1} de {modulos.length}</div>
-        </aside>
-        <main style={{ minWidth: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 13 }}>
-            <div>
-              <div style={{ fontSize: 11, color: C.goldDeep, fontFamily: F_MONO, letterSpacing: ".1em", textTransform: "uppercase", fontWeight: 700 }}>Módulo {String(moduloActivo + 1).padStart(2, "0")}</div>
-              <div style={{ fontFamily: F_DISPLAY, fontSize: 23, color: C.navy, marginTop: 3 }}>{modulos[moduloActivo]}</div>
-            </div>
-            <div style={{ fontSize: 11.5, color: C.slate }}>{Math.round(((moduloActivo + 1) / modulos.length) * 100)} % de la ruta</div>
-          </div>
-      <Acordeon title="1 · Interés simple" moduleIndex={0} activeModule={moduloActivo} defaultOpen>
+      <h1 style={{ fontFamily: F_DISPLAY, fontSize: 32, color: C.navy, margin: "0 0 26px" }}>Conceptos fundamentales de matemáticas financieras</h1>
+
+      <NavegacionTemas labels={["Interés simple", "Interés compuesto", "Interés continuo", "Conversión de tasas", "Anualidades vencidas", "Anualidades anticipadas", "Gradientes", "Perpetuidades", "Sistemas de amortización"]}>
+      <Acordeon title="1 · Interés simple" defaultOpen>
+        <RecorridoSubmodulos>
+
         <BloqueInteres
           queEs="El interés simple es la forma más fácil de ganar o pagar intereses. Siempre se calcula sobre el mismo capital inicial. Ese capital inicial no cambia."
           analogia={`Imagina que le prestas tu bicicleta a un amigo.
@@ -3842,9 +3956,12 @@ El interés simple es igual: siempre se calcula sobre el mismo capital inicial, 
             { label: "Interpretación", content: "Bajo estas condiciones, el capital alcanzaría un valor del final de $ 1.200.000,00 COP." },
           ]}
         />
+              </RecorridoSubmodulos>
       </Acordeon>
 
-      <Acordeon title="2 · Interés compuesto: interés sobre interés" moduleIndex={1} activeModule={moduloActivo} defaultOpen>
+      <Acordeon title="2 · Interés compuesto: interés sobre interés">
+        <RecorridoSubmodulos>
+
         <BloqueInteres
           queEs="El interés compuesto es cuando los intereses generados se incorporan al capital. Dicho fácil: es interés sobre interés, porque el dinero crece y los intereses también empiezan a producir más intereses."
           analogia={`Imagina una bola de nieve.
@@ -3872,9 +3989,12 @@ El dinero hace lo mismo: gana intereses, esos intereses se vuelven parte del din
             { label: "Interpretación", content: "El saldo puede crecer más que en interés simple porque cada trimestre los intereses se suman al capital y generan más intereses." },
           ]}
         />
+              </RecorridoSubmodulos>
       </Acordeon>
 
-      <Acordeon title="3 · Interés continuo" moduleIndex={2} activeModule={moduloActivo} defaultOpen>
+      <Acordeon title="3 · Interés continuo">
+        <RecorridoSubmodulos>
+
         <BloqueInteres
           queEs="El interés continuo es como el compuesto, pero sin esperar nada. En vez de sumar los intereses cada mes, los va sumando todo el tiempo, sin parar nunca."
           analogia={`¿Te acuerdas de la bola de nieve de hace un momento?
@@ -3900,45 +4020,33 @@ Por eso esta bola crece un poquito más rápido que la del interés compuesto no
             { label: "Resultado presentado", content: formatCurrencyCO(futureValueContinuous(850000, 0.0895, 2.5), "COP") },
           ]}
         />
+              </RecorridoSubmodulos>
       </Acordeon>
 
-      <Acordeon title="4 · Conversión de tasas" moduleIndex={3} activeModule={moduloActivo} defaultOpen>
+      <Acordeon title="4 · Conversión de tasas">
         <ConversionTasas />
       </Acordeon>
 
-      <Acordeon title="5 · Anualidades vencidas" moduleIndex={4} activeModule={moduloActivo} defaultOpen>
+      <Acordeon title="5 · Anualidades vencidas">
         <AnualidadesVencidas />
       </Acordeon>
 
-      <Acordeon title="6 · Anualidades anticipadas" moduleIndex={5} activeModule={moduloActivo} defaultOpen>
+      <Acordeon title="6 · Anualidades anticipadas">
         <AnualidadesAnticipadas />
       </Acordeon>
 
-      <Acordeon title="7 · Gradientes" moduleIndex={6} activeModule={moduloActivo} defaultOpen>
+      <Acordeon title="7 · Gradientes">
         <Gradientes />
       </Acordeon>
 
-      <Acordeon title="8 · Perpetuidades" moduleIndex={7} activeModule={moduloActivo} defaultOpen>
+      <Acordeon title="8 · Perpetuidades">
         <Perpetuidades />
       </Acordeon>
 
-      <Acordeon title="9 · Sistemas de amortización" moduleIndex={8} activeModule={moduloActivo} defaultOpen>
+      <Acordeon title="9 · Sistemas de amortización">
         <SistemasAmortizacion />
       </Acordeon>
-
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginTop: 20, paddingTop: 16, borderTop: `1px solid ${C.line}` }}>
-            <Boton variant="outline" onClick={retroceder} disabled={moduloActivo === 0}>← Módulo anterior</Boton>
-            <div style={{ display: "flex", gap: 5 }}>
-              {modulos.map((_, index) => <button key={index} aria-label={`Ir al módulo ${index + 1}`} onClick={() => setModuloActivo(index)} style={{
-                width: index === moduloActivo ? 22 : 7, height: 7, border: 0, borderRadius: 99,
-                background: index === moduloActivo ? C.gold : C.line, cursor: "pointer", padding: 0,
-                transition: "all .18s ease"
-              }} />)}
-            </div>
-            <Boton variant="gold" onClick={avanzar} disabled={moduloActivo === modulos.length - 1}>Siguiente módulo ↓</Boton>
-          </div>
-        </main>
-      </div>
+      </NavegacionTemas>
 
       <div style={{ marginTop: 18, padding: 16, background: C.paperDark, borderRadius: 8, fontSize: 13, color: C.slate }}>
         <strong style={{ color: C.navy }}>Notación:</strong> para interés simple y compuesto usamos <em>i</em> (tasa por periodo) y <em>n</em> (número de periodos). Para interés continuo usamos <em>r</em> (tasa continua) y <em>t</em> (tiempo en años). Nunca usamos una "T" aislada: siempre indicamos "Momento del flujo" con su unidad explícita.
@@ -4303,8 +4411,8 @@ function SimularBasico({ moneda, onGuardarHistorial }) {
         <Etiqueta>Configuración</Etiqueta>
         <Campo label="Tipo de operación" help="La interpretación de entradas, salidas e intereses cambia según sea crédito o inversión.">
           <Selector value={operacion} onChange={(e) => setOperacion(e.target.value)} options={[{ value: "credito", label: "Crédito" }, { value: "inversion", label: "Inversión" }]} />
+          <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "6px 11px", background: operacion === "credito" ? "#EEF2F8" : "#EAF3ED", color: operacion === "credito" ? C.navy : C.success, fontSize: 11.5, fontWeight: 800 }}><span style={{ width: 7, height: 7, borderRadius: 99, background: operacion === "credito" ? C.navyLight : C.success }} />Modo {operacion === "credito" ? "crédito" : "inversión"}</div>
         </Campo>
-        <ModoOperacion operacion={operacion} />
         <div style={{ padding: 12, background: C.paperDark, borderRadius: 8, fontSize: 12.5, color: C.slate, marginBottom: 14, lineHeight: 1.5 }}>
           {operacion === "credito"
             ? <><strong style={{ color: C.navy }}>Crédito:</strong> VP suele ser el dinero que recibes hoy; VF es lo que terminas pagando o debiendo; <strong>I = VF − VP</strong> representa los intereses pagados.</>
@@ -4762,8 +4870,8 @@ function SimularAvanzado({ moneda, onGuardarHistorial }) {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14 }}>
           <Campo label="Tipo de operación">
             <Selector value={operacion} onChange={(e) => setOperacion(e.target.value)} options={[{ value: "credito", label: "Crédito" }, { value: "inversion", label: "Inversión" }]} />
+            <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "6px 11px", background: operacion === "credito" ? "#EEF2F8" : "#EAF3ED", color: operacion === "credito" ? C.navy : C.success, fontSize: 11.5, fontWeight: 800 }}><span style={{ width: 7, height: 7, borderRadius: 99, background: operacion === "credito" ? C.navyLight : C.success }} />Modo {operacion === "credito" ? "crédito" : "inversión"}</div>
           </Campo>
-          <ModoOperacion operacion={operacion} />
           <Campo label="Régimen">
             <Selector value={regimen} onChange={(e) => setRegimen(e.target.value)} options={[{ value: "simple", label: "Simple" }, { value: "compuesto", label: "Compuesto" }, { value: "continuo", label: "Continuo" }]} />
           </Campo>
@@ -5564,8 +5672,7 @@ function SimuladorGradientes({ moneda, onGuardarHistorial }) {
     <Tarjeta>
       <Etiqueta>Configuración del gradiente</Etiqueta>
       <div style={{fontSize:12.5,color:C.slate,lineHeight:1.5,marginBottom:12}}>Construimos cada cuota y luego la llevamos a hoy o al final.</div>
-      <Campo label="Tipo de operación"><Selector value={operacion} onChange={e=>setOperacion(e.target.value)} options={[{value:"credito",label:"Crédito"},{value:"inversion",label:"Inversión"}]}/></Campo>
-      <ModoOperacion operacion={operacion} />
+      <Campo label="Tipo de operación"><Selector value={operacion} onChange={e=>setOperacion(e.target.value)} options={[{value:"credito",label:"Crédito"},{value:"inversion",label:"Inversión"}]}/><div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "6px 11px", background: operacion === "credito" ? "#EEF2F8" : "#EAF3ED", color: operacion === "credito" ? C.navy : C.success, fontSize: 11.5, fontWeight: 800 }}><span style={{ width: 7, height: 7, borderRadius: 99, background: operacion === "credito" ? C.navyLight : C.success }} />Modo {operacion === "credito" ? "crédito" : "inversión"}</div></Campo>
       <Campo label="Tipo de gradiente"><Selector value={tipo} onChange={e=>setTipo(e.target.value)} options={[{value:"aritmetico",label:"Aritmético · cambia en pesos"},{value:"geometrico",label:"Geométrico · cambia en porcentaje"}]}/></Campo>
       <Campo label="¿Las cuotas aumentan o disminuyen?"><Selector value={direccion} onChange={e=>setDireccion(e.target.value)} options={[{value:"creciente",label:"Creciente (+)"},{value:"decreciente",label:"Decreciente (−)"}]}/></Campo>
       <Campo label={`Primera cuota (A₁) · ${moneda}`}><Entrada value={A1} onChange={e=>setA1(e.target.value)} placeholder="800.000"/></Campo>
@@ -5756,8 +5863,7 @@ function SimuladorPerpetuidades({ moneda, onGuardarHistorial }) {
     <Tarjeta>
       <Etiqueta>Configuración de la perpetuidad</Etiqueta>
       <div style={{fontSize:12.5,color:C.slate,lineHeight:1.5,marginBottom:12}}>Una perpetuidad es una serie de pagos que no termina. Por eso calculamos cuánto vale hoy; no tiene valor futuro. La tabla muestra la cantidad n que elijas y agrega el valor presente de los pagos que siguen después, hasta el infinito.</div>
-      <Campo label="Tipo de operación"><Selector value={operacion} onChange={e=>setOperacion(e.target.value)} options={[{value:"credito",label:"Crédito"},{value:"inversion",label:"Inversión"}]}/></Campo>
-      <ModoOperacion operacion={operacion} />
+      <Campo label="Tipo de operación"><Selector value={operacion} onChange={e=>setOperacion(e.target.value)} options={[{value:"credito",label:"Crédito"},{value:"inversion",label:"Inversión"}]}/><div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "6px 11px", background: operacion === "credito" ? "#EEF2F8" : "#EAF3ED", color: operacion === "credito" ? C.navy : C.success, fontSize: 11.5, fontWeight: 800 }}><span style={{ width: 7, height: 7, borderRadius: 99, background: operacion === "credito" ? C.navyLight : C.success }} />Modo {operacion === "credito" ? "crédito" : "inversión"}</div></Campo>
       <Campo label="Tipo de perpetuidad"><Selector value={tipo} onChange={e=>{const v=e.target.value;setTipo(v);setMaxPagos(v==="constante"?"1000":v==="aritmetico"?"5000":"15000");setRes(null);setPaginaTabla(1);}} options={[{value:"constante",label:"Constante"},{value:"aritmetico",label:"Con gradiente aritmético"},{value:"geometrico",label:"Con gradiente geométrico"}]}/></Campo>
       <Campo label={`Valor de la cuota (A) · ${moneda}`}><Entrada value={A} onChange={e=>setA(e.target.value)} placeholder="150.000"/></Campo>
       {tipo!=="constante"&&<Campo label={tipo==="aritmetico"?`Gradiente aritmético (L) · ${moneda}`:"Gradiente geométrico (g) · %"}><Entrada value={grad} onChange={e=>setGrad(e.target.value)} placeholder={tipo==="aritmetico"?"5.000":"0,72"}/></Campo>}
@@ -6009,7 +6115,6 @@ function SimuladorAmortizaciones({moneda,onGuardarHistorial}){
   return <div style={{display:"grid",gridTemplateColumns:"minmax(290px,0.9fr) minmax(360px,1.3fr)",gap:20,alignItems:"start"}}>
     <Tarjeta>
       <Etiqueta>Datos del crédito</Etiqueta>
-      <ModoOperacion operacion="credito" />
       <Campo label="Sistema de amortización"><Selector value={sistema} onChange={e=>{setSistema(e.target.value);setRes(null)}} options={[{value:"frances",label:"Francés · cuota fija"},{value:"aleman",label:"Alemán · abono fijo a capital"},{value:"americano",label:"Americano · pago al final"}]}/></Campo>
       <Campo label={`Monto del crédito / valor del bien · ${moneda}`}><Entrada value={monto} onChange={e=>setMonto(e.target.value)} placeholder="1.000.000"/></Campo>
       <Campo label="Número total de cuotas (n)" help="Entero entre 1 y 100.000. Puedes escribirlo como 20000 o 20.000. La tabla se muestra por páginas de 100 filas."><Entrada type="text" inputMode="numeric" autoComplete="off" value={nTxt} onChange={e=>setNTxt(filtrarEnteroTexto(e.target.value))} placeholder="Ej. 24 o 20.000"/></Campo>
@@ -6909,7 +7014,11 @@ export default function App() {
   const [moneda, setMoneda] = useState("COP");
 
   return (
-    <div style={{ fontFamily: F_BODY, background: C.paper, minHeight: "100vh", color: C.ink }}>
+    <div style={{
+      fontFamily: F_BODY,
+      background: "radial-gradient(circle at 8% 0%, rgba(217,174,99,0.17), transparent 27%), radial-gradient(circle at 96% 4%, rgba(36,69,111,0.11), transparent 24%), linear-gradient(180deg, #f8f6f0 0%, #f3f1ec 38%, #f7f4ee 100%)",
+      minHeight: "100vh", color: C.ink
+    }}>
       <Nav activa={seccion} setActiva={setSeccion} moneda={moneda} setMoneda={setMoneda} />
       {seccion === "inicio" && <Inicio ir={setSeccion} />}
       {seccion === "aprender" && <Aprender />}
@@ -6917,8 +7026,8 @@ export default function App() {
       {seccion === "comparar" && <Comparar moneda={moneda} />}
       {seccion === "glosario" && <Glosario />}
       {seccion === "interacciones" && <Interacciones />}
-      <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 20 }}>
-        <Section style={{ padding: "22px 20px", fontSize: 11.5, color: C.slate, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+      <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 26, background: "rgba(255,255,255,0.48)" }}>
+        <Section style={{ padding: "24px 24px", fontSize: 11.5, color: C.slate, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
           <span>Numeris · Proyecto académico · Matemáticas Financieras · Tercer corte 2026-2</span>
           <span>Desarrollado con asistencia de Replit Agent, ChatGPT Business y Claude</span>
         </Section>
